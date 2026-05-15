@@ -68,12 +68,12 @@ kotlin{
     }
 
 //    iosX64();iosArm64();iosSimulatorArm64()
-//    listOf(iosArm64(), iosSimulatorArm64() ).forEach { iosTarget ->/*IOS目标*/
-//        iosTarget.binaries.framework /*IOS目标 二进制框架*/{
-//            baseName="ComposeApp"
-//            isStatic=true/*是否静态*/
-//        }
-//    }
+    listOf(iosArm64(), iosSimulatorArm64() ).forEach { iosTarget ->/*IOS目标*/
+        iosTarget.binaries.framework /*IOS目标 二进制框架*/{
+            baseName="ComposeApp"
+            isStatic=true/*是否静态*/
+        }
+    }
     
     jvm()/*JVM桌面目标*/
     
