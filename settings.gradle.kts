@@ -1,5 +1,5 @@
 rootProject.name = "EditLetterChat"
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+//enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
@@ -30,15 +30,23 @@ dependencyResolutionManagement {
                 includeGroupAndSubgroups("com.google")
             }
         }
-        mavenCentral()
+        mavenCentral()/*公共仓库*/
+        maven { url = uri("https://company/com/maven2") }/*私有/自定义 仓库*/
+
 
         maven { url = uri("https://maven.aliyun.com/repository/public") }/*1. 配置阿里云公共仓库镜像(用于大多数开源库)*/
         maven { url = uri("https://maven.aliyun.com/repository/google") }/*2. 配置Google仓库镜像(关键：用于Firebase、AndroidX等)，阿里云源*/
+
+        mavenLocal()/*本地仓库*/
+        flatDir {/*文件目录*/
+            dirs("libs")
+        }
     }
 }
 
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+//    id("dev.icerock.moko:resources-generator") version "0.26.0"/*引入 MokoResources综合资源库*/
 }
 
 include(":composeApp")/*导入 composeApp(Compose程序共享代码) 模块*/

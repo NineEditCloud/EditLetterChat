@@ -33,10 +33,12 @@ import com.nineeditcloud.editletterchat.client.Result
 import com.nineeditcloud.editletterchat.database.Account_Database
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
 import createNotification
+import dev.icerock.moko.resources.ImageResource
 import editletterchat.composeapp.generated.resources.Res
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import dev.icerock.moko.resources.compose.painterResource
 
 /*登录界面*/
 
@@ -80,7 +82,7 @@ class SignIn :Screen{
                                       },
                                       labelText/*标签文本*/="密码", inputType=KeyboardType.Password/*输入类型 密码*/,
                                       endIcon={
-                                          Icon(painter=painterResource(if(passwordVisible) Res.drawable.ic_menu_view else Res.drawable.ic_menu_help),
+                                          Icon(painter=painterResource(if(passwordVisible)  else Res.drawable.ic_menu_help),
                                                contentDescription="显示/隐藏 密码 视觉切换 图标",
                                                Modifier.pointerInput/*指针输入事件(无涟漪效果)*/(Unit){
                                                    detectTapGestures/*识别点击手势*/(onTap/*点击*/={

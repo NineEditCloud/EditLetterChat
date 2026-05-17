@@ -1,10 +1,8 @@
-import org.gradle.kotlin.dsl.invoke
+import dev.icerock.gradle.MRVisibility
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.awt.SystemColor.desktop
 
 /*若用了shared区分模块，composeApp部分负责共享应用GUI(不包括将Compose用于HTML)，若未用shared模块 则composeApp模块包括KMP项目全部内容*/
 plugins {
@@ -23,6 +21,7 @@ plugins {
 //    alias(libs.plugins.krdb)/*应用 Krdb插件(Realm新版，支持Kotlin2.1+)*/
 
 //    alias(libs.plugins.exoquery)/*应用 ExoQuery插件*/
+    alias(libs.plugins.multiplatform.mokoResources)/*应用 MokoResources综合资源库 插件*/
 }
 /*如果依赖丢失导致项目报错，请先连接VPN，点击 Gradle -> 重新加载所有Gradle项目，等待依赖下载完成，
 在顶部菜单点击 文件 -> 从磁盘全部重新加载 (或快捷键Ctrl+Alt+Y)
@@ -61,19 +60,19 @@ kotlin{
             jvmTarget.set(JvmTarget.JVM_17)
         }
         compilations.all {
-            kotlinOptions {
+            @Suppress("DEPRECATION") kotlinOptions {
                 freeCompilerArgs += listOf("-Xcontext-receivers")
             }
         }
     }
 
 //    iosX64();iosArm64();iosSimulatorArm64()
-    listOf(iosArm64(), iosSimulatorArm64() ).forEach { iosTarget ->/*IOS目标*/
-        iosTarget.binaries.framework /*IOS目标 二进制框架*/{
-            baseName="ComposeApp"
-            isStatic=true/*是否静态*/
-        }
-    }
+//    listOf(iosArm64(), iosSimulatorArm64() ).forEach { iosTarget ->/*IOS目标*/
+//        iosTarget.binaries.framework /*IOS目标 二进制框架*/{
+//            baseName="ComposeApp"
+//            isStatic=true/*是否静态*/
+//        }
+//    }
     
     jvm()/*JVM桌面目标*/
     
@@ -95,15 +94,18 @@ kotlin{
             implementation("org.jetbrains.compose.foundation:foundation:${libs.versions.composeMultiplatform.get()}")
             implementation("org.jetbrains.compose.ui:ui:${libs.versions.composeMultiplatform.get()}")
             implementation("org.jetbrains.compose.components:components-resources:${libs.versions.composeMultiplatform.get()}")
+//            implementation("com.google.android.material:material:1.7.0")/*Material组件与主题属性，谷歌源(安卓必须用此源，否则重要内容缺失)，最高有1.7.0版本*/
+            implementation("org.jetbrains.compose.material:material:1.7.0")/*Material组件与主题属性，跨平台版，最高1.7.0*/
+            implementation("androidx.compose.material:material-icons-extended:1.7.0")/*MaterialIcons(官方推荐)，该库包含所有 Material图标，体积庞大，务必启用 R8/ProGuard 以缩减包体积*/
             implementation("org.jetbrains.compose.material3:material3:1.6.0")/*Compose基础Material包控件、组件，最高1.4.0兼容安卓5.0，但不支持wasmJS*/
+
 //            implementation("org.jetbrains.compose.animation:animation")
-            implementation(compose.components.resources)/*通用预览依赖(包含@Preview等，但Android端会被 actual 绕过)*/
 
-            val lifecycle_version="2.9.4"
-            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version")
-            implementation("org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version")
+            val lifecycleVersion="2.9.4"
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
 
-            //Navigation核心库
+            /*Navigation核心库*/
             val navVersion = "2.9.8"/*2.7.7稳定*/
             implementation("androidx.navigation:navigation-compose:${navVersion}")/*Nav Compose导航图组件，功能特性，不可缺少，其实这一个就够了*/
 
@@ -116,10 +118,22 @@ kotlin{
 
 //            implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.0.0-alpha05")/*navigation3，navigation新版*/
 
-            implementation("cafe.adriel.voyager:voyager-navigator:1.1.0-beta03")/*Voyager-Navigation 跨平台通用界面导航依赖，1.1.0-beta02*/
-            implementation("io.github.dokar3:sonner:0.3.1")/*Compose-Sonner，跨平台Toast底部弹窗提示(与布局有绑定关系)*/
-            implementation("io.github.the-best-is-best:compose_toast:2.1.1")/*跨平台Toast底部弹窗提示，自定义UI部分 依赖Box堆叠容器，该库2.1.2后只兼容AGP9以上*/
+            implementation("cafe.adriel.voyager:voyager-navigator:1.1.0-beta03")/*Voyager-Navigation 跨平台通用界面导航依赖，1.1.0-beta03*/
+//            implementation("io.github.dokar3:sonner:0.3.1")/*Compose-Sonner，跨平台Toast底部弹窗提示(与布局有绑定关系)*/
+            implementation("io.github.the-best-is-best:compose_toast:2.0.0")/*跨平台Toast底部弹窗提示，自定义UI依赖Box堆叠容器，原生弹窗不依赖布局，该库2.1.2后只兼容AGP9以上*/
             implementation("io.github.khubaibkhan4:alert-kmp:2.0.0")/*Alert-KMP，极致便捷的跨平台底部弹窗提示，完全不依赖Box或布局绑定*/
+
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.components.resources)/*compose通用资源，含painterResource用的composeResources资源 和 @Preview预览注解等(但Android端会被 actual 绕过)*/
+//            implementation("io.github.rabehx:iconsax-compose:2.0.1")/*Iconsax-Compose，imageVector用的超千款图标*/
+            /*Compose-Icons，imageVector用的多套开源图标包*/
+//            implementation("br.com.devsrsouza.compose.icons:font-awesome:${libs.versions.composeIcons.get()}")
+//            implementation("br.com.devsrsouza.compose.icons:simple-icons:${libs.versions.composeIcons.get()}")
+//            implementation("br.com.devsrsouza.compose.icons:tabler-icons:${libs.versions.composeIcons.get()}")
+//            implementation("br.com.devsrsouza.compose.icons:line-awesome:${libs.versions.composeIcons.get()}")
+            api("dev.icerock.moko:resources:${libs.versions.mokoResources.get()}")/*mokoResources综合资源 核心依赖*/
+            api("dev.icerock.moko:resources-compose:${libs.versions.mokoResources.get()}")/*mokoResources综合资源 Compose支持，含painterResource用的图标资源*/
+
 
 
 
@@ -175,15 +189,15 @@ kotlin{
 //            implementation("com.ctrip.sqllin:sqllin-dsl:${libs.versions.sqllin.get()}")/*SQLlin，跨平台且方便分库分表的DSL数据库框架，KSP用于编译时生成代码，dsl模块已包含必要注解，无需额外添加*/
 //            implementation("com.ctrip.sqllin:sqllin-driver:${libs.versions.sqllin.get()}")/*一套通用的多平台SQLite低阶API，DSL的底层依赖*/
 
-            implementation("io.exoquery:exoquery-runner-jdbc:${libs.versions.exoqueryRun.get()}")/*JVM runner*/
-            implementation("org.postgresql:postgresql:42.7.0")/*JDBC驱动*/
+//            implementation("io.exoquery:exoquery-runner-jdbc:${libs.versions.exoqueryRun.get()}")/*JVM runner*/
+//            implementation("org.postgresql:postgresql:42.7.0")/*JDBC驱动*/
 
 //            implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")/*Ktor-CIO纯Kotlin引擎(跨平台通用)，或apache、java*/
         }
 
         nativeMain.dependencies/*Kotlin/Native IOS/MacOS/Linux*/{
-            implementation("io.exoquery:exoquery-runner-native:1.0.0")/*Native runner*/
-            implementation("app.cash.sqldelight:native-driver:2.0.2")/*SQLDelight native driver (可选)*/
+//            implementation("io.exoquery:exoquery-runner-native:1.0.0")/*Native runner*/
+//            implementation("app.cash.sqldelight:native-driver:2.0.2")/*SQLDelight native driver (可选)*/
         }
 
 //        jsMain.dependencies/*JS运行依赖*/{
@@ -199,8 +213,7 @@ kotlin{
 }
 dependencies/*综合依赖*/{
 //    implementation(platform("androidx.compose:compose-bom:2024.09.00"))/*Compose-Bom物料清单(必备，否则下载包不全)，最高2024.09.00支持安卓5.0，改了更高版本会有内容缺失*/
-    val composeMultiPlatform_version="1.9.0-rc01"
-    debugImplementation("org.jetbrains.compose.ui:ui-tooling:$composeMultiPlatform_version")
+    debugImplementation("org.jetbrains.compose.ui:ui-tooling:${libs.versions.composeMultiplatform.get()}")
 
 
 
@@ -242,15 +255,21 @@ dependencies/*综合依赖*/{
 
 
 }
+tasks.withType<KotlinCompile>{/*为解决 KSP 在 Kotlin Multiplatform 中的元数据依赖问题*/
+    if(name != "kspCommonMainKotlinMetadata"){
+        dependsOn("kspCommonMainKotlinMetadata")
+    }
+}
 room{/*Room配置*/
     schemaDirectory("$projectDir/schemas")/*Room架构导出目录*/
 }
 
-/*以下是为了解决 KSP 在 Kotlin Multiplatform 中的元数据依赖问题*/
-tasks.withType<KotlinCompile>{
-    if(name != "kspCommonMainKotlinMetadata"){
-        dependsOn("kspCommonMainKotlinMetadata")
-    }
+multiplatformResources{/*moko-resources 配置块*/
+    resourcesPackage.set("com.nineeditcloud.editletterchat")/*【必需】生成的资源类包名*/
+    resourcesClassName.set("MR")                /*【可选】生成的资源类名，默认为MR*/
+    resourcesVisibility.set(MRVisibility.Public)/*【可选】资源类可见性，默认为Public*/
+    iosBaseLocalizationRegion.set("en")         /*【可选】iOS基础本地化区域*/
+    iosMinimalDeploymentTarget.set("11.0")      /*【可选】iOS最低版本*/
 }
 
 android/*安卓目标配置*/{
