@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.navigator.Navigator
-import com.nineeditcloud.editletterchat.database.Account_Database
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {

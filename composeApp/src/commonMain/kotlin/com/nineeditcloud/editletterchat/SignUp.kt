@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -29,14 +28,13 @@ import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.dokar.sonner.Toast
-import com.dokar.sonner.rememberToasterState
 import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
 import com.nineeditcloud.editletterchat.client.Result
-import com.nineeditcloud.editletterchat.database.Account_Database
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
+import compose.icons.Octicons
+import compose.icons.octicons.Eye16
+import compose.icons.octicons.EyeClosed16
 import createNotification
-import editletterchat.composeapp.generated.resources.Res
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -66,7 +64,7 @@ class SignUp:Screen {
 
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
 
-        val toaster = rememberToasterState()/*创建 Toast 状态管理器*/
+//        val toaster = rememberToasterState()/*创建 Toast 状态管理器*/
 
         Column(Modifier.background(backgroundColor).fillMaxSize()) {
             Column(Modifier.fillMaxSize().padding(horizontal=40.dp),
@@ -96,7 +94,7 @@ class SignUp:Screen {
                                       },
                                       labelText="密码", inputType=KeyboardType.Password/*输入类型 密码*/,
                                       endIcon={
-                                          Icon(painter=painterResource(if(passwordVisible) Res.ic_menu_view else Res.drawable.ic_menu_help),
+                                          Icon(imageVector=if(passwordVisible) Octicons.Eye16 else Octicons.EyeClosed16,
                                                contentDescription="显示/隐藏 密码 视觉切换 图标",
                                                Modifier.pointerInput/*指针输入事件(无涟漪效果)*/(Unit) {
                                                    detectTapGestures/*识别点击手势*/(onTap/*点击*/={

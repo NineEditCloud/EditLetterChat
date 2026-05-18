@@ -1,13 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.INTERNET" /> <!--声明 网络权限-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /><!--声明访问网络状态信息权限，非危险 普通权限(安装时自动授予)-->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" /> <!--写入存储空间权限 非私有存储路径的文件写入要用-->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" /> <!--读取存储空间权限 非私有存储路径的文件读取要用-->
+
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher_background"
+        android:icon="@drawable/icon00"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher"
+        android:roundIcon="@drawable/icon00"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:name=".database.MyApp">
+        <!--icon为应用图标，label为应用标签，name为获取安卓应用Context(上下文调用实例) 的类-->
         <activity
             android:exported="true"
             android:name=".MainActivity">

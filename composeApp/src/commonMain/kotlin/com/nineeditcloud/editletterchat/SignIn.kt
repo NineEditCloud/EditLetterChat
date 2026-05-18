@@ -17,7 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,15 +29,17 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
 import com.nineeditcloud.editletterchat.client.Result
-import com.nineeditcloud.editletterchat.database.Account_Database
+import com.nineeditcloud.editletterchat.database.AppDatabase
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
+import com.nineeditcloud.editletterchat.database.getDatabase
+import compose.icons.Octicons
+import compose.icons.octicons.Eye16
+import compose.icons.octicons.EyeClosed16
+import compose.icons.octicons.Person16
 import createNotification
-import dev.icerock.moko.resources.ImageResource
-import editletterchat.composeapp.generated.resources.Res
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import dev.icerock.moko.resources.compose.painterResource
 
 /*登录界面*/
 
@@ -82,7 +83,7 @@ class SignIn :Screen{
                                       },
                                       labelText/*标签文本*/="密码", inputType=KeyboardType.Password/*输入类型 密码*/,
                                       endIcon={
-                                          Icon(painter=painterResource(if(passwordVisible)  else Res.drawable.ic_menu_help),
+                                          Icon(imageVector=if(passwordVisible) Octicons.Eye16 else Octicons.EyeClosed16,
                                                contentDescription="显示/隐藏 密码 视觉切换 图标",
                                                Modifier.pointerInput/*指针输入事件(无涟漪效果)*/(Unit){
                                                    detectTapGestures/*识别点击手势*/(onTap/*点击*/={
@@ -100,7 +101,7 @@ class SignIn :Screen{
                                 is Result.Success -> {/*请求成功，处理accountId*/
                                     withContext(Dispatchers.Main){/*在UI活动线程中执行(UI在主线程)*/
                                         isLoading=true
-                                        val accountDatabase= Account_Database.getDatabase(context)/*获取连接数据库*/
+                                        val accountDatabase=getDatabase("UserAccount_LocalData")/*获取连接数据库*/
                                         val userAccountDao=accountDatabase.userAccountDao()/*获取 用户账号 表的Dao操作实例*/
                                         userAccountDao.insertAccount(UserAccountLocalData(result.accountId, password, password, result.token))/*将账号数据存入 用户账号表*/
                                         userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/

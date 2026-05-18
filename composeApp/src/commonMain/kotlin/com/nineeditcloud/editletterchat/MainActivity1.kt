@@ -105,6 +105,9 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.internal.BackHandler
 import com.nineeditcloud.editletterchat.database.AccountFriendLocalData
 import com.nineeditcloud.editletterchat.database.Account_Database
+import compose.icons.Octicons
+import compose.icons.octicons.File16
+import compose.icons.octicons.Image16
 import editletterchat.composeapp.generated.resources.Res
 import editletterchat.composeapp.generated.resources.cover07
 import editletterchat.composeapp.generated.resources.name_edit
@@ -319,7 +322,7 @@ class MainActivity1:Screen{
                                         onClick={
                                             scope.launch/*启动协程作用域(抽屉控制器操作执行工具)*/{ drawerState.close()/*关闭抽屉*/ }
                                         },
-                                        icon={ Icon(painterResource(android.R.drawable.ic_input_get), contentDescription="文件图标",
+                                        icon={ Icon(Octicons.File16, contentDescription="文件图标",
                                                     Modifier.size(25.dp)) },
                                         shape=RectangleShape/*设置直角*/
                                                                   )
@@ -329,7 +332,7 @@ class MainActivity1:Screen{
                                         onClick={
                                             scope.launch/*启动协程作用域(抽屉控制器操作执行工具)*/ { drawerState.close()/*关闭抽屉*/ }
                                         },
-                                        icon={ Icon(painterResource(android.R.drawable.ic_menu_gallery), contentDescription="相册图标",
+                                        icon={ Icon(Octicons.Image16, contentDescription="相册图标",
                                                     Modifier.size(25.dp)) },
                                         shape=RectangleShape/*设置直角*/
                                                                   )

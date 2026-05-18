@@ -12,12 +12,11 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        maven{ url=uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }/*JetBrains-ComposeMultiplatform专用仓库(关键！)*/
+        maven{ url=uri("https://plugins.gradle.org/m2/") }
 
-        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
-        maven { url = uri("https://plugins.gradle.org/m2/") }
-
-        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }/*1.配置Gradle插件镜像 阿里云源*/
-        maven { url = uri("https://maven.aliyun.com/repository/public") }/*2.配置阿里云公共仓库镜像*/
+        maven{ url=uri("https://maven.aliyun.com/repository/gradle-plugin") }/*1.配置Gradle插件镜像 阿里云源*/
+        maven{ url=uri("https://maven.aliyun.com/repository/public") }/*2.配置阿里云公共仓库镜像*/
     }
 }
 
@@ -31,11 +30,15 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()/*公共仓库*/
-        maven { url = uri("https://company/com/maven2") }/*私有/自定义 仓库*/
 
 
-        maven { url = uri("https://maven.aliyun.com/repository/public") }/*1. 配置阿里云公共仓库镜像(用于大多数开源库)*/
-        maven { url = uri("https://maven.aliyun.com/repository/google") }/*2. 配置Google仓库镜像(关键：用于Firebase、AndroidX等)，阿里云源*/
+//        maven{ url=uri("https://company/com/maven2") }/*Company仓库*/
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")/*JetBrains-ComposeMultiplatform专用仓库(关键！)*/
+//        maven("https://dl.google.com/dl/android/maven2")/*谷歌官方仓库，如果上述仓库仍找不到，可尝试添加此仓库*/
+
+//        maven{ url=uri("https://maven.aliyun.com/repository/central") }/*阿里云源mavenCentral */
+        maven{ url=uri("https://maven.aliyun.com/repository/public") }/*阿里云公共仓库镜像(用于大多数开源库)*/
+        maven{ url=uri("https://maven.aliyun.com/repository/google") }/*阿里云源Google仓库镜像(用于Firebase、AndroidX等) */
 
         mavenLocal()/*本地仓库*/
         flatDir {/*文件目录*/
