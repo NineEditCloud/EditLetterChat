@@ -31,6 +31,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
 import com.nineeditcloud.editletterchat.client.Result
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
+import com.nineeditcloud.editletterchat.database.getDatabase
 import compose.icons.Octicons
 import compose.icons.octicons.Eye16
 import compose.icons.octicons.EyeClosed16
@@ -115,7 +116,7 @@ class SignUp:Screen {
                                 is Result.Success-> {/*结果密封类 中 成功数据类 的类型生效，请求成功，处理accountId*/
                                     withContext(Dispatchers.Main){/*在UI活动线程中执行(UI在主线程)*/
                                         isLoading=true
-                                        val accountDatabase=Account_Database.getDatabase(context)/*获取连接数据库*/
+                                        val accountDatabase=getDatabase("UserAccount_LocalData")/*获取连接 账号数据库*/
                                         val userAccountDao=accountDatabase.userAccountDao()/*获取 用户账号 表的Dao操作实例*/
                                         userAccountDao.insertAccount(UserAccountLocalData(result.accountId, username, password, result.token, ""))/*将账号数据存入 用户账号表*/
                                         userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/

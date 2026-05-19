@@ -21,6 +21,8 @@ material="1.7.3"
 
 navigation="2.9.1"#/*jetbrains发布的跨平台版Navigation版本，2.9.0-beta01为首个支持KMP版 兼容1.8.0，2.9.1支持CMP1.9.0-rc01 且兼容安卓5.0*/
 
+voyager="1.1.0-beta03"#跨平台界面导航库版本
+
 ksp="2.1.21-2.0.2"#KSP版本必须与Kotlin兼容，Kotlin2.0.21用2.0.21-1.0.28，Kotlin2.1.21用2.1.21-2.0.2，Kotlin2.1.20用2.1.20-1.0.32或2.1.20-2.0.1
 room="2.7.0"#Room2.6.1稳定版、2.7.0(2024预览版) 都支持安卓5.0
 sqlite="2.5.2"
@@ -36,6 +38,8 @@ exoqueryRun="1.4.0.PL"
 
 composeIcons="1.1.1"
 mokoResources="0.26.4"
+
+filekit="0.14.1"#FileKit跨平台 应用私有路径获取、文件操作 库版本，0.12.0支持 CMP1.9.0及RC版本
 
 
 

@@ -97,7 +97,7 @@ class CreateGroupChat/*创建群聊界面*/: Screen{
         }
     }
 }
-class Add_FriendAndGroupChat/*添加好友和群聊界面*/: Screen{
+class Add_FriendAndGroupChat/*添加好友和群聊界面(添加联系)*/: Screen{
     @Composable
     override fun Content() {
         val backgroundColor=if(!isSystemInDarkTheme())Color(0xFFEEF2FD) else Color(0xFF1C1E1F)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/

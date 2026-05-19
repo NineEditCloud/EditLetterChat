@@ -28,7 +28,7 @@ import editletterchat.composeapp.generated.resources.Res
 import editletterchat.composeapp.generated.resources.image01
 import org.jetbrains.compose.resources.painterResource
 
-/*登录和注册 选择界面*/
+/*开始选择-登录和注册 选择界面*/
 /** 像素单位
  * DP(Density-independentPixels 密度无关像素)：用于UI元素尺寸，在不同密度的屏幕上显示同样大小
  * SP(Scale-independentPixels 缩放无关像素)：用于字体大小，无固定缩放大小，自适应系统缩放大小

@@ -1,14 +1,5 @@
 package com.nineeditcloud.editletterchat
 
-import android.annotation.SuppressLint
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.os.Build
-import android.os.Bundle
-import androidx.activity.compose.BackHandler
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -76,9 +67,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -87,7 +81,6 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -98,23 +91,38 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import cafe.adriel.voyager.navigator.internal.BackHandler
 import com.nineeditcloud.editletterchat.database.AccountFriendLocalData
-import com.nineeditcloud.editletterchat.database.Account_Database
+import com.nineeditcloud.editletterchat.database.getDatabase
 import compose.icons.Octicons
+import compose.icons.octicons.DeviceCamera16
 import compose.icons.octicons.File16
 import compose.icons.octicons.Image16
 import editletterchat.composeapp.generated.resources.Res
 import editletterchat.composeapp.generated.resources.cover07
 import editletterchat.composeapp.generated.resources.name_edit
 import editletterchat.composeapp.generated.resources.new_user
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.ImageFormat
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.absolutePath
+import io.github.vinceglb.filekit.cacheDir
+import io.github.vinceglb.filekit.compressImage
+import io.github.vinceglb.filekit.createDirectories
+import io.github.vinceglb.filekit.dialogs.compose.util.encodeToByteArray
+import io.github.vinceglb.filekit.div
+import io.github.vinceglb.filekit.exists
+import io.github.vinceglb.filekit.filesDir
+import io.github.vinceglb.filekit.path
+import io.github.vinceglb.filekit.write
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
-import java.io.File
-import java.io.FileOutputStream
 
 /*首页 导航图 界面*/
 
@@ -125,24 +133,25 @@ var selectedName=""
 var imagePath:String=""
 var backgroundColor:Color=Color.White/*全局背景色初始化值*/
 
-//lateinit var userAccountDao: UserAccountDao/*lateinit为延迟初始化，Dao操作实例(数据访问对象)*/
-//val accountDatabase=Account_Database.getDatabase(this)/*获取数据库实例*/
-//val userAccountDao=accountDatabase.userAccountDao()/*获取数据库中的 已登录账号本地数据 表实例*/
-//lifecycleScope.launch{/*协程*/
-//    if(userAccountDao.getHisCurrentUseAccount()){/*如果存在正在使用的账号*/
-//        account=userAccountDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号*/
-//    }
-//}
-
-
+@OptIn(ExperimentalComposeUiApi::class)
 class MainActivity1:Screen{
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    override fun Content() {
+    override fun Content(){
+        val accountDatabase=getDatabase("UserAccount_LocalData")/*获取 用户账号本地数据 数据库实例*/
+        val userAccountDao=accountDatabase.userAccountDao()/*获取数据库中的 已登录账号本地数据 表实例*/
+        val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
+        lifecycleOwner.lifecycleScope.launch{/*协程*/
+            if(userAccountDao.getHisCurrentUseAccount()){/*如果存在正在使用的账号*/
+                account=userAccountDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号*/
+            }
+        }
+
         val drawerState=remember{ DrawerState(DrawerValue.Closed) }/*抽屉状态对象*/
         val scope=rememberCoroutineScope()/*协程作用域(抽屉控制器操作执行工具)*/
 
         val navController=rememberNavController()//常量 导航控制器对象(导航图和导航栏共用同一个导航控制器，实现控制导航图)
-        //    var presses by remember { mutableIntStateOf(0) }
+//        var presses by remember{ mutableIntStateOf(0) }
         val items=listOf(//导航项信息列表
             NavItem("消息", "message", Icons.Default.Home, badgeCount = 0,"用户名"),
             NavItem("联系人", "contact", Icons.Default.Person, badgeCount = 23,"联系人"),
@@ -150,11 +159,9 @@ class MainActivity1:Screen{
                         )
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()/*创建NavBSE对象*/
-        val currentRoute=navBackStackEntry?.destination?.route//获取当前导航页 对象
+        val currentRoute=navBackStackEntry?.destination?.route/*获取当前导航页 对象*/
 
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
-
-
 
         /*这部分是把好友头像保存到本地，如果正式上架的话要把头像改成遍历所有接收到此账号好友的头像*/
         /*获取外部私有 文件路径和缓存路径
@@ -162,23 +169,35 @@ class MainActivity1:Screen{
         应用外部缓存路径：/storage/emulated/0/Android/data/包名/cache
         Context需要处在主函数可用this调用当前类所继承的Context类，其它可用LocalContext.current创建的对象
         */
-        val filesPath=context.getExternalFilesDir(null)?.absolutePath ?: "n"/*如果获取失败返回n*/
-        //        val cachePath=this.externalCacheDir?.absolutePath ?: "n"/*如果获取失败返回n*/
 
-        if (filesPath != "n"){/*如果确实获取到了外部私有文件路径*/
-            val dir= File(filesPath/*目录*/,"avatar"/*文件夹名称*/)/*拼接头像文件夹路径*/
-            if(!dir.exists()){/*如果文件夹不存在，(!代表反面，文件夹存在的反面)*/
-                dir.mkdirs()/*创建文件夹，否则在不存在此文件夹的情况下，向不存在的目录保存文件会报错并闪退*/
+
+        val targetDir=FileKit.filesDir ?:run{/*获取目录对象，若获取失败则直接返回或处理错误*/
+            println("错误：无法获取应用文件目录。请检查是否已正确初始化FileKit")/*可选：显示用户提示或记录日志*/
+//            return /*或者抛出异常，取决于你的应用策略*/
+        }
+        val filesPath:PlatformFile?=(FileKit.filesDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有文件目录，   若获取失败则为空*/
+        val cachePath:PlatformFile?=(FileKit.cacheDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有临时缓存目录，若获取失败则为空*/
+
+        if(filesPath!=null){/*如果确实获取到了外部私有文件路径*/
+            val dir=filesPath/"avatar"/*目标文件夹*/
+            dir.createDirectories()/*创建不存在的文件夹及其不存在的父目录 行为幂等(Idempotent)，若文件夹存在 什么都不执行 也不要报错*/
+//            if(!dir.exists()){/*若文件夹不存在，(!代表反面，文件夹存在的反面)，其实FileKit会自行判断，若要判断是否为已存在还是刚创建 可添加判断*/
+//                dir.createDirectories()/*创建文件夹，否则在不存在此文件夹的情况下，向不存在的目录保存文件会报错并闪退*/
+//            }
+            val imageFile=dir/"new_user.png"/*目标图片文件*/
+
+            val imageBitmap:ImageBitmap=
+                imageResource(Res.drawable.new_user)/*处理图片(Compress & Save)，假设已在 Composable 函数中获取到 ImageBitmap*/
+
+            CoroutineScope(Dispatchers.Default).launch {/*在协程中执行图片保存操作*/
+                val imageBytes=imageBitmap.encodeToByteArray(format=ImageFormat.PNG,
+                                                             quality=90)/*将ImageBitmap 编码为字节数组*/
+                val compressedBytes=FileKit.compressImage(bytes=imageBytes,
+                                                          quality=90,
+                                                          imageFormat=ImageFormat.PNG)/*压缩图片(可选步骤，如不需要可直接写入原始字节)*/
+                imageFile.write(compressedBytes)/*将压缩后的图片数据写入文件*/
+                imagePath=imageFile.path/*获取文件路径*/
             }
-
-            val imageFile = File("$filesPath/avatar", "new_user.png")//创建文件
-            val bitmap = BitmapFactory.decodeResource(context.resources, Res.drawable.new_user)//从资源(res)获取图片Bitmap
-
-            FileOutputStream(imageFile).use { outputStream ->/*文件输出流*/
-                //            Bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)/*创建一个图片*/
-                bitmap.compress(Bitmap.CompressFormat.PNG/*将图片输出为Png格式*/, 90, outputStream)/*保存图片Bitmap数据输出到文件*/
-            }
-            imagePath=imageFile.absolutePath/*获取文件路径*/
         }
 
         /*假设收到的最新每一条消息集，联系人消息集*/
@@ -517,7 +536,7 @@ class MainActivity1:Screen{
                                                                                           if(!showPopup){
                                                                                               selectedId=contactMessageItem.id
                                                                                               selectedName=contactMessageItem.name
-                                                                                              activity.startActivity(Intent(context, Session()::class.java))/*跳转消息会话界面*/
+                                                                                              navigator.push(Session())/*跳转 消息会话界面*/
                                                                                           }
                                                                                       },
                                                                                       onLongClick={/*长按事件*/
@@ -582,7 +601,7 @@ class MainActivity1:Screen{
 
                             }
 
-                            BackHandler/*拦截返回键*/{
+                            @Suppress("DEPRECATION") BackHandler/*拦截返回键*/{
                                 if(drawerState.isClosed)/*如果抽屉是关闭状态)*/
                                     if(expanded||showPopup){/*如果有弹窗视图是打开状态*/
                                         expanded=false
@@ -619,9 +638,9 @@ class MainActivity1:Screen{
                                                        .fillMaxWidth(0.4f)
                                                   ){
                                                 Row(Modifier.fillMaxWidth().height(50.dp)
-                                                        //                                        .clip(RoundedCornerShape(topStart = 13.dp, topEnd = 13.dp))/*裁剪顶部为圆角，以待点击圆角涟漪(必须在点击事件前裁剪)*/
+//                                                        .clip(RoundedCornerShape(topStart = 13.dp, topEnd = 13.dp))/*裁剪顶部为圆角，以待点击圆角涟漪(必须在点击事件前裁剪)*/
                                                         .clickable{/*创建群聊选项点击事件*/
-                                                            activity.startActivity(Intent(context, CreateGroupChat()::class.java))
+                                                            navigator.push(CreateGroupChat())/*跳转 创建群聊界面*/
                                                         }/*.background(Color.White,RoundedCornerShape(topStart = 13.dp, topEnd = 13.dp))*//*背景白色，顶部圆角*/,
                                                     verticalAlignment = Alignment.CenterVertically/*子项垂直居中对齐*/,) {
                                                     Icon(painterResource(Res.drawable.name_edit), contentDescription = "创建群聊图标",
@@ -630,18 +649,18 @@ class MainActivity1:Screen{
                                                 }
                                                 HorizontalDivider(Modifier.padding(start=40.dp,top=0.dp), color=Color.LightGray)/*水平分割线*/
                                                 Row(Modifier.fillMaxWidth().height(50.dp).clickable{/*添加好友选项点击事件*/
-                                                    activity.startActivity(Intent(context, Add_FriendAndGroupChat()::class.java))
+                                                    navigator.push(Add_FriendAndGroupChat())/*跳转 添加好友和群聊界面(添加联系)*/
                                                 }, verticalAlignment = Alignment.CenterVertically/*子项垂直居中对齐*/) {
                                                     Icon(painterResource(Res.drawable.new_user), contentDescription = "添加 好友/群 图标",
                                                          Modifier.padding(horizontal = 10.dp))
-                                                    Text("加好友/群", /*lineHeight = 1.sp,*/ fontSize = 10.sp,color= MaterialTheme.colorScheme.onSurface)
+                                                    Text("加好友/群", /*lineHeight = 1.sp,*/ fontSize=10.sp, color=MaterialTheme.colorScheme.onSurface)
                                                 }
                                                 HorizontalDivider(Modifier.padding(start=40.dp,top=0.dp), color=Color.LightGray)/*水平分割线*/
                                                 Row(Modifier.fillMaxWidth().height(50.dp).clickable{/*扫一扫选项点击事件*/
-                                                    activity.startActivity(Intent(context, ScanQRCode()::class.java))
+                                                    navigator.push(ScanQRCode())/*跳转 扫一扫界面*/
                                                 }, verticalAlignment = Alignment.CenterVertically/*子项垂直居中对齐*/) {
                                                     Row(Modifier.padding(horizontal = 10.dp)) {
-                                                        Icon(painterResource(Res.drawable.ic_menu_view), contentDescription = "扫一扫图标",
+                                                        Icon(imageVector=Octicons.DeviceCamera16, contentDescription="扫一扫图标",
                                                              Modifier.size(25.dp))
                                                     }
                                                     Text("扫一扫", /*lineHeight = 1.sp,*/ fontSize = 10.sp,color= MaterialTheme.colorScheme.onSurface)
@@ -650,7 +669,7 @@ class MainActivity1:Screen{
                                                 Row(Modifier.fillMaxWidth().height(50.dp)
                                                         //                                        .clip(RoundedCornerShape(bottomStart = 13.dp, bottomEnd = 13.dp))/*裁剪底部为圆角，以待点击圆角涟漪(必须在点击事件前用)*/
                                                         .clickable{/*收付款选项点击事件*/
-                                                            activity.startActivity(Intent(context, PaymentAndReceipt()::class.java))
+                                                            navigator.push(PaymentAndReceipt())/*跳转 收付款界面*/
                                                         }/*.background(Color.White, RoundedCornerShape(bottomStart = 13.dp, bottomEnd = 13.dp))*//*背景白色，底部圆角*/,
                                                     verticalAlignment = Alignment.CenterVertically/*子项垂直居中对齐*/) {
                                                     Row(Modifier.padding(horizontal = 10.dp)) {

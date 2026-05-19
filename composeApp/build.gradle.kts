@@ -1,6 +1,7 @@
 //import dev.icerock.gradle.MRVisibility
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -84,12 +85,12 @@ kotlin{
     
     jvm()/*JVM桌面目标*/
     
-//    js {
+//    js{
 //        browser()
 //        binaries.executable()
 //    }
 //    @OptIn(ExperimentalWasmDsl::class)
-//    wasmJs {
+//    wasmJs{
 //        browser()
 //        binaries.executable()
 //    }
@@ -125,7 +126,10 @@ kotlin{
 
 //            implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.0.0-alpha05")/*navigation3(navigation新版)，所有新版皆支持KMP跨平台*/
 
-            implementation("cafe.adriel.voyager:voyager-navigator:1.1.0-beta03")/*Voyager-Navigation 跨平台通用界面导航依赖，1.1.0-beta03*/
+            implementation("cafe.adriel.voyager:voyager-navigator:${libs.versions.voyager.get()}")/*Voyager-Navigation 跨平台通用界面导航依赖，1.1.0-beta03*/
+            implementation("cafe.adriel.voyager:voyager-screenmodel:${libs.versions.voyager.get()}")/*Voyager-Screen模块*/
+            implementation("cafe.adriel.voyager:voyager-transitions:${libs.versions.voyager.get()}")
+
 //            implementation("io.github.dokar3:sonner:0.3.1")/*Compose-Sonner，跨平台Toast底部弹窗提示(与布局有绑定关系)*/
             implementation("io.github.the-best-is-best:compose_toast:2.0.0")/*跨平台Toast底部弹窗提示，自定义UI依赖Box堆叠容器，原生弹窗不依赖布局，该库2.1.2后只兼容AGP9以上*/
             implementation("io.github.khubaibkhan4:alert-kmp:2.0.0")/*Alert-KMP，极致便捷的跨平台底部弹窗提示，完全不依赖Box或布局绑定*/
@@ -161,8 +165,16 @@ kotlin{
 
             implementation("io.ktor:ktor-client-core:${libs.versions.ktor.get()}")/*Ktor-共享核心，不带引擎*/
             implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")/*Ktor-CIO纯Kotlin通信引擎(跨平台通用)*/
+            implementation("io.ktor:ktor-network:${libs.versions.ktor.get()}")/*Ktor-Network模块，提供原始TCP和UDP 套接字支持*/
             implementation("io.ktor:ktor-client-content-negotiation:${libs.versions.ktor.get()}")/*Ktor-内容协商*/
             implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")/*Ktor协商-序列化JSON(需内容协商)*/
+
+            implementation("io.github.vinceglb:filekit-core:${libs.versions.filekit.get()}")/*FileKit核心模块，跨平台 文件操作 和 应用私有路径访问*/
+            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")
+            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")
+            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")
+
+            implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.composeMultiplatform.get()}")/*CMP跨平台 返回键事件库*/
         }
         commonTest.dependencies/*常规测试共享依赖*/{
             implementation("org.jetbrains.kotlin:kotlin-test:${libs.versions.kotlin.get()}")/*Kotlin测试依赖*/
