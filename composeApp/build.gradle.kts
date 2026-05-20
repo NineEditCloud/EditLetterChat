@@ -50,6 +50,8 @@ Android Emulator 25.3.11
 KMP框架能将Kotlin+Java项目 编译到Win、MacOS、Linux、Android、IOS、WEB的JS(但不支持将Compose应用于HTML等，JS和wasmJS的依赖只能放在shared部分)
 
 KMP框架有时候Gradle找不到依赖 可能不是依赖仓库问题，而是找不到对应操作系统平台的依赖(比如找不到IOS版依赖)，原因是库的 发布链接和版本 没有某些平台的依赖
+
+Git提交了项目的多个变化版本时，选择推送时间最新的(这样使用的是最新项目状态)，否则可能推送失败
 */
 /*---KMP跨平台最方便好用的数据库框架
 *分表情况：SQLlin(安卓6.0+，库已停止发布)，Exposed(未来KMP跨平台计划项目中)
