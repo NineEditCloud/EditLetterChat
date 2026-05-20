@@ -1,8 +1,8 @@
 [versions]
-agp = "8.13.0"#安卓Gradle插件 版本
-android-compileSdk = "36"
+agp = "8.5.0"#安卓Gradle插件 版本
+android-compileSdk = "34"
 android-minSdk = "21"
-android-targetSdk = "36"
+android-targetSdk = "34"
 androidx-activity = "1.11.0"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.17.0"
@@ -10,9 +10,9 @@ androidx-espresso = "3.7.0"
 androidx-lifecycle="2.9.4"#2.9.4兼容安卓5.0，2.8.0以上支持KMP
 androidx-testExt = "1.3.0"
 composeHotReload = "1.1.0"
-composeMultiplatform = "1.9.0-rc01"#CMP插件和Compose依赖版本，最高1.9.0-rc01兼容安卓5.0且有CMP插件
-junit = "4.13.2"
-kotlin = "2.1.21"#2.0.21兼容Realm，2.1.21兼容Krdb，2.3.21新版
+composeMultiplatform="1.9.0-rc01"#CMP插件和Compose依赖版本，最高1.9.0-rc01兼容安卓5.0且有CMP插件
+junit="4.13.2"
+kotlin="2.0.21"#2.0.21兼容Realm，2.1.21兼容Krdb，2.3.21新版
 kotlinx-coroutines = "1.10.2"
 ktor = "3.4.3"#2.3.12或3.0.1
 logback = "1.5.32"
@@ -23,9 +23,9 @@ navigation="2.9.1"#/*jetbrains发布的跨平台版Navigation版本，2.9.0-beta
 
 voyager="1.1.0-beta03"#跨平台界面导航库版本
 
-ksp="2.1.21-2.0.2"#KSP版本必须与Kotlin兼容，Kotlin2.0.21用2.0.21-1.0.28，Kotlin2.1.21用2.1.21-2.0.2，Kotlin2.1.20用2.1.20-1.0.32或2.1.20-2.0.1
-room="2.7.0"#Room2.6.1稳定版、2.7.0(2024预览版) 都支持安卓5.0
-sqlite="2.5.2"
+ksp="2.0.21-1.0.28"#KSP版本必须与Kotlin兼容，Kotlin2.0.21用2.0.21-1.0.28，Kotlin2.1.20用2.1.20-1.0.32或2.1.20-2.0.1，Kotlin2.1.21用2.1.21-2.0.2
+room="2.7.0"#Room2.6.1稳定版兼容安卓5.0 但不支持KMP，2.7.0(2024预览版) 兼容安卓5.0 支持KMP
+sqlite="2.5.2"#2.5.2
 sqllin="1.3.1"#旧版1.3.1，最新版2.3.3
 
 kabin="0.1.0-alpha14"#0.1.0-alpha11，0.1.0-pre-alpha01首个预发布版
@@ -39,7 +39,7 @@ exoqueryRun="1.4.0.PL"
 composeIcons="1.1.1"
 mokoResources="0.26.4"
 
-filekit="0.14.1"#FileKit跨平台 应用私有路径获取、文件操作 库版本，0.12.0支持 CMP1.9.0及RC版本
+filekit="0.12.0"#FileKit跨平台 应用私有路径获取、文件操作 库版本，0.12.0以上支持 CMP1.9.0及RC版本 安卓5.0
 
 
 
@@ -87,7 +87,7 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 androidx-room = { id = "androidx.room", version.ref = "room" }
-realm-kotlin={ id="io.realm.kotlin", version.ref="realm" }#Realm插件
+realm={ id="io.realm.kotlin", version.ref="realm" }#Realm插件
 krdb={id="io.github.xilinjia.krdb.gradle-plugin", version.ref="krdb"}#Krdb插件 Realm的新版 支持Kotlin2.1+
 
 serialization={id="plugin.serialization", version.ref="kotlin"}

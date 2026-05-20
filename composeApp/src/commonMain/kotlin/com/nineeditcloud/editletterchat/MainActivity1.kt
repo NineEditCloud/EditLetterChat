@@ -115,7 +115,6 @@ import io.github.vinceglb.filekit.compressImage
 import io.github.vinceglb.filekit.createDirectories
 import io.github.vinceglb.filekit.dialogs.compose.util.encodeToByteArray
 import io.github.vinceglb.filekit.div
-import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.path
 import io.github.vinceglb.filekit.write
@@ -171,10 +170,10 @@ class MainActivity1:Screen{
         */
 
 
-        val targetDir=FileKit.filesDir ?:run{/*获取目录对象，若获取失败则直接返回或处理错误*/
-            println("错误：无法获取应用文件目录。请检查是否已正确初始化FileKit")/*可选：显示用户提示或记录日志*/
-//            return /*或者抛出异常，取决于你的应用策略*/
-        }
+//        val targetDir=FileKit.filesDir ?:run{/*获取目录对象，若获取失败则直接返回或处理错误*/
+//            println("错误：无法获取应用文件目录。请检查是否已正确初始化FileKit")/*可选：显示用户提示或记录日志*/
+////            return /*或者抛出异常，取决于你的应用策略*/
+//        }
         val filesPath:PlatformFile?=(FileKit.filesDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有文件目录，   若获取失败则为空*/
         val cachePath:PlatformFile?=(FileKit.cacheDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有临时缓存目录，若获取失败则为空*/
 
@@ -190,11 +189,9 @@ class MainActivity1:Screen{
                 imageResource(Res.drawable.new_user)/*处理图片(Compress & Save)，假设已在 Composable 函数中获取到 ImageBitmap*/
 
             CoroutineScope(Dispatchers.Default).launch {/*在协程中执行图片保存操作*/
-                val imageBytes=imageBitmap.encodeToByteArray(format=ImageFormat.PNG,
-                                                             quality=90)/*将ImageBitmap 编码为字节数组*/
-                val compressedBytes=FileKit.compressImage(bytes=imageBytes,
-                                                          quality=90,
-                                                          imageFormat=ImageFormat.PNG)/*压缩图片(可选步骤，如不需要可直接写入原始字节)*/
+                val imageBytes=imageBitmap.encodeToByteArray(format=ImageFormat.PNG, quality=90)/*将ImageBitmap 编码为字节数组*/
+                val compressedBytes=FileKit.compressImage/*压缩图片(可选步骤，如不需要可直接写入原始字节)*/(bytes=imageBytes, quality=90,
+                                                          imageFormat=ImageFormat.PNG)
                 imageFile.write(compressedBytes)/*将压缩后的图片数据写入文件*/
                 imagePath=imageFile.path/*获取文件路径*/
             }

@@ -12,7 +12,7 @@ plugins {
 
     alias(libs.plugins.ksp) apply false/*引入 KSP插件*/
 
-//    alias(libs.plugins.realm.kotlin) apply false/*引入 Realm插件*/
+    alias(libs.plugins.realm) apply false/*引入 Realm插件*/
 //    alias(libs.plugins.krdb) apply false/*引入 Krdb插件(Realm新版，支持Kotlin2.1+)，下载失败*/
 
 //    alias(libs.plugins.exoquery) apply false/*引入 ExoQuery插件，下载失败*/

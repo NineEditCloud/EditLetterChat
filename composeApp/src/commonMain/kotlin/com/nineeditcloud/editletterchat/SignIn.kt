@@ -22,19 +22,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
 import com.nineeditcloud.editletterchat.client.Result
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
-import com.nineeditcloud.editletterchat.database.getDatabase
+import com.nineeditcloud.editletterchat.database.addData
+//import com.nineeditcloud.editletterchat.database.getDatabase
 import compose.icons.Octicons
 import compose.icons.octicons.Eye16
 import compose.icons.octicons.EyeClosed16
-import createNotification
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -99,10 +101,18 @@ class SignIn :Screen{
                                 is Result.Success -> {/*请求成功，处理accountId*/
                                     withContext(Dispatchers.Main){/*在UI活动线程中执行(UI在主线程)*/
                                         isLoading=true
-                                        val accountDatabase=getDatabase("UserAccount_LocalData")/*获取连接 账号数据库*/
-                                        val userAccountDao=accountDatabase.userAccountDao()/*获取 用户账号 表的Dao操作实例*/
-                                        userAccountDao.insertAccount(UserAccountLocalData(result.accountId, password, password, result.token))/*将账号数据存入 用户账号表*/
-                                        userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
+                                        addData("userAccount", UserAccountLocalData() ){
+                                            var id:String=result.accountId/*账号Id*/
+                                            var name:String=""/*昵称*/
+                                            var passwd:String=password/*密码*/
+                                            var token:String=result.token/*令牌*/
+                                            var user_status:String=""/*用户状态*/
+                                            var currentUse:Boolean=true/*是否为当前正在使用的账号*/
+                                        }
+//                                        val accountDatabase=getDatabase("UserAccount_LocalData")/*获取连接 账号数据库*/
+//                                        val userAccountDao=accountDatabase.userAccountDao()/*获取 用户账号 表的Dao操作实例*/
+//                                        userAccountDao.insertAccount(UserAccountLocalData(result.accountId, password, password, result.token))/*将账号数据存入 用户账号表*/
+//                                        userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
                                         navigator.replace(MainActivity1())/*将当前界面 替换成 首页界面，覆盖原本界面*/
                                     }
 
@@ -110,7 +120,9 @@ class SignIn :Screen{
                                 is Result.Error -> {/*显示错误信息*/
                                     withContext(Dispatchers.Main){/*在UI活动线程中执行(UI在主线程)*/
                                         isLoading=false
-                                        createNotification(NotificationType.TOAST).show(result.message)/*底部弹窗提示 响应消息*/
+//                                        createNotification(NotificationType.TOAST).show(result.message)/*底部弹窗提示 响应消息*/
+//                                        showToast(message=result.message, backgroundColor=Color.White, textColor=Color.Black,
+//                                            gravity=ToastGravity.Bottom, duration=ToastDuration.Long)
                                     }
                                 }
                             }
@@ -139,6 +151,15 @@ class SignIn :Screen{
                 }, color = MaterialTheme.colorScheme.onSurface, lineHeight = 1.sp/*行高设置为1可让文本占用位置变小*/)
             }
         }
+    }
+}
+
+class AddData:ViewModel(){
+    fun add(){
+        viewModelScope.launch {
+
+        }
+
     }
 }
 
