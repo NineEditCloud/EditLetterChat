@@ -69,7 +69,7 @@ kotlin{
             jvmTarget.set(JvmTarget.JVM_17)
         }
         compilations.all {
-            @Suppress("DEPRECATION") kotlinOptions {
+            kotlinOptions {
                 freeCompilerArgs += listOf("-Xcontext-receivers")
             }
         }
@@ -309,15 +309,15 @@ dependencies/*综合依赖*/{
 android/*安卓目标配置*/{
     namespace="com.nineeditcloud.editletterchat"/*应用包名*/
     compileSdk=libs.versions.android.compileSdk.get().toInt()/*编译SDK版本*/
-    defaultConfig {
-        applicationId = "com.nineeditcloud.editletterchat"/*应用包名*/
-        minSdk = libs.versions.android.minSdk.get().toInt()/*最低兼容SDK版本*/
-        targetSdk = libs.versions.android.targetSdk.get().toInt()/*目标SDK版本*/
-        versionCode = 1/*版本代码*/
-        versionName = "1.0"/*版本名*/
+    defaultConfig{
+        applicationId="com.nineeditcloud.editletterchat"/*应用包名*/
+        minSdk=libs.versions.android.minSdk.get().toInt()/*最低兼容SDK版本*/
+        targetSdk=libs.versions.android.targetSdk.get().toInt()/*目标SDK版本*/
+        versionCode=1/*版本代码*/
+        versionName="1.0"/*版本名*/
     }
-    packaging {
-        resources {
+    packaging{
+        resources{
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
@@ -331,15 +331,14 @@ android/*安卓目标配置*/{
         targetCompatibility=JavaVersion.VERSION_17
     }
 //    experimental { enableAndroidResources=true }
-    @Suppress("UnstableApiUsage") @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
-    experimentalProperties["android.experimental.kmp.enableAndroidResources"]=true/*实验性功能：将commonMain的资源 合并为Android资源*/
+//    @Suppress("UnstableApiUsage") @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+//    experimentalProperties["android.experimental.kmp.enableAndroidResources"]=true/*实验性功能：将commonMain的资源 合并为Android资源*/
 }
 
 compose.desktop/*Compose桌面目标配置*/{
     application/*应用*/{
         mainClass="com.nineeditcloud.editletterchat.MainKt"/*主类*/
-
-        nativeDistributions {
+        nativeDistributions{
             targetFormats/*目标桌面系统平台*/(TargetFormat.Dmg/*MacOS安装程序*/, TargetFormat.Msi/*Win安装程序*/, TargetFormat.Deb/*DebianLinux安装程序*/)
             packageName="com.nineeditcloud.editletterchat"/*包名*/
             packageVersion="1.0.0"/*包版本*/
