@@ -7,10 +7,8 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
 //    id("kotlin-kapt")/*kapt依赖插件，Kotlin的Room框架注解处理器包含此类依赖*/
-//    id("com.google.devtools.ksp") version "2.1.21" apply false /*KSP依赖插件(替代kapt)，由于kapt打包问题，尝试KSP，KSP必须与Kotlin兼容*/
-//    id("androidx.room") version "2.6.1" apply false
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.androidx.room)
+    alias(libs.plugins.ksp)/*应用 KSP依赖插件(替代kapt)，由于kapt打包问题，尝试KSP，KSP必须与Kotlin兼容*/
+//    alias(libs.plugins.androidx.room)
 //    alias(libs.plugins.realm.kotlin)/*应用 Realm插件*/
 //    alias(libs.plugins.krdb)/*应用 Krdb插件(Realm新版，支持Kotlin2.1+)*/
 
@@ -91,19 +89,19 @@ dependencies{
 //    add("kspJvm", ...)/*如果你的JVM目标命名为"jvm"*/
 //    add("kspJs", ...)
 
-    add("kspCommonMainMetadata", "com.attafitamim.kabin:compiler:${libs.versions.kabin.get()}")/*Kabin配置KSP依赖，否则无法生成代码*/
+//    add("kspCommonMainMetadata", "com.attafitamim.kabin:compiler:${libs.versions.kabin.get()}")/*Kabin配置KSP依赖，否则无法生成代码*/
 
-    listOf("kspCommonMainMetadata"/*commonMain(用于处理共享代码)*/,
-           "kspAndroid"/*安卓*/,
+//    listOf("kspCommonMainMetadata"/*commonMain(用于处理共享代码)*/,
+//           "kspAndroid"/*安卓*/,
 //           "kspIosArm64", "kspIosX64", "kspIosSimulatorArm64",/*IOS系列架构*/
-           "kspJvm",/*由kotlin块中JVM目标的命名决定*/
+//           "kspJvm",/*由kotlin块中JVM目标的命名决定*/
 //           "kspDesktop",/*ComposeMultiplatform项目中 JVM桌面目标常用*/
 //           "kspJs",/*适用于 Kotlin/JS 目标*/
 //           "kspNative"/*适用于 Kotlin/Native 目标*/
-          ).forEach{ target ->/*循环遍历 每次赋值给target*/
-        add(target, libs.androidx.room.compiler)/*为各平台添加Room处理器*/
+//          ).forEach{ target ->/*循环遍历 每次赋值给target*/
+//        add(target, libs.androidx.room.compiler)/*为各平台添加Room处理器*/
 
-    }
+//    }
 
 
 //    ksp("androidx.room:room-compiler:${libs.versions.room}")/*Room注解处理器 (Kotlin项目使用kapt 或 更新的KSP 插件)*/
@@ -125,16 +123,16 @@ dependencies{
 
 
 }
-room{/*Room配置*/
-    schemaDirectory("$projectDir/schemas")/*Room架构导出目录*/
-}
+//room{/*Room配置*/
+//    schemaDirectory("$projectDir/schemas")/*Room架构导出目录*/
+//}
 
 /*以下是为了解决 KSP 在 Kotlin Multiplatform 中的元数据依赖问题*/
-tasks.withType<KotlinCompile>{
-    if(name != "kspCommonMainKotlinMetadata"){
-        dependsOn("kspCommonMainKotlinMetadata")
-    }
-}
+//tasks.withType<KotlinCompile>{
+//    if(name != "kspCommonMainKotlinMetadata"){
+//        dependsOn("kspCommonMainKotlinMetadata")
+//    }
+//}
 
 
 

@@ -45,7 +45,7 @@ import kotlinx.coroutines.withContext
 
 class SignIn :Screen{
     @Composable
-    override fun Content() {
+    override fun Content(){
         var accountId by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var passwordVisible by remember { mutableStateOf(false) }
@@ -154,13 +154,12 @@ class SignIn :Screen{
     }
 }
 
-class AddData:ViewModel(){
-    fun add(){
-        viewModelScope.launch {
-
-        }
-
-    }
-}
+//class AddData:ViewModel(){
+//    fun add(){
+//        viewModelScope.launch {
+//
+//        }
+//    }
+//}
 
 
