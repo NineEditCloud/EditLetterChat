@@ -12,7 +12,7 @@ androidx-testExt="1.3.0"
 composeHotReload="1.1.0"
 composeMultiplatform="1.9.0-rc01"#CMP插件和Compose依赖版本，最高1.9.0-rc01兼容安卓5.0且有CMP插件
 junit="4.13.2"
-kotlin="2.0.21"#2.0.21兼容Realm，2.1.21兼容Krdb，2.3.21新版
+kotlin="2.0.20"#2.0.20兼容Realm2.3.0，2.1.21兼容Krdb，2.3.21新版
 kotlinx-coroutines="1.10.2"
 ktor="3.4.3"#2.3.12或3.0.1
 logback="1.5.32"
@@ -23,14 +23,19 @@ navigation="2.9.1"#/*jetbrains发布的跨平台版Navigation版本，2.9.0-beta
 
 voyager="1.1.0-beta03"#跨平台界面导航库版本
 
-ksp="2.0.21-1.0.28"#KSP版本必须与Kotlin兼容，Kotlin2.0.21用2.0.21-1.0.28，Kotlin2.1.20用2.1.20-1.0.32或2.1.20-2.0.1，Kotlin2.1.21用2.1.21-2.0.2
+ksp="2.0.20-1.0.25"#KSP版本必须与Kotlin兼容，Kotlin2.0.20用2.0.20-1.0.25，Kotlin2.0.21用2.0.21-1.0.28，Kotlin2.1.20用2.1.20-1.0.32或2.1.20-2.0.1，Kotlin2.1.21用2.1.21-2.0.2
+#用KSP1版本并添加ksp.useKsp2=false，当遇到兼容性问题，这是个快速有效的临时解决方案，有助于判断问题 是来源于KSP2 还是其他配置
 room="2.7.0"#Room2.6.1稳定版兼容安卓5.0 但不支持KMP，2.7.0(2024预览版) 兼容安卓5.0 支持KMP
 sqlite="2.5.2"#2.5.2
 sqllin="1.3.1"#旧版1.3.1，最新版2.3.3
 
 kabin="0.1.0-alpha14"#0.1.0-alpha11，0.1.0-pre-alpha01首个预发布版
 
-realm="3.0.0"#1.16.0
+realm="2.3.0"#1.16.0，Realm2.3.0兼容Kotlin2.0.20
+#Kotlin2.0.21与Realm不兼容 会导致plugin option:androidx.compose.compiler.plugins.kotlin:generateFunctionKeyMetaAnnotations=true异常
+#解决方案1：将kotlin降至1.9.x
+#解决方案2：降级到已知的稳定组合，如 Realm2.3.0 与 Kotlin2.0.20，1.修改 gradle.properties 或 versions.toml 中的版本号，2.执行 ./gradlew clean
+#仅临时方案：强制指定language_version为1.9 来绕过 K2编译器严格检查，不保证解决所有问题，1. 在 build.gradle.kts 的 kotlin 块中添加：kotlin{compilerOptions{ language_version.set("1.9") } } 2.同步项目(Sync)
 krdb="3.2.6"
 
 exoquery="2.1.21-1.4.0.PL"
