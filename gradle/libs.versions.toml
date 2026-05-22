@@ -1,6 +1,6 @@
 [versions]
 agp="8.13.0"#安卓Gradle插件 版本，8.13.0兼容Gradle9.0.0，8.5.0兼容Gradle8.7
-android-compileSdk="34"
+android-compileSdk="36"#编译版本要兼容依赖库，否则报错> Task :composeApp:checkDebugAarMetadata FAILED
 android-minSdk="21"
 android-targetSdk="34"
 androidx-activity="1.11.0"

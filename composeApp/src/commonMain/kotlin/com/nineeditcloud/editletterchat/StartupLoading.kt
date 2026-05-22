@@ -58,9 +58,9 @@ class StartupLoading:Screen{
         LaunchedEffect(Unit)/*使用LaunchedEffect实现延迟跳转(无跳转计时)*/{
             delay(2000)/*延迟2秒*/
             if(doesAnAccountExist){/*如果存在正在使用的账号*/
-                navigator.replace(StartSelector())/*将当前界面 替换成开始选择界面，将原本界面覆盖*/
+                navigator.replace(MainActivity1())/*将当前界面 替换成开始选择界面，将原本界面覆盖*/
             }else{/*否则*/
-                navigator.replace(SignIn())/*将当前界面 替换成登陆界面，将原本界面覆盖*/
+                navigator.replace(StartSelector())/*将当前界面 替换成登陆界面，将原本界面覆盖*/
             }
         }
     }
