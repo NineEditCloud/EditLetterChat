@@ -96,8 +96,8 @@ import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.nineeditcloud.editletterchat.database.AccountFriendLocalData
-import com.nineeditcloud.editletterchat.database.getDatabase
+import com.nineeditcloud.editletterchat.database.AccountFriendLocalData //import com.nineeditcloud.editletterchat.database.AccountFriendLocalData
+//import com.nineeditcloud.editletterchat.database.getDatabase
 import compose.icons.Octicons
 import compose.icons.octicons.DeviceCamera16
 import compose.icons.octicons.File16
@@ -137,14 +137,14 @@ class MainActivity1:Screen{
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content(){
-        val accountDatabase=getDatabase("UserAccount_LocalData")/*获取 用户账号本地数据 数据库实例*/
-        val userAccountDao=accountDatabase.userAccountDao()/*获取数据库中的 已登录账号本地数据 表实例*/
-        val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
-        lifecycleOwner.lifecycleScope.launch{/*协程*/
-            if(userAccountDao.getHisCurrentUseAccount()){/*如果存在正在使用的账号*/
-                account=userAccountDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号*/
-            }
-        }
+//        val accountDatabase=getDatabase("userAccount_localData")/*获取 用户账号本地数据 数据库实例*/
+//        val userAccountDao=accountDatabase.userAccountDao()/*获取数据库中的 已登录账号本地数据 表实例*/
+//        val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
+//        lifecycleOwner.lifecycleScope.launch{/*协程*/
+//            if(userAccountDao.getHisCurrentUseAccount()){/*如果存在正在使用的账号*/
+//                account=userAccountDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号*/
+//            }
+//        }
 
         val drawerState=remember{ DrawerState(DrawerValue.Closed) }/*抽屉状态对象*/
         val scope=rememberCoroutineScope()/*协程作用域(抽屉控制器操作执行工具)*/

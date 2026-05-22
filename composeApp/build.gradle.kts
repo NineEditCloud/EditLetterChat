@@ -1,21 +1,22 @@
-@file:OptIn(ExperimentalKotlinGradlePluginApi::class)/*OptIn注解可能引发报错？*/
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 /*若用了shared区分模块，composeApp部分负责共享应用GUI(不包括将Compose用于HTML)，若未用shared模块 则composeApp模块包括KMP项目全部内容*/
-plugins {
+plugins{
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)/*Kotlin2.0.21版的ComposeCompiler插件有Bug*/
-    alias(libs.plugins.composeHotReload)
+//    alias(libs.plugins.composeHotReload)/*仅支持Kotlin2.1.20+，在2.0.x版本不兼容，会自动注入参数：androidx.compose.compiler.plugins.kotlin:generateFunctionKeyMetaAnnotations=true*/
+//    kotlin("jvm") version libs.versions.kotlin.get()
 
 //    id("kotlin-kapt")/*kapt依赖插件，Kotlin的Room框架注解处理器包含此类依赖*/
     alias(libs.plugins.ksp)/*应用 KSP插件(替代kapt)，由于kapt打包问题，尝试KSP，KSP必须与Kotlin兼容*/
-//    alias(libs.plugins.androidx.room)/*应用 Room插件*/
-    alias(libs.plugins.realm)/*应用 Realm插件(对象型数据存储框架)*/
+    alias(libs.plugins.androidx.room)/*应用 Room插件*/
+//    alias(libs.plugins.realm)/*应用 Realm插件(对象型数据存储框架)*/
 //    alias(libs.plugins.krdb)/*应用 Krdb插件(Realm新版，支持Kotlin2.1+)*/
 
 //    alias(libs.plugins.exoquery)/*应用 ExoQuery插件*/
@@ -34,6 +35,7 @@ plugins {
 推荐构建版本组合：
 Gradle构建工具9.0.0(KMP兼容) + AndroidGradlePlugin8.13.0(Gradle9.0.0兼容) + Kotlin 2.3.21-2.0.21 + JDK17以上
 Gradle9.3.0(兼容AGP9.0.0) + AGP9.0.0 + kotlin2.3.21 + JDK17以上
+Gradle8.7 + AGP8.5.0 + Kotlin1.9.20-2.0.20 + JDK17以上：旧版兼容Realm2.3.0-3.0.0
 
 要更新AndroidGradlePlugin版本的话，打开 Tools -> AGP Upgrade Assistant，查看最新版本，
 并在 “项目文件夹/gradle/libs.versions.toml” 文件中更改versions中的agp浮点值
@@ -86,7 +88,9 @@ kotlin{
     }
     
     jvm()/*JVM桌面目标*/
-    
+//    linuxX64();linuxArm64()
+//    mingwX64()
+
 //    js{
 //        browser()
 //        binaries.executable()
@@ -153,12 +157,16 @@ kotlin{
 
 
 
-//            implementation("androidx.room:room-runtime:${libs.versions.room.get()}")/*Room核心库，Room2.x会导致KSP反射Bug，3.x不兼容安卓5.0*/
-//            implementation("androidx.sqlite:sqlite-bundled")/*SQLite数据库依赖*/
+
+
+
+            implementation("androidx.room:room-runtime:${libs.versions.room.get()}")/*Room核心库，Room2.x会导致KSP反射Bug，3.x不兼容安卓5.0*/
+            implementation("androidx.sqlite:sqlite-bundled")/*SQLite数据库依赖*/
+
 
 //            implementation("com.attafitamim.kabin:core:${libs.versions.kabin.get()}")/*Kabin核心库，机制防Room*/
 
-            implementation("io.realm.kotlin:library-base:${libs.versions.realm.get()}")/*Realm 对象型数据存储框架*/
+//            implementation("io.realm.kotlin:library-base:${libs.versions.realm.get()}")/*Realm 对象型数据存储框架*/
 
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.0")/*序列化库，ExoQuery必须*/
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")/*Kotlin协程 跨平台通用版(为各平台分配协程依赖或内置主线程调度器)，含Dispatchers.Main等，可在后台线程做复杂操作，并自动回到主线程更新UI*/
@@ -236,10 +244,10 @@ kotlin{
 //        }
     }
 
-//    sourceSets.configureEach {
-//        kotlin.srcDir("${layout.buildDirectory.get().asFile}/generated/ksp/$name/kotlin/")/*指定 Room Schema 的导出路径(对KSP同样需要)，buildDir已弃用，使用新的API获取构建路径*/
+    sourceSets.configureEach {
+        kotlin.srcDir("${layout.buildDirectory.get().asFile}/generated/ksp/$name/kotlin/")/*指定 Room Schema 的导出路径(对KSP同样需要)，buildDir已弃用，使用新的API获取构建路径*/
 //        kotlin.srcDir("${layout.buildDirectory.get().asFile}/generated/ksp/metadata/commonMain/kotlin/")/*Kabin，关键：让项目识别KSP生成的代码*/
-//    }
+    }
 }
 dependencies/*综合依赖*/{
 //    implementation(platform("androidx.compose:compose-bom:2024.09.00"))/*Compose-Bom物料清单(必备，否则下载包不全)，最高2024.09.00支持安卓5.0，改了更高版本会有内容缺失*/
@@ -247,7 +255,10 @@ dependencies/*综合依赖*/{
 
 
 
-//    implementation(kotlin("reflect"))/*KSP底层 通用反射API 依赖库，重要！！！*/
+//    implementation("org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}")/*Kotlin标准库*/
+//    implementation("org.jetbrains.kotlin:kotlin-reflect:${libs.versions.kotlin.get()}")/*Kotlin反射依赖，KSP必须！！！*/
+//    implementation(kotlin("stdlib"))/*Kotlin标准库，用Kotlin插件添加对应版本*/
+    implementation(kotlin("reflect"))/*Kotlin反射依赖，用Kotlin插件添加对应版本*/
 //    add("kspCommonMainMetadata", "androidx.room:room-compiler:${libs.versions.room}")/*添加处理器到 commonMain(用于处理共享代码)，设备不足以编译所有平台的话这样加会报错*/
 //    add("kspAndroid", "androidx.room:room-compiler:${libs.versions.room}")/*为 Android 平台添加处理器*/
 
@@ -294,9 +305,9 @@ dependencies/*综合依赖*/{
 //        dependsOn("kspCommonMainKotlinMetadata")
 //    }
 //}
-//room{/*Room配置*/
-//    schemaDirectory("$projectDir/schemas")/*Room架构导出目录*/
-//}
+room{/*Room配置*/
+    schemaDirectory("$projectDir/schemas")/*Room架构导出目录*/
+}
 
 //multiplatformResources{/*moko-resources 配置块*/
 //    resourcesPackage.set("com.nineeditcloud.editletterchat")/*【必需】生成的资源类包名*/

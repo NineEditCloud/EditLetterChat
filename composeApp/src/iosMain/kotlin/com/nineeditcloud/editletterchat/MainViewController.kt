@@ -3,25 +3,25 @@ package com.nineeditcloud.editletterchat
 import androidx.compose.ui.window.ComposeUIViewController
 import cafe.adriel.voyager.navigator.Navigator
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.CoreGraphics.CGRect
-import platform.UIKit.NSTextAlignmentCenter
-import platform.UIKit.UIButton
-import platform.UIKit.UIButtonTypeSystem
-import platform.UIKit.UIColor
-import platform.UIKit.UIControlStateNormal
-import platform.UIKit.UILabel
-import platform.UIKit.UIView
-import kotlin.experimental.ExperimentalNativeApi
-import platform.UIKit.*
+//import platform.CoreGraphics.CGRect
+//import platform.UIKit.NSTextAlignmentCenter
+//import platform.UIKit.UIButton
+//import platform.UIKit.UIButtonTypeSystem
+//import platform.UIKit.UIColor
+//import platform.UIKit.UIControlStateNormal
+//import platform.UIKit.UILabel
+//import platform.UIKit.UIView
+//import platform.UIKit.*
+//import kotlin.experimental.ExperimentalNativeApi
 
 fun MainViewController()=ComposeUIViewController{
     Navigator(StartupLoading())/*使用Voyager跨平台界面*/
 }
 
 //@OptIn(ExperimentalForeignApi::class)
-//fun createCustomView(): UIView {
-//    val container/*主容器视图*/ = UIView(frame=CGRect(x=0.0, y=0.0, width=300.0, height=200.0))
-//    container.backgroundColor = UIColor.lightGrayColor
+//fun createCustomView():UIView{
+//    val container/*主容器视图*/=UIView(frame=CGRect(x=0.0, y=0.0, width=300.0, height=200.0))
+//    container.backgroundColor=UIColor.lightGrayColor
 //
 //    val label/*添加UILabel*/ = UILabel(frame = CGRect(x = 20.0, y = 50.0, width = 260.0, height = 30.0))
 //    label.text = "Hello from Kotlin"

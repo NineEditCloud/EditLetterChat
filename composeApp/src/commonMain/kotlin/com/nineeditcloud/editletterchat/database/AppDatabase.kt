@@ -1,20 +1,20 @@
 package com.nineeditcloud.editletterchat.database
 
-//import androidx.room.ColumnInfo
-//import androidx.room.ConstructedBy
-//import androidx.room.Dao
-//import androidx.room.Database
-//import androidx.room.Entity
-//import androidx.room.Insert
-//import androidx.room.OnConflictStrategy
-//import androidx.room.PrimaryKey
-//import androidx.room.Query
-//import androidx.room.RoomDatabase
-//import androidx.room.RoomDatabaseConstructor
-//import androidx.room.Update
-//import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-//import kotlinx.coroutines.Dispatchers
-//import kotlinx.coroutines.IO
+import androidx.room.ColumnInfo
+import androidx.room.ConstructedBy
+import androidx.room.Dao
+import androidx.room.Database
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.RoomDatabase
+import androidx.room.RoomDatabaseConstructor
+import androidx.room.Update
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 
 //import com.attafitamim.kabin.annotations.ColumnInfo
 //import com.attafitamim.kabin.annotations.Dao
@@ -117,22 +117,22 @@ package com.nineeditcloud.editletterchat.database
 //
 //
 //
-//@Entity(tableName="friend")/*账号好友本地数据 表结构对象模型，ContactMessageItem也会使用，此表不保存头像路径，头像保存在账号对应的路径*/
-//data class AccountFriendLocalData(
-//    @PrimaryKey/*关键字段(每个表结构必须有)*/
-//    val id: String,/*好友账号或群聊ID*/
-//
-//    var name: String,/*用户名*/
-//    var newMessage: String,/*最新消息简略*/
-//
-//    @ColumnInfo(name = "friend_message_session")/*字段名*/
-//    val withFriendMessageSession: String,/*与好友的消息会话*/
-//
-//    var user_status: String="这家伙很忙，没发表状态",/*好友发表的用户状态，若调用处不传参数则 默认状态*/
-//    var top: Boolean=false,         /*是否为置顶，若调用处不传参数则默认false*/
-//    var message_list: Boolean=true, /*是否在消息列表中，若调用处不传参数则默认true*/
-//    var menu: Boolean=false/*长按菜单状态*/
-//                                                                                               )
+@Entity(tableName="friend")/*账号好友本地数据 表结构对象模型，ContactMessageItem也会使用，此表不保存头像路径，头像保存在账号对应的路径*/
+data class AccountFriendLocalData(
+    @PrimaryKey/*关键字段(每个表结构必须有)*/
+    val id: String,/*好友账号或群聊ID*/
+
+    var name: String,/*用户名*/
+    var newMessage: String,/*最新消息简略*/
+
+    @ColumnInfo(name = "friend_message_session")/*字段名*/
+    val withFriendMessageSession: String,/*与好友的消息会话*/
+
+    var user_status: String="这家伙很忙，没发表状态",/*好友发表的用户状态，若调用处不传参数则 默认状态*/
+    var top: Boolean=false,         /*是否为置顶，若调用处不传参数则默认false*/
+    var message_list: Boolean=true, /*是否在消息列表中，若调用处不传参数则默认true*/
+    var menu: Boolean=false/*长按菜单状态*/
+                                                                                               )
 //@Dao/*对于好友数据表的 数据访问(DAO实例)*/
 //interface FriendDao{
 //

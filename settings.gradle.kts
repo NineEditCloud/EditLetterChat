@@ -40,10 +40,10 @@ dependencyResolutionManagement {
         maven{ url=uri("https://maven.aliyun.com/repository/public") }/*阿里云公共仓库镜像(用于大多数开源库)*/
         maven{ url=uri("https://maven.aliyun.com/repository/google") }/*阿里云源Google仓库镜像(用于Firebase、AndroidX等) */
 
-        mavenLocal()/*本地仓库*/
-        flatDir {/*文件目录*/
-            dirs("libs")
-        }
+//        mavenLocal()/*本地仓库*/
+//        flatDir {/*文件目录*/
+//            dirs("libs")
+//        }
     }
 }
 
