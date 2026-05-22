@@ -16,9 +16,9 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/icon00"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
-        <!--android:name=".database.MyApp"-->
-        <!--icon为应用图标，label为应用标签，name为获取安卓应用Context(上下文调用实例) 的类-->
+        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:name=".database.MyApp">
+        <!--icon为应用图标，label为应用标签，name为获取安卓应用Context(上下文调用实例) 的类(若对应类不存在会闪退)-->
         <activity
             android:exported="true"
             android:name=".MainActivity">
