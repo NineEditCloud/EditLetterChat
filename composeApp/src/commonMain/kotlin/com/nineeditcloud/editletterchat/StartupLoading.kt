@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+//import com.nineeditcloud.editletterchat.database.getDatabase
 import editletterchat.composeapp.generated.resources.Res
 import editletterchat.composeapp.generated.resources.image00_upscale_4x
 import kotlinx.coroutines.delay
@@ -44,14 +45,15 @@ class StartupLoading:Screen{
                               Crop裁剪以填充(会剪掉部分)
                               FillBounds拉伸以填充整个区域(不保持宽高比) FillWidth拉伸至组件宽度(高度按拉伸比例自适应) FillHeight拉伸至组件高度(宽度按拉伸比例自适应)
                               Fit等比例缩放图片，使得图片完全显示在区域内，可能不会填满*/
-                             )
+                         )
         }
 
-//        val accountDatabase=getDatabase("UserAccount_LocalData")/*获取 用户账号本地数据 数据库实例*/
+//        val accountDatabase=getDatabase("userAccount_localData")/*获取 用户账号本地数据 数据库实例*/
 //        val userAccountDao=accountDatabase.userAccountDao()/*获取数据库中的 已登录账号本地数据 表实例*/
         val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
         lifecycleOwner.lifecycleScope.launch{/*协程*/
 //            doesAnAccountExist=userAccountDao.getHisCurrentUseAccount()/*查询是否已存在正在使用的账号*/
+
         }
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
 

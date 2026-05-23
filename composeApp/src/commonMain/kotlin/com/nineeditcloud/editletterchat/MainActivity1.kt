@@ -96,7 +96,6 @@ import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.nineeditcloud.editletterchat.database.AccountFriendLocalData //import com.nineeditcloud.editletterchat.database.AccountFriendLocalData
 //import com.nineeditcloud.editletterchat.database.getDatabase
 import compose.icons.Octicons
 import compose.icons.octicons.DeviceCamera16
@@ -780,5 +779,13 @@ data class NavItem(
     var topAppBarTitle:String="顶部应用栏",/*顶部应用栏标题*/
 //    val icon1: ImageVector,/*导航键图标选中状态*/
 )
-
+data class AccountFriendLocalData(
+    val id: String,/*好友账号或群聊ID*/
+    var name: String,/*用户名*/
+    var newMessage: String,/*最新消息简略*/
+    val withFriendMessageSession: String,/*与好友的消息会话*/
+    var user_status: String="这家伙很忙，没发表状态",/*好友发表的用户状态，若调用处不传参数则 默认状态*/
+    var top: Boolean=false,         /*是否为置顶，若调用处不传参数则默认false*/
+    var message_list: Boolean=true, /*是否在消息列表中，若调用处不传参数则默认true*/
+    var menu: Boolean=false/*长按菜单状态*/   )
 

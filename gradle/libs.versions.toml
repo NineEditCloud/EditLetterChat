@@ -1,6 +1,6 @@
-[versions]
+[versions]#版本变量
 agp="8.13.0"#安卓Gradle插件 版本，8.13.0兼容Gradle9.0.0，8.5.0兼容Gradle8.7
-android-compileSdk="36"#编译版本要兼容依赖库，否则报错> Task :composeApp:checkDebugAarMetadata FAILED
+android-compileSdk="34"#编译版本要兼容依赖库(包括Kotlin版本)，否则报错> Task :composeApp:checkDebugAarMetadata FAILED
 android-minSdk="21"
 android-targetSdk="34"
 androidx-activity="1.11.0"
@@ -9,46 +9,51 @@ androidx-core="1.17.0"
 androidx-espresso="3.7.0"
 androidx-lifecycle="2.9.4"#2.9.4兼容安卓5.0，2.8.0以上支持KMP
 androidx-testExt="1.3.0"
-composeHotReload="1.1.0"
-composeMultiplatform="1.9.0-rc01"#CMP插件和Compose依赖版本，最高1.9.0-rc01兼容安卓5.0且有CMP插件
+composeHotReload="1.1.0"#ComposeHotReload，Kotlin2.1.x+支持的插件
+composeMultiplatform="1.9.0-rc01"#CMP插件和Compose依赖版本，最高1.9.0-rc01兼容安卓5.0且有CMP插件，1.7+兼容Kotlin2.1/2.2，1.6.11兼容Kotlin2.0.x
 junit="4.13.2"
-kotlin="2.1.21"#1.9.23兼容Realm2.0.20兼容Realm2.3.0，2.1.21兼容Krdb 没有配置误检Bug，2.3.21新版
-kotlinx-coroutines="1.10.2"
-ktor="3.2.3"#2.3.12或3.0.1，Ktor3.4.3兼容Kotlin2.3.x，3.2.3兼容Kotlin2.1.21
+junitJupiter = "5.14.0"#
 logback="1.5.32"
-material3="1.10.0"
+material3="1.9.0"#Compose基础Material包控件、组件，最高1.4.0兼容安卓5.0，但不支持wasmJS，1.6.0兼容安卓5.0
 material="1.7.3"
+
+kotlin="2.1.20"#1.9.23兼容Realm2.0.20兼容Realm2.3.0，2.1.21兼容Krdb 没有配置误检Bug，2.3.21新版
+kotlinx="1.8.1"#1.11.0兼容Kotlin2.1/2.2，1.8.1兼容Kotlin2.0.x
+
+ktor="3.2.3"#2.3.12或3.0.1，Ktor3.4.3兼容Kotlin2.3.x，3.2.3兼容Kotlin2.1.21
 
 navigation="2.9.1"#/*jetbrains发布的跨平台版Navigation版本，2.9.0-beta01为首个支持KMP版 兼容1.8.0，2.9.1支持CMP1.9.0-rc01 且兼容安卓5.0*/
 voyager="1.1.0-beta03"#跨平台界面导航库版本
 
-ksp="2.1.21-2.0.2"#KSP版本必须与Kotlin兼容，Kotlin1.9.20用1.9.20-1.0.25，Kotlin1.9.23用1.9.23-1.0.20
+ksp="2.1.20-1.0.32"#KSP版本必须与Kotlin兼容，Kotlin1.9.20用1.9.20-1.0.25，Kotlin1.9.23用1.9.23-1.0.20
 #Kotlin2.0.20用2.0.20-1.0.25，Kotlin2.0.21用2.0.21-1.0.28，     Kotlin2.1.20用2.1.20-1.0.32或2.1.20-2.0.1，Kotlin2.1.21用2.1.21-2.0.2
 #用KSP1版本并添加ksp.useKsp2=false，当遇到兼容性问题，这是个快速有效的临时解决方案，有助于判断问题 是来源于KSP2 还是其他配置
-room="2.7.0"#Room2.6.1稳定版兼容安卓5.0 但不支持KMP，2.7.0(2024预览版) 兼容安卓5.0 支持KMP
+room="2.7.0"#Room2.6.1稳定版兼容安卓5.0 不支持KMP，2.7.0(2024预览版) 兼容安卓5.0、Kotlin1.9.x-2.0.x、KMP，2.0.8-RC03兼容安卓5.0、Kotlin2.0.20，2.8.0-SNAPSHOT/RC兼容Kotlin2.1.x
 sqlite="2.5.2"#2.5.2
 sqllin="1.3.1"#旧版1.3.1，最新版2.3.3
-
 kabin="0.1.0-alpha14"#0.1.0-alpha11，0.1.0-pre-alpha01首个预发布版
-
 realm="2.3.0"#Kotlin2.0.21与Realm不兼容 会导致plugin option:androidx.compose.compiler.plugins.kotlin:generateFunctionKeyMetaAnnotations=true异常
 #Realm1.16.0兼容Kotlin1.9.23，Realm2.3.0兼容Kotlin1.9.23、2.0.20
 #解决方案1：将kotlin降至1.9.x
 #解决方案2：降级到已知的稳定组合，如 Realm2.3.0 与 Kotlin2.0.20，1.修改 gradle.properties 或 versions.toml 中的版本号，2.执行 ./gradlew clean
 #仅临时方案：强制指定language_version为1.9 来绕过 K2编译器严格检查，不保证解决所有问题，1. 在 build.gradle.kts 的 kotlin 块中添加：kotlin{compilerOptions{ language_version.set("1.9") } } 2.同步项目(Sync)
 krdb="3.2.6"
-
 exoquery="2.1.21-1.4.0.PL"
 exoqueryRun="1.4.0.PL"
 
 composeIcons="1.1.1"
 mokoResources="0.26.4"
+composeToast="1.0.2"#该库2.1.2后只兼容AGP9以上，2.0.0兼容Kotlin2.1/2.2，1.0.2兼容Kotlin1.0.2
 
-filekit="0.12.0"#FileKit跨平台 应用私有路径获取、文件操作 库版本，0.12.0以上支持 CMP1.9.0及RC版本 安卓5.0
+kotlinxIo="0.3.0"#0.8.0兼容Kotlin2.1/2.2，0.3.0兼容Kotlin2.0.x
+filekit="0.10.0"#FileKit跨平台 应用私有路径获取、文件操作 库(仅兼容Kotlin2.1无问题)，0.12.0以上支持 CMP1.9.0及RC版本 安卓5.0 Kotlin2.1/2.2，0.10.0、0.9.8兼容Kotlin2.0，0.11.0对于Kotlin2.0不稳定
+coil="3.0.4"#FileKit-Coil内部底层依赖，3.3.0兼容Kotlin2.1/2.2，3.0.4兼容Kotlin2.0.x
+okio="3.9.1"
 
 
 
-[libraries]
+
+[libraries]#依赖库，若指定的版本变量不存在或已改名，则会引起异常：Problem: In version catalog libs, version reference '不存在的那个变量名' doesn't exist，如：Reason: Dependency 'org.jetbrains.kotlinx:kotlinx-coroutines-swing' references version 'kotlinx.coroutines' which doesn't exist.
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -66,7 +71,7 @@ compose-material3 = { module = "org.jetbrains.compose.material3:material3", vers
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
-kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 ktor-serverCore = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
 ktor-serverNetty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
@@ -77,10 +82,11 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 
 androidx-room-sqlite-wrapper = { module = "androidx.room:room-sqlite-wrapper", version.ref = "room" }# 可选：Room SQLite Wrapper (v2.8.0+)
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
 
 
 
-[plugins]
+[plugins]#插件
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }#仅支持Kotlin2.1.20+，在2.0.x版本不兼容，会自动注入参数：androidx.compose.compiler.plugins.kotlin:generateFunctionKeyMetaAnnotations=true

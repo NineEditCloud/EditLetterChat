@@ -53,7 +53,20 @@ KMP框架有时候Gradle找不到依赖 可能不是依赖仓库问题，而是�
 
 KMP可编写GitHub云编译配置文件，并在GitHub对项目使用 GitHub Actions 执行编译配置文件
 Git提交了项目的多个变化版本时，选择推送时间最新的(这样使用的是最新项目状态)，否则可能推送失败
+
+清理Gradle缓存
+-1.停守护进程
+gradlew --stop
+-2.清理构建产物
+gradlew clean
+-3.删除 Gradle 缓存（关键！metadata 缓存在这）
+Windows PowerShell：Remove-Item -Recurse -Force ~/.gradle/caches
+cmd：rmdir /s /q %USERPROFILE%\.gradle\caches
+或手动删对应依赖路径
+-4.重新同步/构建
+gradlew build --refresh-dependencies
 */
+
 /*---KMP跨平台最方便好用的数据库框架
 *分表情况：SQLlin(安卓6.0+，库已停止发布)，Exposed(未来KMP跨平台计划项目中)
 *不分表情况：
@@ -108,20 +121,19 @@ kotlin{
             implementation("org.jetbrains.compose.runtime:runtime:${libs.versions.composeMultiplatform.get()}")
             implementation("org.jetbrains.compose.foundation:foundation:${libs.versions.composeMultiplatform.get()}")
             implementation("org.jetbrains.compose.ui:ui:${libs.versions.composeMultiplatform.get()}")
+            implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.composeMultiplatform.get()}")/*CMP跨平台 返回键事件库*/
             implementation("org.jetbrains.compose.components:components-resources:${libs.versions.composeMultiplatform.get()}")
             implementation("org.jetbrains.compose.material:material:${libs.versions.material.get()}")/*Material组件与主题属性，跨平台版，最高1.7.0*/
 //            implementation("org.jetbrains.compose.material:material-icons-extended:${libs.versions.material.get()}")/*MaterialIcons图标库 跨平台通用版*/
-            implementation(compose.materialIconsExtended)/*MaterialIcons图标库 跨平台通用版，自动根据项目配置 为所有目标平台解析正确依赖，该库包含所有Material图标，体积庞大，务必启用 R8/ProGuard 以缩减包体积*/
             implementation("org.jetbrains.compose.material3:material3:1.9.0")/*Compose基础Material包控件、组件，最高1.4.0兼容安卓5.0，但不支持wasmJS，1.6.0兼容安卓5.0*/
-
 //            implementation("org.jetbrains.compose.animation:animation")
 
-//            implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${libs.versions.androidx.lifecycle.get()}")
+//            implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${libs.versions.androidx.lifecycle.get()}")/*lifecycle-ViewModelCompose，KMP跨平台 ViewModel-Compose协程库*/
 //            implementation("androidx.lifecycle:lifecycle-runtime-compose:${libs.versions.androidx.lifecycle.get()}")
-            implementation(libs.androidx.lifecycle.viewmodelCompose)/*lifecycle-viewModelCompose，KMP跨平台 Compose协程库*/
+            implementation(libs.androidx.lifecycle.viewmodelCompose)/*lifecycle-ViewModelCompose，KMP跨平台 ViewModel-Compose协程库*/
             implementation(libs.androidx.lifecycle.runtimeCompose)
+//            api("androidx.lifecycle:lifecycle-viewmodel:${libs.versions.androidx.lifecycle}")/*KMP跨平台 ViewModel协程库*/
 
-            /*Navigation核心库 跨平台*/
             val navVersion="2.9.1"/*jetbrains发布的跨平台版Navigation版本，2.9.0-beta01为首个支持KMP版 兼容1.8.0，2.9.1支持CMP1.9.0-rc01 且兼容安卓5.0*/
             implementation("org.jetbrains.androidx.navigation:navigation-compose:$navVersion")/*Nav Compose导航图组件 跨平台版，功能特性，不可缺少，其实这一个就够了*/
 //            implementation("org.jetbrains.androidx.navigation:navigation-fragment:$nav_version")/*Java的 Nav内嵌导航界面*/
@@ -136,14 +148,11 @@ kotlin{
             implementation("cafe.adriel.voyager:voyager-screenmodel:${libs.versions.voyager.get()}")/*Voyager-Screen模块*/
             implementation("cafe.adriel.voyager:voyager-transitions:${libs.versions.voyager.get()}")
 
-//            implementation("io.github.dokar3:sonner:0.3.1")/*Compose-Sonner，跨平台Toast底部弹窗提示(与布局有绑定关系)*/
-            implementation("io.github.the-best-is-best:compose_toast:2.0.0")/*Compose_Toast跨平台Toast底部弹窗提示，自定义UI依赖Box堆叠容器，原生弹窗不依赖布局，该库2.1.2后只兼容AGP9以上*/
-//            implementation("io.github.khubaibkhan4:alert-kmp:0.0.4")/*Alert-KMP，兼容安卓7.0+，极致便捷的跨平台底部弹窗提示，完全不依赖Box或布局绑定*/
-//            implementation("network.chaintech:cmptoast:1.0.8")/*CMPToast 跨平台底部弹窗提示，兼容安卓5.0，但与安卓name获取Context冲突*/
-
+            implementation(compose.materialIconsExtended)/*MaterialIcons图标库 跨平台通用版，自动根据项目配置 为所有目标平台解析正确依赖，该库包含所有Material图标，体积庞大，务必启用 R8/ProGuard 以缩减包体积*/
 //            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)/*OptIn选项可能引发报错？*/
-//            implementation(compose.components.resources)/*compose通用资源，可能含painterResource用的composeResources资源 和 @Preview预览注解等(但Android端会被 actual 绕过)*/
+//            implementation(compose.components.resources)/*compose通用资源，可能含painterResource用的composeResources资源、Res类 和 @Preview预览注解等(但Android端会被 actual 绕过)*/
 //            implementation("io.github.rabehx:iconsax-compose:2.1.1")/*Iconsax-Compose，imageVector用的超千款图标*/
+
             /*Compose-Icons，imageVector用的多套开源图标包*/
 //            implementation("br.com.devsrsouza.compose.icons:simple-icons:${libs.versions.composeIcons.get()}")/*简易图标库*/
 //            implementation("br.com.devsrsouza.compose.icons:tabler-icons:${libs.versions.composeIcons.get()}")
@@ -151,28 +160,28 @@ kotlin{
 //            implementation("br.com.devsrsouza.compose.icons:font-awesome:${libs.versions.composeIcons.get()}")
 //            implementation("br.com.devsrsouza.compose.icons:line-awesome:${libs.versions.composeIcons.get()}")
 
-
 //            api("dev.icerock.moko:resources:${libs.versions.mokoResources.get()}")/*mokoResources综合资源 核心依赖*/
 //            api("dev.icerock.moko:resources-compose:${libs.versions.mokoResources.get()}")/*mokoResources综合资源 Compose支持，含painterResource用的图标资源*/
 
+//            implementation("io.github.dokar3:sonner:0.3.1")/*Compose-Sonner，跨平台Toast底部弹窗提示(与布局有绑定关系)*/
+            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Compose_Toast跨平台Toast底部弹窗提示，自定义UI依赖Box堆叠容器，原生弹窗不依赖布局*/
+//            implementation("io.github.khubaibkhan4:alert-kmp:0.0.4")/*Alert-KMP，兼容安卓7.0+，极致便捷的跨平台底部弹窗提示，完全不依赖Box或布局绑定*/
+//            implementation("network.chaintech:cmptoast:1.0.8")/*CMPToast 跨平台底部弹窗提示，兼容安卓5.0，但与安卓name获取Context冲突*/
 
-
+            implementation("com.darkrockstudios:mpfilepicker:3.1.0")/*基于ComposeMultiplatform框架的 跨平台 文件选择器组件*/
 
 
 
             implementation("androidx.room:room-runtime:${libs.versions.room.get()}")/*Room核心库，Room2.x会导致KSP反射Bug，3.x不兼容安卓5.0*/
             implementation("androidx.sqlite:sqlite-bundled")/*SQLite数据库依赖*/
 
-
 //            implementation("com.attafitamim.kabin:core:${libs.versions.kabin.get()}")/*Kabin核心库，机制防Room*/
 
 //            implementation("io.realm.kotlin:library-base:${libs.versions.realm.get()}")/*Realm 对象型数据存储框架*/
 
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.0")/*序列化库，ExoQuery必须*/
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")/*Kotlin协程 跨平台通用版(为各平台分配协程依赖或内置主线程调度器)，含Dispatchers.Main等，可在后台线程做复杂操作，并自动回到主线程更新UI*/
-
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${libs.versions.kotlinx.get()}")/*Kotlin序列化库，ExoQuery必须*/
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.kotlinx.get()}")/*Kotlin协程 跨平台通用版(为各平台分配协程依赖或内置主线程调度器)，含Dispatchers.Main等，可在后台线程做复杂操作，并自动回到主线程更新UI*/
             implementation("com.google.code.gson:gson:2.13.2")/*Json编解码*/
-            implementation("com.darkrockstudios:mpfilepicker:3.1.0")/*基于ComposeMultiplatform框架的 跨平台 文件选择器组件*/
 
             implementation("io.ktor:ktor-client-core:${libs.versions.ktor.get()}")/*Ktor-共享核心，不带引擎*/
             implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")/*Ktor-CIO纯Kotlin通信引擎(跨平台通用)*/
@@ -180,18 +189,21 @@ kotlin{
             implementation("io.ktor:ktor-client-content-negotiation:${libs.versions.ktor.get()}")/*Ktor-内容协商*/
             implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")/*Ktor协商-序列化JSON(需内容协商)*/
 
-            implementation("io.github.vinceglb:filekit-core:${libs.versions.filekit.get()}")/*FileKit核心模块，跨平台 文件操作 和 应用私有路径访问*/
+            implementation("org.jetbrains.kotlinx:kotlinx-io-core:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO 字节流/字符流、缓冲、协程读写*/
+            implementation("org.jetbrains.kotlinx:kotlinx-io-bytestring:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO-ByteString高效字节串*/
+            implementation("org.jetbrains.kotlinx:kotlinx-files:${libs.versions.kotlinxIo.get()}")/*Kotlinx跨平台文件系统API(Path,Directory,FileSystem)*/
+
+            implementation("io.github.vinceglb:filekit-core:${libs.versions.filekit.get()}")/*FileKit核心库(仅兼容Kotlin2.1+)，跨平台 文件操作 和 应用私有路径访问*/
             implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")
             implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")
-            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")
+            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*fileKit选取图片文件，内部依赖不兼容Kotlin旧版，建议用AsyncImage(model=selectedFile.path)*/
 
-            implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.composeMultiplatform.get()}")/*CMP跨平台 返回键事件库*/
-
-            api("androidx.lifecycle:lifecycle-viewmodel:${libs.versions.androidx.lifecycle}")/*KMP跨平台 ViewModel协程库*/
+            implementation("com.squareup.okio:okio:${libs.versions.okio.get()}")/*OkIO 文件操作核心库*/
+            implementation("com.squareup.okio:okio-okfile:${libs.versions.okio.get()}")/*OkIO-文件系统扩展*/
         }
         commonTest.dependencies/*常规测试共享依赖*/{
             implementation("org.jetbrains.kotlin:kotlin-test:${libs.versions.kotlin.get()}")/*Kotlin测试依赖*/
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")/*Kotlin协程依赖测试版*/
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${libs.versions.kotlinx.get()}")/*Kotlin协程依赖测试版*/
         }
 
         androidMain.dependencies/*安卓依赖*/{
@@ -218,11 +230,10 @@ kotlin{
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{
             implementation(compose.desktop.currentOs)/*桌面端GUI预览引擎依赖，1.7.x已自动包含，手补以防万一*/
-//            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.11.0")/*1.11.0，桌面协程依赖，包含Dispatchers.Main*/
+//            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:${libs.versions.kotlinx.get()}")/*桌面协程依赖，包含Dispatchers.Main*/
 
 
 
-//            implementation(kotlin("reflect"))/*KSP底层 JVM专用反射API 依赖库，重要！！！*/
 //            implementation("com.ctrip.sqllin:sqllin-dsl:${libs.versions.sqllin.get()}")/*SQLlin，跨平台且方便分库分表的DSL数据库框架，KSP用于编译时生成代码，dsl模块已包含必要注解，无需额外添加*/
 //            implementation("com.ctrip.sqllin:sqllin-driver:${libs.versions.sqllin.get()}")/*一套通用的多平台SQLite低阶API，DSL的底层依赖*/
 
@@ -250,6 +261,8 @@ kotlin{
     }
 }
 dependencies/*综合依赖*/{
+//    testImplementation(libs.junit.jupiter)/*测试依赖*/
+
 //    implementation(platform("androidx.compose:compose-bom:2024.09.00"))/*Compose-Bom物料清单(必备，否则下载包不全)，最高2024.09.00支持安卓5.0，改了更高版本会有内容缺失*/
     debugImplementation("org.jetbrains.compose.ui:ui-tooling:${libs.versions.composeMultiplatform.get()}")
 
@@ -257,48 +270,45 @@ dependencies/*综合依赖*/{
 
 //    implementation("org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}")/*Kotlin标准库*/
 //    implementation("org.jetbrains.kotlin:kotlin-reflect:${libs.versions.kotlin.get()}")/*Kotlin反射依赖，KSP必须！！！*/
-//    implementation(kotlin("stdlib"))/*Kotlin标准库，用Kotlin插件添加对应版本*/
+    implementation(kotlin("stdlib"))/*Kotlin标准库，用Kotlin插件添加对应版本*/
     implementation(kotlin("reflect"))/*Kotlin反射依赖，用Kotlin插件添加对应版本*/
-//    add("kspCommonMainMetadata", "androidx.room:room-compiler:${libs.versions.room}")/*添加处理器到 commonMain(用于处理共享代码)，设备不足以编译所有平台的话这样加会报错*/
-//    add("kspAndroid", "androidx.room:room-compiler:${libs.versions.room}")/*为 Android 平台添加处理器*/
 
-    /*为各iOS架构添加处理器*/
-//    add("kspIosSimulatorArm64", "androidx.room:room-compiler:${libs.versions.room}")
-//    add("kspIosX64", "androidx.room:room-compiler:${libs.versions.room}")
-//    add("kspIosArm64", "androidx.room:room-compiler:${libs.versions.room}")
 
-//    add("kspDesktop", "androidx.room:room-compiler:${libs.versions.room}")/*为桌面平台添加处理器*/
-//    add("kspJvm", ...)/*如果你的JVM目标命名为"jvm"*/
-//    add("kspJs", ...)
 
-//    add("kspCommonMainMetadata", "com.attafitamim.kabin:compiler:${libs.versions.kabin.get()}")/*Kabin配置KSP依赖，否则无法生成代码*/
-
-//    listOf("kspCommonMainMetadata"/*commonMain(用于处理共享代码)*/,
-//           "kspAndroid"/*安卓*/,
-//           "kspIosArm64", "kspIosX64", "kspIosSimulatorArm64",/*IOS系列架构*/
-//           "kspJvm",/*由kotlin块中JVM目标的命名决定*/
-//           "kspDesktop",/*ComposeMultiplatform项目中 JVM桌面目标常用*/
-//           "kspJs",/*适用于 Kotlin/JS 目标*/
-//           "kspNative"/*适用于 Kotlin/Native 目标*/
-//          ).forEach{ target ->/*循环遍历 每次赋值给target*/
-//        add(target, libs.androidx.room.compiler)/*为各平台添加Room处理器*/
-//    }
+    listOf(
+//        "kspCommonMainMetadata"/*commonMain(用于处理共享代码)，设备不足以编译至所有目标时添加会导致异常*/,
+        "kspAndroid"/*安卓目标*/,
+        "kspIosArm64", "kspIosX64", "kspIosSimulatorArm64", /*IOS系列架构目标，设备不足以编译时添加会导致异常*/
+        "kspJvm",/*Kotlin块中JVM桌面目标的命名*/
+//        "kspJs",/* Kotlin/JS 目标*/
+//        "kspNative"/* Kotlin/Native 目标*/
+        ).forEach{ target ->/*循环遍历 每次赋值给target*/
+            add(target, libs.androidx.room.compiler)/*为各平台添加Room处理器，缺少此依赖会导致异常：Caused by: java.lang.ClassNotFoundException: com.nineeditcloud.editletterchat.database.AppDatabase_Impl*/
+//            add(target, "com.ctrip.sqllin:sqllin-processor:${libs.versions.sqllin.get()}")/*除安卓外，配置KSP以处理使用SQLlin依赖中的注解*/
+    }
 
     /*在AndroidX库的更新中，collection-ktx的功能已被合并进了collection主要库中，Room2.7.0内部仍然请求的是collection-ktx，所以需强制所有依赖底层用旧版collection-ktx库*/
 //    implementation("androidx.collection:collection:1.2.0")/*强制所有依赖底层用指定的 collection库版本，避免版本冲突*/
 
-//    listOf(
-//        "kspIosArm64", "kspIosX64", "kspIosSimulatorArm64",/*IOS系列架构*/
-//        "kspJvm",/*由kotlin块中JVM目标的命名决定*/
-//        "kspDesktop",/*ComposeMultiplatform项目中 JVM桌面目标常用*/
-//        "kspJs",/*适用于 Kotlin/JS 目标*/
-//        "kspNative"/*适用于 Kotlin/Native 目标*/
-//          ).forEach{ target ->/*循环遍历 每次赋值给target*/
-//              add(target, "com.ctrip.sqllin:sqllin-processor:${libs.versions.sqllin.get()}")/*除安卓外，配置KSP以处理使用SQLlin依赖中的注解*/
-//          }
-
 //    implementation("com.attafitamim.kabin:compiler:${libs.versions.kabin.get()}")/*Kabin编译库*/
 
+//    implementation("io.coil-kt.coil3:coil:${libs.versions.coil.get()}")/*fileKit-coil的内部底层依赖*/
+//    implementation("io.coil-kt.coil3:coil-compose:${libs.versions.coil.get()}")/*fileKit-coil的内部底层依赖*/
+}
+configurations.all{/*全部配置*/
+    resolutionStrategy.eachDependency{/*遍历依赖*/
+//        if(requested.name/*依赖名称*/.contains("filekit-coil") ){
+//        }
+        if(requested.group/*依赖位置*/=="org.jetbrains.kotlin"){
+            useVersion(libs.versions.kotlin.get())/*强制更改Kotlin所有库(包括stdlib) 与Koltin插件版本统一*/
+        }
+        if(requested.group=="io.coil-kt.coil3"){
+            useVersion(libs.versions.coil.get())/*强制更改Coil为统一版本*/
+        }
+        if(requested.name.contains("kotlinx-io-bytestring")||requested.name.contains("kotlinx-io-core") ){
+            useVersion(libs.versions.kotlinxIo.get())/*强制更改Kotlin-IO版本*/
+        }
+    }
 }
 //tasks.withType<KotlinCompile>{/*MokoResources资源问题-为解决KSP 在KotlinMultiplatform中的元数据依赖问题*/
 //    if(name != "kspCommonMainKotlinMetadata"){
