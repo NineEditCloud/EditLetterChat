@@ -1,10 +1,12 @@
-rootProject.name = "EditLetterChat"
+@file:Suppress("UnstableApiUsage")
+
+rootProject.name="EditLetterChat"
 //enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-pluginManagement {
-    repositories {
-        google {
-            mavenContent {
+pluginManagement{
+    repositories{
+        google{
+            mavenContent{
                 includeGroupAndSubgroups("androidx")
                 includeGroupAndSubgroups("com.android")
                 includeGroupAndSubgroups("com.google")
@@ -14,32 +16,30 @@ pluginManagement {
         gradlePluginPortal()
         maven{ url=uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }/*JetBrains-ComposeMultiplatform专用仓库(关键！)*/
         maven{ url=uri("https://plugins.gradle.org/m2/") }
-
         maven{ url=uri("https://maven.aliyun.com/repository/gradle-plugin") }/*1.配置Gradle插件镜像 阿里云源*/
         maven{ url=uri("https://maven.aliyun.com/repository/public") }/*2.配置阿里云公共仓库镜像*/
     }
 }
 
-dependencyResolutionManagement {
-    repositories {
-        google {
-            mavenContent {
+dependencyResolutionManagement{
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories{
+        google{
+            mavenContent{
                 includeGroupAndSubgroups("androidx")
                 includeGroupAndSubgroups("com.android")
                 includeGroupAndSubgroups("com.google")
             }
         }
         mavenCentral()/*公共仓库*/
-
-
-        maven{ url=uri("https://company/com/maven2") }/*Company仓库*/
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")/*JetBrains-ComposeMultiplatform专用仓库(关键！)*/
-        maven("https://dl.google.com/dl/android/maven2")/*谷歌官方仓库，如果上述仓库仍找不到，可尝试添加此仓库*/
+        maven{ url=uri("https://company/com/maven2")/*通用自定义Maven仓库写法*/ }/*Company仓库*/
+        maven{ url=uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }/*JetBrains-ComposeMultiplatform专用仓库(关键！)*/
+        maven{ url=uri("https://dl.google.com/dl/android/maven2") }/*谷歌官方仓库，如果上述仓库仍找不到，可尝试添加此仓库*/
 
         maven{ url=uri("https://maven.aliyun.com/repository/central") }/*阿里云源mavenCentral */
         maven{ url=uri("https://maven.aliyun.com/repository/public") }/*阿里云公共仓库镜像(用于大多数开源库)*/
         maven{ url=uri("https://maven.aliyun.com/repository/google") }/*阿里云源Google仓库镜像(用于Firebase、AndroidX等) */
-
+//        maven("")/*便捷写法*/
 //        mavenLocal()/*本地仓库*/
 //        flatDir {/*文件目录*/
 //            dirs("libs")

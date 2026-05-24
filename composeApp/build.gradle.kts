@@ -180,7 +180,7 @@ kotlin{
 //            implementation("io.realm.kotlin:library-base:${libs.versions.realm.get()}")/*Realm 对象型数据存储框架*/
 
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${libs.versions.kotlinx.get()}")/*Kotlin序列化库，ExoQuery必须*/
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.kotlinx.get()}")/*Kotlin协程 跨平台通用版(为各平台分配协程依赖或内置主线程调度器)，含Dispatchers.Main等，可在后台线程做复杂操作，并自动回到主线程更新UI*/
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.kotlinx.get()}")/*Kotlin协程-跨平台核心(为各平台分配协程依赖或内置主线程调度器，内置Kotlin/Native作为IOS依赖)，Room内部依赖需要，各平台依赖提供Dispatchers.Main，可在后台线程做复杂操作，并自动回到主线程更新UI*/
             implementation("com.google.code.gson:gson:2.13.2")/*Json编解码*/
 
             implementation("io.ktor:ktor-client-core:${libs.versions.ktor.get()}")/*Ktor-共享核心，不带引擎*/
@@ -189,17 +189,22 @@ kotlin{
             implementation("io.ktor:ktor-client-content-negotiation:${libs.versions.ktor.get()}")/*Ktor-内容协商*/
             implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")/*Ktor协商-序列化JSON(需内容协商)*/
 
-            implementation("org.jetbrains.kotlinx:kotlinx-io-core:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO 字节流/字符流、缓冲、协程读写*/
-            implementation("org.jetbrains.kotlinx:kotlinx-io-bytestring:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO-ByteString高效字节串*/
-            implementation("org.jetbrains.kotlinx:kotlinx-files:${libs.versions.kotlinxIo.get()}")/*Kotlinx跨平台文件系统API(Path,Directory,FileSystem)*/
+//            implementation("io.github.vinceglb:filekit-core:${libs.versions.filekit.get()}")/*FileKit核心库(仅兼容Kotlin2.1+)，跨平台 文件操作 和 应用私有路径访问*/
+//            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")
+//            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")
+//            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*fileKit选取图片文件，内部依赖不兼容Kotlin旧版，建议用AsyncImage(model=selectedFile.path)*/
 
-            implementation("io.github.vinceglb:filekit-core:${libs.versions.filekit.get()}")/*FileKit核心库(仅兼容Kotlin2.1+)，跨平台 文件操作 和 应用私有路径访问*/
-            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")
-            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")
-            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*fileKit选取图片文件，内部依赖不兼容Kotlin旧版，建议用AsyncImage(model=selectedFile.path)*/
+//            implementation("org.jetbrains.kotlinx:kotlinx-io-core:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO(疑似依赖链接失效) 字节流/字符流、缓冲、协程读写*/
+//            implementation("org.jetbrains.kotlinx:kotlinx-io-bytestring:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO-ByteString高效字节串*/
+//            implementation("org.jetbrains.kotlinx:kotlinx-files:${libs.versions.kotlinxIo.get()}")/*Kotlinx跨平台文件系统API(Path,Directory,FileSystem)*/
 
-            implementation("com.squareup.okio:okio:${libs.versions.okio.get()}")/*OkIO 文件操作核心库*/
-            implementation("com.squareup.okio:okio-okfile:${libs.versions.okio.get()}")/*OkIO-文件系统扩展*/
+//            implementation("com.squareup.okio:okio:${libs.versions.okio.get()}")/*OkIO(疑似依赖链接失效) 文件操作核心库*/
+//            implementation("com.squareup.okio:okio-okfile:${libs.versions.okio.get()}")/*OkIO-文件系统扩展*/
+
+            implementation("dev.zwander:kmpfile:${libs.versions.kmpFile.get()}")/*KMPFile，兼容Kotlin2.0和安卓5.0的 文件操作、应用私有路径获取框架*/
+            implementation("dev.zwander:kmpfile-filekit:${libs.versions.kmpFile.get()}")/*KMPFile与FileKit协作*/
+            implementation("dev.zwander:kmpfile-okio:${libs.versions.kmpFile.get()}")   /*KMPFile与Okio协作*/
+
         }
         commonTest.dependencies/*常规测试共享依赖*/{
             implementation("org.jetbrains.kotlin:kotlin-test:${libs.versions.kotlin.get()}")/*Kotlin测试依赖*/
@@ -213,6 +218,7 @@ kotlin{
 
 
 //            implementation("androidx.room:room-sqlite-wrapper")/*Room需要的SQLite库，Room2.8+引入的库(2.8+可用)*/
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${libs.versions.kotlinx.get()}")/*Kotlin协程-安卓，Room内部依赖需要*/
 
 //            implementation("org.jetbrains.exposed:exposed-core:1.2.0")/*Exposed核心模块(必须)，由于Room不方便分表，SQLlin不兼容安卓5.0，所以安卓用Exposed*/
 //            implementation("org.jetbrains.exposed:exposed-jdbc:1.2.0")/*Exposed数据传输模块(必须)：使用 JDBC 作为传输层*/
@@ -230,7 +236,7 @@ kotlin{
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{
             implementation(compose.desktop.currentOs)/*桌面端GUI预览引擎依赖，1.7.x已自动包含，手补以防万一*/
-//            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:${libs.versions.kotlinx.get()}")/*桌面协程依赖，包含Dispatchers.Main*/
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:${libs.versions.kotlinx.get()}")/*Kotlin协程-JVM桌面 Room内部依赖需要，包含Dispatchers.Main*/
 
 
 
@@ -260,7 +266,7 @@ kotlin{
 //        kotlin.srcDir("${layout.buildDirectory.get().asFile}/generated/ksp/metadata/commonMain/kotlin/")/*Kabin，关键：让项目识别KSP生成的代码*/
     }
 }
-dependencies/*综合依赖*/{
+dependencies/*可用于部分平台调用的共享依赖*/{
 //    testImplementation(libs.junit.jupiter)/*测试依赖*/
 
 //    implementation(platform("androidx.compose:compose-bom:2024.09.00"))/*Compose-Bom物料清单(必备，否则下载包不全)，最高2024.09.00支持安卓5.0，改了更高版本会有内容缺失*/
@@ -286,9 +292,9 @@ dependencies/*综合依赖*/{
             add(target, libs.androidx.room.compiler)/*为各平台添加Room处理器，缺少此依赖会导致异常：Caused by: java.lang.ClassNotFoundException: com.nineeditcloud.editletterchat.database.AppDatabase_Impl*/
 //            add(target, "com.ctrip.sqllin:sqllin-processor:${libs.versions.sqllin.get()}")/*除安卓外，配置KSP以处理使用SQLlin依赖中的注解*/
     }
-
     /*在AndroidX库的更新中，collection-ktx的功能已被合并进了collection主要库中，Room2.7.0内部仍然请求的是collection-ktx，所以需强制所有依赖底层用旧版collection-ktx库*/
 //    implementation("androidx.collection:collection:1.2.0")/*强制所有依赖底层用指定的 collection库版本，避免版本冲突*/
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${libs.versions.kotlinx.get()}")/*Kotlin协程，Room内部依赖需要*/
 
 //    implementation("com.attafitamim.kabin:compiler:${libs.versions.kabin.get()}")/*Kabin编译库*/
 
@@ -297,9 +303,9 @@ dependencies/*综合依赖*/{
 }
 configurations.all{/*全部配置*/
     resolutionStrategy.eachDependency{/*遍历依赖*/
-//        if(requested.name/*依赖名称*/.contains("filekit-coil") ){
+//        if(requested.name/*依赖包名称*/.contains("filekit-coil") ){
 //        }
-        if(requested.group/*依赖位置*/=="org.jetbrains.kotlin"){
+        if(requested.group/*依赖包位置*/=="org.jetbrains.kotlin"){
             useVersion(libs.versions.kotlin.get())/*强制更改Kotlin所有库(包括stdlib) 与Koltin插件版本统一*/
         }
         if(requested.group=="io.coil-kt.coil3"){

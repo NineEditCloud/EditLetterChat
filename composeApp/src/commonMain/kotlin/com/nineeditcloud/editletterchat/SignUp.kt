@@ -28,17 +28,17 @@ import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
-import com.nineeditcloud.editletterchat.client.Result
-import com.nineeditcloud.editletterchat.database.addData
-import com.nineeditcloud.editletterchat.database.UserAccountLocalData
-//import com.nineeditcloud.editletterchat.database.getDatabase
 import compose.icons.Octicons
 import compose.icons.octicons.Eye16
 import compose.icons.octicons.EyeClosed16
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
+import com.nineeditcloud.editletterchat.client.Result
+import com.nineeditcloud.editletterchat.database.UserAccountLocalData
+import com.nineeditcloud.editletterchat.database.getDatabase
+//import com.nineeditcloud.editletterchat.database.addData
 
 /*注册界面*/
 
@@ -117,18 +117,18 @@ class SignUp:Screen {
                                     withContext(Dispatchers.Main){/*在UI活动线程中执行(UI在主线程)*/
                                         isLoading=true
                                         /*Room添加 用户账号数据*/
-//                                        val userAccountDao=getDatabase("userAccount_localData")/*获取连接 账号数据库*/.userAccountDao()/*获取 用户账号表的Dao操作实例*/
-//                                        userAccountDao.insertAccount(UserAccountLocalData(result.accountId, username, password, result.token, ""))/*将账号数据存入 用户账号表*/
-//                                        userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
+                                        val userAccountDao=getDatabase("userAccount_localData")/*获取连接 账号数据库*/.userAccountDao()/*获取 用户账号表的Dao操作实例*/
+                                        userAccountDao.insertAccount(UserAccountLocalData(result.accountId, username, password, result.token, ""))/*将账号数据存入 用户账号表*/
+                                        userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
                                         /*Realm添加 用户账号数据*/
-                                        addData("userAccount"/*库*/, UserAccountLocalData()/*数据类对象模型*/ ){
-                                            var id:String=result.accountId/*账号Id*/
-                                            var name:String=""/*昵称*/
-                                            var passwd:String=password/*密码*/
-                                            var token:String=result.token/*令牌*/
-                                            var user_status:String=""/*用户状态*/
-                                            var currentUse:Boolean=true/*是否为当前正在使用的账号*/
-                                        }
+//                                        addData("userAccount"/*库*/, UserAccountLocalData()/*数据类对象模型*/ ){
+//                                            var id:String=result.accountId/*账号Id*/
+//                                            var name:String=""/*昵称*/
+//                                            var passwd:String=password/*密码*/
+//                                            var token:String=result.token/*令牌*/
+//                                            var user_status:String=""/*用户状态*/
+//                                            var currentUse:Boolean=true/*是否为当前正在使用的账号*/
+//                                        }
                                         navigator.replace(MainActivity1())/*将当前界面 替换成主页界面*/
                                     }
                                 }
