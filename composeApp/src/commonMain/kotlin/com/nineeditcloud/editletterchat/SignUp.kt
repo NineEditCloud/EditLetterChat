@@ -38,6 +38,9 @@ import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
 import com.nineeditcloud.editletterchat.client.Result
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
 import com.nineeditcloud.editletterchat.database.getDatabase
+import io.github.tbib.compose_toast.native_toast.NativeShowToast
+import io.github.tbib.compose_toast.native_toast.NativeToastType
+
 //import com.nineeditcloud.editletterchat.database.addData
 
 /*注册界面*/
@@ -66,6 +69,7 @@ class SignUp:Screen {
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
 
 //        val toaster = rememberToasterState()/*创建 Toast 状态管理器*/
+        val coroutineScope=rememberCoroutineScope()/*协程作用域，用于Compose_Toast的NativeShowToastCMP自适应原生底部弹窗提示组件 等*/
 
         Column(Modifier.background(backgroundColor).fillMaxSize()) {
             Column(Modifier.fillMaxSize().padding(horizontal=40.dp),
@@ -114,21 +118,21 @@ class SignUp:Screen {
                             val result=EditLettrtChat_HTTPApiClient.signUp(username=username, mobilePhoneNum=mobilePhoneNum, password=password)
                             when(result){
                                 is Result.Success-> {/*结果密封类 中 成功数据类 的类型生效，请求成功，处理accountId*/
+                                    /*Room添加 用户账号数据*/
+                                    val userAccountDao=getDatabase("userAccount_localData")/*获取连接 账号数据库*/.userAccountDao()/*获取 用户账号表的Dao操作实例*/
+                                    userAccountDao.insertAccount(UserAccountLocalData(result.accountId, username, password, result.token, ""))/*将账号数据存入 用户账号表*/
+                                    userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
+                                    /*Realm添加 用户账号数据*/
+//                                    addData("userAccount"/*库*/, UserAccountLocalData()/*数据类对象模型*/ ){
+//                                        var id:String=result.accountId/*账号Id*/
+//                                        var name:String=""/*昵称*/
+//                                        var passwd:String=password/*密码*/
+//                                        var token:String=result.token/*令牌*/
+//                                        var user_status:String=""/*用户状态*/
+//                                        var currentUse:Boolean=true/*是否为当前正在使用的账号*/
+//                                    }
                                     withContext(Dispatchers.Main){/*在UI活动线程中执行(UI在主线程)*/
                                         isLoading=true
-                                        /*Room添加 用户账号数据*/
-                                        val userAccountDao=getDatabase("userAccount_localData")/*获取连接 账号数据库*/.userAccountDao()/*获取 用户账号表的Dao操作实例*/
-                                        userAccountDao.insertAccount(UserAccountLocalData(result.accountId, username, password, result.token, ""))/*将账号数据存入 用户账号表*/
-                                        userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
-                                        /*Realm添加 用户账号数据*/
-//                                        addData("userAccount"/*库*/, UserAccountLocalData()/*数据类对象模型*/ ){
-//                                            var id:String=result.accountId/*账号Id*/
-//                                            var name:String=""/*昵称*/
-//                                            var passwd:String=password/*密码*/
-//                                            var token:String=result.token/*令牌*/
-//                                            var user_status:String=""/*用户状态*/
-//                                            var currentUse:Boolean=true/*是否为当前正在使用的账号*/
-//                                        }
                                         navigator.replace(MainActivity1())/*将当前界面 替换成主页界面*/
                                     }
                                 }
@@ -138,6 +142,9 @@ class SignUp:Screen {
 //                                        createNotification(NotificationType.TOAST).show(result.message)/*底部弹窗提示响应消息*/
 //                                        showToast(message=result.message, backgroundColor=Color.White, textColor=Color.Black,
 //                                                  gravity=ToastGravity.Bottom, duration=ToastDuration.Long)
+                                        coroutineScope.launch{
+                                            NativeShowToast.show(result.message, NativeToastType.LONG)/*底部弹窗提示 响应消息*/
+                                        }
                                     }
                                     println(result.message)
                                 }

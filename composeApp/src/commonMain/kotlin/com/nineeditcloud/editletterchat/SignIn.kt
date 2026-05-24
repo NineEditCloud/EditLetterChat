@@ -37,11 +37,14 @@ import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
 import com.nineeditcloud.editletterchat.client.Result
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
 import com.nineeditcloud.editletterchat.database.getDatabase
-//import com.nineeditcloud.editletterchat.database.addData
+import io.github.tbib.compose_toast.native_toast.NativeShowToast
+import io.github.tbib.compose_toast.native_toast.NativeToastType
+import kotlinx.serialization.json.JsonNull.content
 
 /*登录界面*/
 
 class SignIn :Screen{
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content(){
         var accountId by remember { mutableStateOf("") }
@@ -60,6 +63,17 @@ class SignIn :Screen{
         val editBoxBorder=if(!isSystemInDarkTheme()) Color(0xED2B2D30) else Color.White
 
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
+
+//        val sheetState=rememberAdaptiveSheetState()/*AdaptiveBottomSheet底部是否弹窗提示状态*/
+//        var showBottomSheet by remember { mutableStateOf(false) }/*用于控制 BottomSheet 显示/隐藏的布尔状态*/
+//        var bottomSheetStr=""
+//        if(showBottomSheet){
+//            AdaptiveBottomSheet/*自适应底部弹窗*/(adaptiveSheetState/*底部弹窗触发状态*/=sheetState, onDismissRequest={ showBottomSheet=false }/*处理关闭事件*/,
+//                                content/*设置内容*/={
+//                                    Text(bottomSheetStr)
+//                                })
+//        }
+        val coroutineScope=rememberCoroutineScope()/*协程作用域，用于Compose_Toast的NativeShowToastCMP自适应原生底部弹窗提示组件 等*/
 
         Column(Modifier.background(backgroundColor).fillMaxSize() ){
             Column(modifier=Modifier.fillMaxSize().padding(horizontal=40.dp),
@@ -92,26 +106,26 @@ class SignIn :Screen{
                                       background=editBoxBackground, borderColor=editBoxBorder, modifier=Modifier.padding(bottom=24.dp))
 
                 Button/*登录按钮*/(
-                    onClick={/*模拟登录过程*/isLoading = true
+                    onClick={/*模拟登录过程*/isLoading=true
                         lifecycleOwner.lifecycleScope.launch{
                             val result=EditLettrtChat_HTTPApiClient.signIn(accountId, password)
                             when(result){
                                 is Result.Success -> {/*请求成功，处理accountId*/
+                                    /*Room添加 用户账号数据*/
+                                    val userAccountDao=getDatabase("userAccount_localData")/*获取连接 账号数据库*/.userAccountDao()/*获取 用户账号表的Dao操作实例*/
+                                    userAccountDao.insertAccount(UserAccountLocalData(result.accountId, password, password, result.token))/*将账号数据存入 用户账号表*/
+                                    userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
+                                    /*Realm添加 用户账号数据*/
+//                                    addData("userAccount"/*库*/, UserAccountLocalData()/*数据类对象模型*/ ){
+//                                        var id:String=result.accountId/*账号Id*/
+//                                        var name:String=""/*昵称*/
+//                                        var passwd:String=password/*密码*/
+//                                        var token:String=result.token/*令牌*/
+//                                        var user_status:String=""/*用户状态*/
+//                                        var currentUse:Boolean=true/*是否为当前正在使用的账号*/
+//                                    }
                                     withContext(Dispatchers.Main){/*在UI活动线程中执行(UI在主线程)*/
                                         isLoading=true
-                                        /*Room添加 用户账号数据*/
-                                        val userAccountDao=getDatabase("userAccount_localData")/*获取连接 账号数据库*/.userAccountDao()/*获取 用户账号表的Dao操作实例*/
-                                        userAccountDao.insertAccount(UserAccountLocalData(result.accountId, password, password, result.token))/*将账号数据存入 用户账号表*/
-                                        userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
-                                        /*Realm添加 用户账号数据*/
-//                                        addData("userAccount"/*库*/, UserAccountLocalData()/*数据类对象模型*/ ){
-//                                            var id:String=result.accountId/*账号Id*/
-//                                            var name:String=""/*昵称*/
-//                                            var passwd:String=password/*密码*/
-//                                            var token:String=result.token/*令牌*/
-//                                            var user_status:String=""/*用户状态*/
-//                                            var currentUse:Boolean=true/*是否为当前正在使用的账号*/
-//                                        }
                                         navigator.replace(MainActivity1())/*将当前界面 替换成 首页界面，覆盖原本界面*/
                                     }
 
@@ -122,6 +136,11 @@ class SignIn :Screen{
 //                                        createNotification(NotificationType.TOAST).show(result.message)/*底部弹窗提示 响应消息*/
 //                                        showToast(message=result.message, backgroundColor=Color.White, textColor=Color.Black,
 //                                            gravity=ToastGravity.Bottom, duration=ToastDuration.Long)
+//                                        showBottomSheet=true;bottomSheetStr=result.message
+                                        coroutineScope.launch{
+                                            NativeShowToast.show(result.message, NativeToastType.LONG)/*底部弹窗提示 响应消息*/
+                                        }
+
                                     }
                                 }
                             }
@@ -147,7 +166,7 @@ class SignIn :Screen{
                     detectTapGestures(
                         onTap/*点击*/={  }
                                      )
-                }, color = MaterialTheme.colorScheme.onSurface, lineHeight = 1.sp/*行高设置为1可让文本占用位置变小*/)
+                }, color=MaterialTheme.colorScheme.onSurface, lineHeight = 1.sp/*行高设置为1可让文本占用位置变小*/)
             }
         }
     }

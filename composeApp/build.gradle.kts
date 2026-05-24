@@ -84,6 +84,7 @@ kotlin{
         }
         compilations.all{
             @Suppress("DEPRECATION") kotlinOptions{
+                freeCompilerArgs += listOf("-Xjvm-default=all")
                 freeCompilerArgs += listOf("-Xcontext-receivers")
 //                freeCompilerArgs += listOf("-P", "plugin:androidx.compose.compiler.plugins.kotlin:functionKeyMetaClasses=true")
             }
@@ -164,7 +165,9 @@ kotlin{
 //            api("dev.icerock.moko:resources-compose:${libs.versions.mokoResources.get()}")/*mokoResources综合资源 Compose支持，含painterResource用的图标资源*/
 
 //            implementation("io.github.dokar3:sonner:0.3.1")/*Compose-Sonner，跨平台Toast底部弹窗提示(与布局有绑定关系)*/
-            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Compose_Toast跨平台Toast底部弹窗提示，自定义UI依赖Box堆叠容器，原生弹窗不依赖布局*/
+            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Compose_Toast跨平台底部弹窗提示，兼容安卓5.0，自定义UI依赖Box堆叠容器，含自适应原生弹窗功能不依赖布局定位*/
+//            implementation("io.github.the-best-is-best:compose-utils:${libs.versions.composeToast.get()}")/*Compose-Utils*/
+//            implementation("io.github.the-best-is-best:kadaptiveui:1.2.0")/*KAdaptiveUI 跨平台Toast底部弹窗提示，仅兼容安卓7.0+，含自适应原生弹窗功能不依赖布局定位，且可自定义弹窗内容为Compose组件*/
 //            implementation("io.github.khubaibkhan4:alert-kmp:0.0.4")/*Alert-KMP，兼容安卓7.0+，极致便捷的跨平台底部弹窗提示，完全不依赖Box或布局绑定*/
 //            implementation("network.chaintech:cmptoast:1.0.8")/*CMPToast 跨平台底部弹窗提示，兼容安卓5.0，但与安卓name获取Context冲突*/
 
@@ -179,20 +182,19 @@ kotlin{
 
 //            implementation("io.realm.kotlin:library-base:${libs.versions.realm.get()}")/*Realm 对象型数据存储框架*/
 
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${libs.versions.kotlinx.get()}")/*Kotlin序列化库，ExoQuery必须*/
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${libs.versions.kotlinx.get()}")/*Kotlin序列化库-跨平台，ExoQuery所需依赖，包含JSON等 编解码/序列化/反序列化*/
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.kotlinx.get()}")/*Kotlin协程-跨平台核心(为各平台分配协程依赖或内置主线程调度器，内置Kotlin/Native作为IOS依赖)，Room内部依赖需要，各平台依赖提供Dispatchers.Main，可在后台线程做复杂操作，并自动回到主线程更新UI*/
-            implementation("com.google.code.gson:gson:2.13.2")/*Json编解码*/
 
             implementation("io.ktor:ktor-client-core:${libs.versions.ktor.get()}")/*Ktor-共享核心，不带引擎*/
-            implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")/*Ktor-CIO纯Kotlin通信引擎(跨平台通用)*/
+//            implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")/*Ktor-CIO 纯Kotlin跨平台通信引擎(只加这个可能出现兼容性问题 建议给各平台加各自的)，或apache、java*/
             implementation("io.ktor:ktor-network:${libs.versions.ktor.get()}")/*Ktor-Network模块，提供原始TCP和UDP 套接字支持*/
             implementation("io.ktor:ktor-client-content-negotiation:${libs.versions.ktor.get()}")/*Ktor-内容协商*/
             implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")/*Ktor协商-序列化JSON(需内容协商)*/
 
-//            implementation("io.github.vinceglb:filekit-core:${libs.versions.filekit.get()}")/*FileKit核心库(仅兼容Kotlin2.1+)，跨平台 文件操作 和 应用私有路径访问*/
-//            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")
-//            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")
-//            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*fileKit选取图片文件，内部依赖不兼容Kotlin旧版，建议用AsyncImage(model=selectedFile.path)*/
+            implementation("io.github.vinceglb:filekit-core:${libs.versions.filekit.get()}")/*FileKit核心库(仅兼容Kotlin2.1+)，跨平台 文件操作 和 应用私有路径访问*/
+            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")
+            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")
+            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*fileKit选取图片文件，内部依赖不兼容Kotlin旧版，建议用AsyncImage(model=selectedFile.path)*/
 
 //            implementation("org.jetbrains.kotlinx:kotlinx-io-core:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO(疑似依赖链接失效) 字节流/字符流、缓冲、协程读写*/
 //            implementation("org.jetbrains.kotlinx:kotlinx-io-bytestring:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO-ByteString高效字节串*/
@@ -201,9 +203,9 @@ kotlin{
 //            implementation("com.squareup.okio:okio:${libs.versions.okio.get()}")/*OkIO(疑似依赖链接失效) 文件操作核心库*/
 //            implementation("com.squareup.okio:okio-okfile:${libs.versions.okio.get()}")/*OkIO-文件系统扩展*/
 
-            implementation("dev.zwander:kmpfile:${libs.versions.kmpFile.get()}")/*KMPFile，兼容Kotlin2.0和安卓5.0的 文件操作、应用私有路径获取框架*/
-            implementation("dev.zwander:kmpfile-filekit:${libs.versions.kmpFile.get()}")/*KMPFile与FileKit协作*/
-            implementation("dev.zwander:kmpfile-okio:${libs.versions.kmpFile.get()}")   /*KMPFile与Okio协作*/
+//            implementation("dev.zwander:kmpfile:${libs.versions.kmpFile.get()}")/*KMPFile，文件操作、应用私有路径获取框架*/
+//            implementation("dev.zwander:kmpfile-filekit:${libs.versions.kmpFile.get()}")/*KMPFile与FileKit协作，包含其依赖*/
+//            implementation("dev.zwander:kmpfile-okio:${libs.versions.kmpFile.get()}")   /*KMPFile与Okio协作，包含其依赖*/
 
         }
         commonTest.dependencies/*常规测试共享依赖*/{
@@ -225,13 +227,13 @@ kotlin{
 //            implementation("org.jetbrains.exposed:exposed-dao:1.2.0")/*Exposed DAO模块(可选)：提供更高层级的 DAO API*/
 //            implementation("com.h2database:h2:2.1.214")/*数据库驱动，以H2为例*/
 
-//            implementation("io.ktor:ktor-client-okhttp:${libs.versions.ktor.get()}")/*Ktor-安卓端底层OkHttp引擎*/
+            implementation("io.ktor:ktor-client-okhttp:${libs.versions.ktor.get()}")/*Ktor-安卓端底层OkHttp引擎*/
         }
         iosMain.dependencies/*IOS端依赖*/{
 //            implementation("com.ctrip.sqllin:sqllin-dsl:${libs.versions.sqllin.get()}")/*SQLlin，跨平台且方便分库分表的DSL数据库框架，KSP用于编译时生成代码，dsl模块已包含必要注解，无需额外添加*/
 //            implementation("com.ctrip.sqllin:sqllin-driver:${libs.versions.sqllin.get()}")/*一套通用的多平台SQLite低阶API，DSL的底层依赖*/
 
-//            implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor}")/*Ktor-IOS端底层Darwin引擎*/
+            implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
         }
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{
@@ -246,7 +248,7 @@ kotlin{
 //            implementation("io.exoquery:exoquery-runner-jdbc:${libs.versions.exoqueryRun.get()}")/*JVM runner*/
 //            implementation("org.postgresql:postgresql:42.7.0")/*JDBC驱动*/
 
-//            implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")/*Ktor-CIO纯Kotlin引擎(跨平台通用)，或apache、java*/
+            implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")/*Ktor-CIO纯Kotlin引擎(跨平台通用)，或apache、java*/
         }
 
         nativeMain.dependencies/*Kotlin/Native IOS/MacOS/Linux*/{
@@ -261,14 +263,12 @@ kotlin{
 //        }
     }
 
-    sourceSets.configureEach {
+    sourceSets.configureEach{
         kotlin.srcDir("${layout.buildDirectory.get().asFile}/generated/ksp/$name/kotlin/")/*指定 Room Schema 的导出路径(对KSP同样需要)，buildDir已弃用，使用新的API获取构建路径*/
 //        kotlin.srcDir("${layout.buildDirectory.get().asFile}/generated/ksp/metadata/commonMain/kotlin/")/*Kabin，关键：让项目识别KSP生成的代码*/
     }
 }
 dependencies/*可用于部分平台调用的共享依赖*/{
-//    testImplementation(libs.junit.jupiter)/*测试依赖*/
-
 //    implementation(platform("androidx.compose:compose-bom:2024.09.00"))/*Compose-Bom物料清单(必备，否则下载包不全)，最高2024.09.00支持安卓5.0，改了更高版本会有内容缺失*/
     debugImplementation("org.jetbrains.compose.ui:ui-tooling:${libs.versions.composeMultiplatform.get()}")
 
@@ -342,6 +342,7 @@ android/*安卓目标配置*/{
         targetSdk=libs.versions.android.targetSdk.get().toInt()/*目标SDK版本*/
         versionCode=1/*版本代码*/
         versionName="1.0"/*版本名*/
+        testInstrumentationRunner="androidx.test.runner.AndroidJUnitRunner"
     }
     packaging{
         resources{
@@ -349,8 +350,14 @@ android/*安卓目标配置*/{
         }
     }
     buildTypes/*编译类型*/{
-        getByName("release")/*根据类型名称获取*/{
-            isMinifyEnabled=false/*是否 启用最小化，建议禁用，会混淆类(可能导致某些类互相影响)*/
+//        release{
+//            isMinifyEnabled=true/*是否开启 安装包体积最小化，不建议启用，会混淆类(容易导致某些类互相影响)，MultiDex需要手动配置，容易导致很麻烦*/
+//            multiDexEnabled=true/*以防安卓包体积最小化会混淆类，导致出现异常，启用此参数*/
+//            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"),"proguard-rules.pro")
+//            signingConfig/*签名配置*/=signingConfigs.getByName/*根据签名名称获取*/("release")
+//        }
+        getByName/*根据签名名称获取*/("release"){
+            isMinifyEnabled=false/*是否开启 安装包体积最小化，不建议启用，会混淆类(容易导致某些类互相影响)，MultiDex需要手动配置，容易导致很麻烦*/
         }
     }
     compileOptions/*编译选项*/{
