@@ -51,7 +51,8 @@ filekit="0.12.0"#FileKit跨平台 应用私有路径获取、文件操作 库(�
 coil="3.0.4"#FileKit-Coil内部底层依赖，3.0.4兼容Kotlin2.0，3.3.0兼容Kotlin2.1/2.2
 kotlinxIo="0.3.0"#0.3.0兼容Kotlin2.0，0.6.0兼容Kotlin2.1，0.8.0兼容Kotlin2.2
 okio="3.9.1"#OkIO3.9.1兼容Kotlin2.0、安卓5.0，3.10.2兼容Kotlin2.1，4.x兼容Kotlin2.2+
-kmpFile="0.8.0"#KMP0.8.0兼容Kotlin2.0、安卓5.0
+kmpFile="0.8.0"
+material3Android = "1.4.0"#KMP0.8.0兼容Kotlin2.0、安卓5.0
 
 
 
@@ -78,7 +79,6 @@ logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 ktor-serverCore = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
 ktor-serverNetty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
 ktor-serverTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
-
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
@@ -97,10 +97,10 @@ ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
 androidx-room = { id = "androidx.room", version.ref = "room" }
 realm={ id="io.realm.kotlin", version.ref="realm" }#Realm插件
 krdb={id="io.github.xilinjia.krdb.gradle-plugin", version.ref="krdb"}#Krdb插件 Realm的新版 支持Kotlin2.1+
-
 serialization={id="plugin.serialization", version.ref="kotlin"}
 exoquery={id="io.exoquery.exoquery-plugin", version.ref="exoquery"}#ExoQuery插件
 exoqueryRun={id="io.exoquery.exoquery-runner-jdbc", version.ref="exoqueryRun"}#ExoQuery需要的平台运行器

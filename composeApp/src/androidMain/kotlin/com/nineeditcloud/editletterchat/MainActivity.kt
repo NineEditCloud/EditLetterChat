@@ -8,10 +8,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.core.view.WindowCompat
 import cafe.adriel.voyager.navigator.Navigator
-import com.nineeditcloud.editletterchat.theme.Theme
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 
+/*Android移动端*/
 class MainActivity:ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?){
@@ -20,7 +20,7 @@ class MainActivity:ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent{
-            Theme{
+            AppTheme{
                 Navigator(StartupLoading())/*使用Voyager跨平台界面*/
             }
 

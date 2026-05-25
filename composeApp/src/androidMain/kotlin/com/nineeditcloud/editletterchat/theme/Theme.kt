@@ -18,7 +18,6 @@ private val DarkColorScheme=darkColorScheme(
     tertiary=Pink80,
     surface=Color(0xFF171515)/*深色底色*/
 )
-
 /*浅色主题*/
 private val LightColorScheme=lightColorScheme(
     primary=Purple40,

@@ -14,8 +14,12 @@ import kotlinx.cinterop.ExperimentalForeignApi
 //import platform.UIKit.*
 //import kotlin.experimental.ExperimentalNativeApi
 
+/*IOS移动端*/
 fun MainViewController()=ComposeUIViewController{
-    Navigator(StartupLoading())/*使用Voyager跨平台界面*/
+    AppTheme{
+        Navigator(StartupLoading())/*使用Voyager跨平台界面*/
+    }
+
 }
 
 //@OptIn(ExperimentalForeignApi::class)
