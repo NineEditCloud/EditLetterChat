@@ -367,7 +367,7 @@ compose.desktop/*Compose桌面目标配置*/{
         nativeDistributions{
             targetFormats/*桌面目标系统平台*/(TargetFormat.Msi/*Win老安装包*/, TargetFormat.Exe/*Win执行包*/, TargetFormat.Dmg/*MacOS安装包*/,
                                               TargetFormat.Rpm/*RedHatLinux软件包*/,TargetFormat.Deb/*DebianLinux软件包*/)
-            packageName="辑信"/*包名*/
+            packageName="EditLetterChat"/*包名，含中文时build.gradle.kts配置文件要用GBK中文编码？*/
             packageVersion="1.0.0"/*包版本*/
         }
     }
