@@ -57,28 +57,27 @@ import kotlinx.coroutines.launch
 fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)->Unit, maxLines:Int=1/*Int.MAX_VALUE无限行数*/,
                                    startIcon/*开头图标*/:@Composable (() -> Unit)?/*接收Comp作为参数 slot模式*/=null,
                                    startText/*开头文本*/:String="",startOnTap:( ()->Unit )?=null,
-                                   labelText/*标签文本*/:String="",
+                                   labelText/*标签文本*/:String="",labelTextSize/*标签文本大小*/:TextUnit=13.sp,
                                    endIcon/*结尾图标*/:@Composable (() -> Unit)? =null,
                                    background:Color=Color.Transparent/*编辑框背景 默认透明*/, shape:Shape=RoundedCornerShape(10.dp)/*形状，默认圆角10.dp*/,
                                    borderColor:Color=Color.Transparent/*边框颜色 默认透明*/, underline:Boolean=false/*下划线，默认不用*/, modifier:Modifier=Modifier,
                                    inputType:KeyboardType=KeyboardType.Text/*输入类型 默认文本*/, contentVisualStatus:Boolean=false/*内容可见状态 默认否*/){
     val underlineColor=if(!isSystemInDarkTheme()) Color.Gray else Color.White/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
 
-    var hasFocus by remember { mutableStateOf(false) }/*编辑框焦点状态 (是否被选中)*/
+    var hasFocus by remember { mutableStateOf(false) }/*编辑框 焦点状态(是否被选中)*/
 
-    val topLabelLeftMargin/*顶部标签背部颜色块 动态左边距*/=if(hasFocus || value!="") 13.dp else 33.dp/*顶部标签动态位置*/
+    val topLabelLeftMargin/*顶部标签背部颜色块 动态左边距*/=if(hasFocus/*焦点选中状态*/ || value!=""/*值不为空*/) 13.dp else 33.dp/*顶部标签动态位置*/
     val topPadding=16.dp
     var minHeight=31.dp/*装饰盒内部 包裹组件的布局 最小高度*/
 
     /*为什么用不了Modifier的weight属性，并不是依赖版本问题，Modifier本身没有weight属性，weight属性是用于Row、Column等布局中的子元素上的*/
 
-    Row(modifier=modifier) {
+    Row(modifier=modifier){
         BasicTextField/*基本编辑框，默认无装饰(下划线、边框)，UI完全自定义*/(
             value=value,/*值绑定text对象*/onValueChange=onValueChange/*值变更时，text对象跟随变更*/,
-            modifier=Modifier
-                .fillMaxWidth()/*填充全部宽度*/.heightIn(max = 200.dp)/*设置最小和最大高度*/
-                .onFocusChanged/*焦点变化时*/{ focusState ->
-                    hasFocus = focusState.isFocused/*更改焦点状态变量*/
+            modifier=Modifier.fillMaxWidth()/*填充全部宽度*/.heightIn(max=200.dp)/*设置最小和最大高度*/
+                .onFocusChanged/*焦点变化时*/{ focusState/*焦点新状态*/ ->
+                    hasFocus=focusState.isFocused/*更改焦点状态变量*/
                 }
 //                .focusRequester(focusRequester)/*可选，用于程序控制焦点*/
             ,maxLines=maxLines/*最大行数*/, keyboardOptions=KeyboardOptions(keyboardType=inputType),
@@ -90,26 +89,18 @@ fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)
                 color=MaterialTheme.colorScheme.onSurface/*文本颜色，适应系统深浅模式主体*/
             ),visualTransformation/*视觉转换*/=if(contentVisualStatus||inputType!=KeyboardType.Password) VisualTransformation.None else PasswordVisualTransformation(),
             decorationBox/*装饰盒(包裹文本和光标，必备，也可在BasicTextField外包裹Box代替)*/={innerTextField->
-                Box(Modifier.fillMaxWidth()){
-                    Row(Modifier
-                        .padding(vertical = topPadding/*边框外的顶部边距，把此布局向内推，边框依旧在内*/)
-                        .background(background, shape)/*设置背景颜色和背景圆角形状*/
-                        .border(3.dp, borderColor, shape)/*边框*/   ){
-                        Row(Modifier
-                            .fillMaxWidth()/*填充全部宽度*/.heightIn(
-                            min = minHeight, max = 196.dp
-                        )/*设置 最小和最大 高度，各比编辑框小4*/
-                            .padding(horizontal = 8.dp, vertical = 8.dp)/*包裹组件的布局 水平和垂直 边距*/,
+                Box(Modifier.fillMaxWidth() ){
+                    Row(Modifier.padding(vertical=topPadding/*边框外的顶部边距，把此布局向内推，边框依旧在内*/)
+                            .background(background, shape)/*设置背景颜色和背景圆角形状*/.border(3.dp, borderColor, shape)/*边框*/   ){
+                        Row(Modifier.fillMaxWidth()/*填充全部宽度*/.heightIn(min=minHeight, max=196.dp)/*设置 最小和最大 高度，各比编辑框小4*/
+                            .padding(horizontal=8.dp, vertical=8.dp)/*包裹组件的布局 水平和垂直 边距*/,
                             verticalAlignment=Alignment.CenterVertically/*子项垂直居中对齐*/){
                             val width=if(startText=="")/*若没有开头文本*/ 34.dp else/*若有开头文本(最多五个数字)*/ 55.dp
-                            Box/*包裹开头*/(Modifier
-                                .height(34.dp)/*固定高度，防止 不同开头组件改变编辑框高度(编辑框高度会影响下划线底部空隙)*/
-                                .width(width)/*动态宽度*/.pointerInput/*识别点击手势(无涟漪效果)*/(
-                                    Unit
-                                ) {
+                            Box/*包裹开头*/(Modifier.height(34.dp)/*固定高度，防止 不同开头组件改变编辑框高度(编辑框高度会影响下划线底部空隙)*/
+                                .width(width)/*动态宽度*/.pointerInput/*识别点击手势(无涟漪效果)*/(Unit){
                                     detectTapGestures(
-                                        onTap/*点击*/ = { startOnTap?.invoke()/*如果接收到的开头点击事件不为空则调用*/ }
-                                    )
+                                        onTap/*点击*/={ startOnTap?.invoke()/*如果接收到的开头点击事件不为空则调用*/ }
+                                                     )
                                 },contentAlignment=Alignment.Center/*子项居中*/){
                                 startIcon?.invoke()/*开头 图标等组件，?.invoke：如果传递Comp不为空则调用*/
                                 if(startText!=""){
@@ -123,11 +114,11 @@ fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)
                                     innerTextField()/*放置文本和光标位置*/
                                     minHeight=35.dp
                                 }else{/*内容为空 并且 编辑框未被选中*/
-                                    Lable(labelText)/*使用定义好的标签*/
+                                    Lable(labelText,fontSize=labelTextSize)/*使用定义好的标签*/
                                     minHeight=31.dp
                                 }
                                 if(underline){/*如果启用下划线*/
-                                    HorizontalDivider/*水平分割线*/(Modifier.height(1.dp).padding(top = 2.dp, bottom = 2.dp),
+                                    HorizontalDivider/*水平分割线*/(Modifier.height(1.dp).padding(top=2.dp, bottom=2.dp),
                                                       color=underlineColor.copy(0.7f) )
                                 }
                             }
@@ -136,15 +127,18 @@ fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)
                     }
 
                     Box/*堆叠布局，为方便只设一次左边距 再套层Box*/(Modifier.padding(start=topLabelLeftMargin/*水平开头 动态边距*/) ){
-                        Row(Modifier
-                            .padding(top = topPadding)/*契合 编辑框顶部边距(编辑框预留给标签的空间)*/.height(
-                                4.dp
-                            )
-                            .background(background)
-                            .widthIn(min = 3.dp)/*最小宽度，内部标签显示时自适应增加宽度*/ ){
-                            if(value!="" || hasFocus)/*内容不为空 或 编辑框被选中 时*/ Lable(labelText)/*使用定义好的标签，以自适应标签宽度*/
+                        val topLabelAreaWidth/*顶部标签区域宽度-自适应标签文本长度*/=(convertSpToDp/*Sp转Dp*/(labelTextSize)+2.dp)*labelText.length
+                        Row(Modifier.padding(top=topPadding)/*契合 编辑框顶部边距(编辑框预留给标签的空间)*/.height(4.dp)
+                                .background(background)
+                                .widthIn(min=if(value!=""||hasFocus) topLabelAreaWidth else 3.dp)/*最小宽度，内部标签显示时自适应增加宽度*/ ){
+//                            if(value!="" || hasFocus)/*内容不为空 或 编辑框被选中 时*/ Lable(labelText)/*使用定义好的标签，以自适应标签宽度，在Windows端 窗口 与 安卓屏幕 尺寸有差别，Compose组件Dp大小单位尺寸会发生改变，会在顶部标签颜色区域 后边重复出现标签文本，不建议 顶部标签区域 这样适应标签长度*/
                         }/*占据文字所在部分背部边框颜色，以改变样式*/
-                        if(value!="" || hasFocus)/*内容不为空 或 编辑框被选中 时*/ Lable(labelText)/*使用定义好的标签*/
+
+                        Column(horizontalAlignment=Alignment.CenterHorizontally/*子项水平居中*/,
+                               modifier=Modifier.width(width=if(value!=""||hasFocus) topLabelAreaWidth else 3.dp) ){
+                            if(value!="" || hasFocus)/*内容不为空 或 编辑框被选中 时*/ Lable(labelText)/*使用定义好的标签*/
+                        }
+
                     }
 //                    Row(Modifier.align(Alignment.BottomStart)/*此布局在Box中 居底 开头*/.height(3.dp)/*高度*/.width(3.dp)/*宽度*/
 //                        .padding(start=3.dp)/*水平开头边距*/.background(background) ){
@@ -157,8 +151,16 @@ fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)
 }
 
 @Composable
-fun Lable(text:String){
-    return Text(text,fontSize=13.sp,lineHeight=1.sp,fontWeight=FontWeight.Bold/*字体粗细 粗*/, color=MaterialTheme.colorScheme.onSurface)
+fun Lable/*标签*/(text:String,fontSize:TextUnit=13.sp){
+    return Text(text,fontSize=fontSize,lineHeight=1.sp,fontWeight=FontWeight.Bold/*字体粗细 粗*/, color=MaterialTheme.colorScheme.onSurface)
+}
+
+@Composable
+fun convertSpToDp/*Sp转Dp单位*/(textUnit:TextUnit):Dp{
+    val density=LocalDensity.current/*获取当前的 Density 实例*/
+    return with(density){
+        textUnit.toDp()/*使用 toDp() 扩展函数将 TextUnit (sp) 转换为 Dp*/
+    }
 }
 
 @Composable

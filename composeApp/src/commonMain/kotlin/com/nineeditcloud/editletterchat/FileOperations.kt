@@ -5,6 +5,9 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.cacheDir
 import io.github.vinceglb.filekit.filesDir
+
+/*基于FileKit的 文件操作、私有路径获取*/
+
 val filesPath:PlatformFile?=(FileKit.filesDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有文件目录，   若获取失败则为空*/
 val cachePath:PlatformFile?=(FileKit.cacheDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有临时缓存目录，若获取失败则为空*/
 fun filePath():PlatformFile?{
