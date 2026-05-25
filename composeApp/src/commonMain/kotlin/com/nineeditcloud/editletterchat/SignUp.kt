@@ -37,6 +37,7 @@ import kotlinx.coroutines.withContext
 import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
 import com.nineeditcloud.editletterchat.client.Result
 import com.nineeditcloud.editletterchat.common_tools.EditBox
+import com.nineeditcloud.editletterchat.common_tools.Log
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
 import com.nineeditcloud.editletterchat.database.getDatabase
 import io.github.tbib.compose_toast.native_toast.NativeShowToast
@@ -130,17 +131,21 @@ class SignUp:Screen {
                                       modifier=Modifier.padding(bottom=32.dp))
 
                 Button/*注册按钮*/(onClick={
-                    if(username.isNotBlank() && mobilePhoneNum.isNotBlank() && password.length>=6)/*简单的表单验证*/ {
+                    if(username.isNotBlank() && mobilePhoneNum.isNotBlank() && password.length>=6)/*简单的表单验证*/{
                         isLoading=true/*登录请求等待反馈时 将按钮 设为不可点击状态*/
                         /*在ViewModel或Activity中 scope.launch{} 或 lifecycleScope.launch{}*/
                         lifecycleOwner.lifecycleScope.launch{
                             val result=EditLettrtChat_HTTPApiClient.signUp(username=username, mobilePhoneNum=mobilePhoneNum, password=password)
                             when(result){
                                 is Result.Success-> {/*结果密封类 中 成功数据类 的类型生效，请求成功，处理accountId*/
-                                    /*Room添加 用户账号数据*/
-                                    val userAccountDao=getDatabase("userAccount_localData")/*获取连接 账号数据库*/.userAccountDao()/*获取 用户账号表的Dao操作实例*/
-                                    userAccountDao.insertAccount(UserAccountLocalData(result.accountId, username, password, result.token, ""))/*将账号数据存入 用户账号表*/
-                                    userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
+                                    try{
+                                        /*Room添加 用户账号数据*/
+                                        val userAccountDao=getDatabase("userAccount_localData")/*获取连接 账号数据库*/.userAccountDao()/*获取 用户账号表的Dao操作实例*/
+                                        userAccountDao.insertAccount(UserAccountLocalData(result.accountId, username, password, result.token, ""))/*将账号数据存入 用户账号表*/
+                                        userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
+                                    }catch(e:Exception){
+                                        Log.e("Room数据库异常", e.message!!, e)/*在LogCat/控制台 打印 具体异常类型和消息，使用 tag:System.out 过滤*/
+                                    }
                                     /*Realm添加 用户账号数据*/
 //                                    addData("userAccount"/*库*/, UserAccountLocalData()/*数据类对象模型*/ ){
 //                                        var id:String=result.accountId/*账号Id*/

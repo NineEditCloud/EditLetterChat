@@ -24,12 +24,12 @@ fun AppTheme(darkTheme:Boolean=isSystemInDarkTheme(), content:@Composable ()->Un
 
 val LightColors=lightColorScheme(
     primary=Color(0xFF6200EA),    /*深紫色*/
-    secondary=Color(0xFF03DAC6),  /*水鸭色*/
+    secondary=Color(0xFF3C03DA),
     background=Color.White,
     )
 val DarkColors=darkColorScheme(
     primary=Color(0xFFBB86FC),    /*淡紫色*/
-    secondary=Color(0xFF03DAC6),  /*水鸭色*/
+    secondary=Color(0xFF1803DA),
     background=Color(0xFF121212), /*深灰色*/
     )
 

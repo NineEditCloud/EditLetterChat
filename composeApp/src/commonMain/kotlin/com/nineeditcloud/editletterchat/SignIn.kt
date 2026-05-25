@@ -128,16 +128,14 @@ class SignIn :Screen{
                             val result=EditLettrtChat_HTTPApiClient.signIn(accountId, password)
                             when(result){
                                 is Result.Success -> {/*请求成功，处理accountId*/
-
                                     try{
                                         /*Room添加 用户账号数据*/
                                         val userAccountDao=getDatabase("userAccount_localData")/*获取连接 账号数据库*/.userAccountDao()/*获取 用户账号表的Dao操作实例*/
-                                        userAccountDao.insertAccount(UserAccountLocalData(result.accountId, password, password, result.token))/*将账号数据存入 用户账号表*/
+                                        userAccountDao.insertAccount(UserAccountLocalData(result.accountId, "", password, result.token, ""))/*将账号数据存入 用户账号表*/
                                         userAccountDao.updateUnusedState_excludeCurrentUse(result.accountId)/*更新 用户账号表 中未在使用的账号current_use字段值为false*/
                                     }catch(e:Exception){
                                         Log.e("Room数据库异常", e.message!!, e)/*在LogCat/控制台 打印 具体异常类型和消息，使用 tag:System.out 过滤*/
                                     }
-
                                     /*Realm添加 用户账号数据*/
 //                                    addData("userAccount"/*库*/, UserAccountLocalData()/*数据类对象模型*/ ){
 //                                        var id:String=result.accountId/*账号Id*/
