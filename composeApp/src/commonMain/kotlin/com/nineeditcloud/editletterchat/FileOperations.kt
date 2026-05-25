@@ -8,10 +8,10 @@ import io.github.vinceglb.filekit.filesDir
 
 /*基于FileKit的 文件操作、私有路径获取*/
 
-val filesPath:PlatformFile?=(FileKit.filesDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有文件目录，   若获取失败则为空*/
-val cachePath:PlatformFile?=(FileKit.cacheDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有临时缓存目录，若获取失败则为空*/
+val filesPath=FileKit.filesDir /*获取应用私有文件目录，   若获取失败则为空*/
+val cachePath=FileKit.cacheDir /*获取应用私有临时缓存目录，若获取失败则为空*/
 fun filePath():PlatformFile?{
-    if(filesPath!=null && filesPath ?.absolutePath()?.isNotBlank()!!){
+    if(filesPath!=null && filesPath ?.absolutePath() ?.isNotBlank()!!){
         return filesPath
     }else{
         print("外部私有文件路径获取失败！！！")
@@ -19,7 +19,7 @@ fun filePath():PlatformFile?{
     }
 }
 fun cachePath():PlatformFile?{
-    if(cachePath!=null && filesPath ?.absolutePath()?.isNotBlank()!!){
+    if(cachePath!=null && filesPath ?.absolutePath() ?.isNotBlank()!!){
         return cachePath
     }else{
         print("外部私有临时缓存路径获取失败！！！")

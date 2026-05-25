@@ -21,8 +21,8 @@ plugins{
 
 //    alias(libs.plugins.exoquery)/*应用 ExoQuery插件*/
 //    alias(libs.plugins.multiplatform.mokoResources)/*应用 MokoResources综合资源库 插件*/
-//    kotlin("plugin.serialization") version "${libs.versions.kotlin.get()}"/*应用Kotlin-serialization序列化插件*/
-    alias(libs.plugins.kotlin.serialization)/*应用 Kotlin-serialization序列化插件*/
+    kotlin("plugin.serialization") version "${libs.versions.kotlin.get()}"/*应用Kotlin-serialization序列化插件*/
+//    alias(libs.plugins.kotlin.serialization)/*应用 Kotlin-serialization序列化插件，闪退*/
 }
 /*若依赖丢失导致项目报错，请先连接VPN，点击 Gradle -> 重新加载所有Gradle项目，等待依赖下载完成，
 在顶部菜单点击 文件 -> 从磁盘全部重新加载 (或快捷键Ctrl+Alt+Y)
@@ -42,6 +42,9 @@ Gradle8.7 + AGP8.5.0 + Kotlin1.9.20-2.0.20 + JDK17以上：旧版兼容Realm2.3.
 要更新AndroidGradlePlugin版本的话，打开 Tools -> AGP Upgrade Assistant，查看最新版本，
 并在 “项目文件夹/gradle/libs.versions.toml” 文件中更改versions中的agp浮点值
 注意：安卓应用运行目标SDK版本只要未弃用，后续更新的系统版本 依旧可运行 较旧SDK版本的应用，一般兼容安卓 4.4或5.0 - 16 范围内版本即可
+
+安卓打包失败不一定全是依赖和代码问题，有时候内存不足也会编译失败(建议关闭AndroidStudio再重启)
+有时候软件闪退不一定全是依赖问题，有时数据库程序的Bug，安卓软件数据清理下
 
 ——必要AndroidSDK版本API
 SDK Platforms：最新版、24(创建项目时最低选择安卓版本API)
@@ -346,13 +349,13 @@ android/*安卓目标配置*/{
     }
     buildTypes/*编译类型*/{
 //        release{
-//            isMinifyEnabled=true/*是否开启 安装包体积最小化，不建议启用，会混淆类(容易导致某些类互相影响)，MultiDex需要手动配置，容易导致很麻烦*/
+//            isMinifyEnabled=false/*是否开启 安装包体积最小化，不建议启用，会混淆类(容易导致某些类互相影响)，MultiDex需要手动配置，容易导致很麻烦*/
 //            multiDexEnabled=true/*以防安卓包体积最小化会混淆类，导致出现异常，启用此参数*/
 //            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"),"proguard-rules.pro")
 //            signingConfig/*签名配置*/=signingConfigs.getByName/*根据签名名称获取*/("release")
 //        }
         getByName/*根据签名名称获取*/("release"){
-            isMinifyEnabled=false/*是否开启 安装包体积最小化，不建议启用，会混淆类(容易导致某些类互相影响)，MultiDex需要手动配置，容易导致很麻烦*/
+            isMinifyEnabled=false/*是否开启 安装包体积最小化，不建议启用(保持false，注释会闪退)，会混淆类(容易导致某些类互相影响)，MultiDex需要手动配置，容易导致很麻烦*/
         }
     }
     compileOptions/*编译选项*/{

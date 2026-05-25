@@ -11,7 +11,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.handleCoroutineException
 import kotlinx.serialization.serializer
 
 object EditLettrtChat_HTTPApiClient{
@@ -54,10 +53,10 @@ object EditLettrtChat_HTTPApiClient{
                     Result.Error("${response.status.value}：${resp.message}")/*调用结果密封类中的 错误类型生效，并传递 消息 参数*/
                 }
             }catch(e:Exception){/*请求异常，说明服务端不存在于可访问的网络(也可能服务器内存问题导致上次服务程序进程没关掉 占用了端口 本次服务程序进程没监听到对应端口 实在不行重启电脑)，或客户端执行报错问题*/
+//                e.printStackTrace()/*在 logcat/控制台 查看具体异常类型和消息*/
+                Log.e("Ktor连接异常", e.message!!, e)/*在LogCat/控制台 打印 具体异常类型和消息，使用 tag:System.out 过滤，注意，不要放在末尾，否则会作为返回值 影响正确的返回值*/
                 Result.Error("连接异常:\n${e.message}")/*调用结果密封类中的 错误类型生效，并传递 消息 参数*/
-//                e.printStackTrace()  /*在 logcat / 控制台 查看具体异常类型和消息*/
-                Log.e("Ktor连接异常", e.message!!, e)/*在LogCat/控制台 打印 具体异常类型和消息，使用 tag:System.out 过滤*/
-            }as Result
+            }as Result/*由于此IO线程直接将执行结果出返回值，将catch块的返回值 强制转换为Result类型*/
         }
     }
 

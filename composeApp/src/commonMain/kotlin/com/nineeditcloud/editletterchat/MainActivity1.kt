@@ -173,8 +173,9 @@ class MainActivity1:Screen{
 //            println("错误：无法获取应用文件目录。请检查是否已正确初始化FileKit")/*可选：显示用户提示或记录日志*/
 ////            return /*或者抛出异常，取决于你的应用策略*/
 //        }
-        val filesPath:PlatformFile?=(FileKit.filesDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有文件目录，   若获取失败则为空*/
-        val cachePath:PlatformFile?=(FileKit.cacheDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有临时缓存目录，若获取失败则为空*/
+        /*以下两行是用FileKit获取私有路径的错误实例*/
+//        val filesPath:PlatformFile?=(FileKit.filesDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有文件目录，   若获取失败则为空，错误示例(返回值Boolean强制转换为PlatformFile?导致闪退)*/
+//        val cachePath:PlatformFile?=(FileKit.cacheDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有临时缓存目录，若获取失败则为空，错误示例(返回值Boolean强制转换为PlatformFile?导致闪退闪退)*/
 
         if(filesPath!=null){/*如果确实获取到了外部私有文件路径*/
             val dir=filesPath/"avatar"/*目标文件夹*/
