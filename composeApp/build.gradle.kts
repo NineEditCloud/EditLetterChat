@@ -365,9 +365,9 @@ compose.desktop/*Compose桌面目标配置*/{
     application/*应用*/{
         mainClass="com.nineeditcloud.editletterchat.MainKt"/*主类*/
         nativeDistributions{
-            targetFormats/*桌面目标系统平台*/(TargetFormat.Msi/*Win安装程序*/, TargetFormat.Exe/*Win执行程序*/, TargetFormat.Dmg/*MacOS安装程序*/,
+            targetFormats/*桌面目标系统平台*/(TargetFormat.Msi/*Win老安装包*/, TargetFormat.Exe/*Win执行包*/, TargetFormat.Dmg/*MacOS安装包*/,
                                               TargetFormat.Rpm/*RedHatLinux软件包*/,TargetFormat.Deb/*DebianLinux软件包*/)
-            packageName="com.nineeditcloud.editletterchat"/*包名*/
+            packageName="辑信"/*包名*/
             packageVersion="1.0.0"/*包版本*/
         }
     }
