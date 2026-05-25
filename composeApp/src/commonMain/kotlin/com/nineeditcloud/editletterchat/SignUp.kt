@@ -136,7 +136,7 @@ class SignUp:Screen {
                         /*在ViewModel或Activity中 scope.launch{} 或 lifecycleScope.launch{}*/
                         lifecycleOwner.lifecycleScope.launch{
                             val result=EditLettrtChat_HTTPApiClient.signUp(username=username, mobilePhoneNum=mobilePhoneNum, password=password)
-                            when(result){
+                            when(result){/*按参数 类型或值 作选择*/
                                 is Result.Success-> {/*结果密封类 中 成功数据类 的类型生效，请求成功，处理accountId*/
                                     try{
                                         /*Room添加 用户账号数据*/

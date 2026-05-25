@@ -50,7 +50,7 @@ composeToast="2.0.0"#1.0.2兼容Kotlin1.0.2，2.0.0兼容Kotlin2.1/2.2、安卓5
 
 filekit="0.12.0"#FileKit跨平台 应用私有路径获取、文件操作 库(仅兼容Kotlin2.1无问题)，0.12.0以上支持 CMP1.9.0及RC版本 安卓5.0 Kotlin2.1/2.2，0.10.0、0.9.8兼容Kotlin2.0，0.11.0对于Kotlin2.0不稳定
 coil="3.0.4"#FileKit-Coil内部底层依赖，3.0.4兼容Kotlin2.0，3.3.0兼容Kotlin2.1/2.2
-kotlinxIo="0.8.0"#0.3.0兼容Kotlin2.0，0.6.0兼容Kotlin2.1，0.8.0兼容Kotlin2.2
+kotlinxIo="0.8.0"#0.3.0兼容Kotlin2.0，0.6.0兼容Kotlin2.1，0.8.0兼容Kotlin2.1/2.2
 okio="3.9.1"#OkIO3.9.1兼容Kotlin2.0、安卓5.0，3.10.2兼容Kotlin2.1，4.x兼容Kotlin2.2+
 kmpFile="0.8.0"
 material3Android = "1.4.0"#KMP0.8.0兼容Kotlin2.0、安卓5.0

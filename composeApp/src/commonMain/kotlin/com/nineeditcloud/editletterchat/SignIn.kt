@@ -126,7 +126,7 @@ class SignIn :Screen{
                     onClick={/*模拟登录过程*/isLoading=true
                         lifecycleOwner.lifecycleScope.launch{
                             val result=EditLettrtChat_HTTPApiClient.signIn(accountId, password)
-                            when(result){
+                            when(result){/*按参数 类型或值 作选择*/
                                 is Result.Success -> {/*请求成功，处理accountId*/
                                     try{
                                         /*Room添加 用户账号数据*/

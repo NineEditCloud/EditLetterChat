@@ -30,6 +30,8 @@ plugins{
 若Gradle丢失，先完全退出AndroidStudio(确保Gradle守护进程已停止)，将C:\Users\Administrator\.gradle\caches 路径下的对应版本gradle文件夹删除，
 重新打开AS，Gradle插件会自动同步并重新下载所有依赖
 
+若清理.gradle文件夹后，build.gradle.kts内容全爆红，点击：File -> 修复IDE -> 重新扫描项目索引 -> 重新打开项目
+
 若 Jvm或安卓 的java包报错，说明JDK丢失，
 点击前往：File → Settings → Build,Execution,Deployment → Build Tools → Gradle → Gradle JVM criteria → Version
 更改一下JDK版本(17或21)，点 Apply(应用) 选项，AndroidStudio会自动下载并保存JDK
