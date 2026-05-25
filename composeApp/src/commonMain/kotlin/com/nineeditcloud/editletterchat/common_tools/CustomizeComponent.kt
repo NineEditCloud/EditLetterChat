@@ -1,4 +1,4 @@
-package com.nineeditcloud.editletterchat
+package com.nineeditcloud.editletterchat.common_tools
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,8 +56,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)->Unit, maxLines:Int=1/*Int.MAX_VALUE无限行数*/,
                                    startIcon/*开头图标*/:@Composable (() -> Unit)?/*接收Comp作为参数 slot模式*/=null,
-                                   startText/*开头文本*/:String="",startOnTap:( ()->Unit )?=null,
-                                   labelText/*标签文本*/:String="",labelTextSize/*标签文本大小*/:TextUnit=13.sp,
+                                   startText/*开头文本*/:String="", startOnTap:( ()->Unit )?=null,
+                                   labelText/*标签文本*/:String="", labelTextSize/*标签文本大小*/:TextUnit=13.sp,
                                    endIcon/*结尾图标*/:@Composable (() -> Unit)? =null,
                                    background:Color=Color.Transparent/*编辑框背景 默认透明*/, shape:Shape=RoundedCornerShape(10.dp)/*形状，默认圆角10.dp*/,
                                    borderColor:Color=Color.Transparent/*边框颜色 默认透明*/, underline:Boolean=false/*下划线，默认不用*/, modifier:Modifier=Modifier,
@@ -127,15 +127,18 @@ fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)
                     }
 
                     Box/*堆叠布局，为方便只设一次左边距 再套层Box*/(Modifier.padding(start=topLabelLeftMargin/*水平开头 动态边距*/) ){
-                        val topLabelAreaWidth/*顶部标签区域宽度-自适应标签文本长度*/=(convertSpToDp/*Sp转Dp*/(labelTextSize)+2.dp)*labelText.length
+                        val topLabelAreaWidth/*顶部标签区域宽度-自适应标签文本长度*/=
+                            if(deviceType()=="Desktop")/*如果是桌面端*/ convertSpToDp/*Sp转Dp*/(labelTextSize)*labelText.length+6.dp
+                            else 3.dp
+                        val placeholder/*占位符*/="一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一"
                         Row(Modifier.padding(top=topPadding)/*契合 编辑框顶部边距(编辑框预留给标签的空间)*/.height(4.dp)
                                 .background(background)
                                 .widthIn(min=if(value!=""||hasFocus) topLabelAreaWidth else 3.dp)/*最小宽度，内部标签显示时自适应增加宽度*/ ){
-//                            if(value!="" || hasFocus)/*内容不为空 或 编辑框被选中 时*/ Lable(labelText)/*使用定义好的标签，以自适应标签宽度，在Windows端 窗口 与 安卓屏幕 尺寸有差别，Compose组件Dp大小单位尺寸会发生改变，会在顶部标签颜色区域 后边重复出现标签文本，不建议 顶部标签区域 这样适应标签长度*/
+                            if(deviceType()!="Desktop")/*若不是桌面端*/ if(value!="" || hasFocus)/*内容不为空 或 编辑框被选中 时*/ Lable(placeholder.take(labelText.length)/*从占位符开头截取字符，根据标签文本长度决定截取字符长度*/)/*使用一个标签，以自适应标签宽度，在Windows端 窗口 与 安卓屏幕 尺寸有差别，Compose组件Dp大小单位尺寸会发生改变，会在顶部标签颜色区域 后边重复出现标签文本，不建议 顶部标签区域 这样适应标签长度*/
                         }/*占据文字所在部分背部边框颜色，以改变样式*/
 
                         Column(horizontalAlignment=Alignment.CenterHorizontally/*子项水平居中*/,
-                               modifier=Modifier.width(width=if(value!=""||hasFocus) topLabelAreaWidth else 3.dp) ){
+                               modifier=Modifier.widthIn(min=if(value!=""||hasFocus) topLabelAreaWidth else 3.dp)/*最小宽度，内部标签显示时自适应增加宽度*/ ){
                             if(value!="" || hasFocus)/*内容不为空 或 编辑框被选中 时*/ Lable(labelText)/*使用定义好的标签*/
                         }
 
@@ -152,7 +155,7 @@ fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)
 
 @Composable
 fun Lable/*标签*/(text:String,fontSize:TextUnit=13.sp){
-    return Text(text,fontSize=fontSize,lineHeight=1.sp,fontWeight=FontWeight.Bold/*字体粗细 粗*/, color=MaterialTheme.colorScheme.onSurface)
+    return Text(text,fontSize=fontSize,lineHeight=0.1.sp,fontWeight=FontWeight.Bold/*字体粗细 粗*/, color=MaterialTheme.colorScheme.onSurface)
 }
 
 @Composable

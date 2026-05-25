@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,12 @@ var doesAnAccountExist=false
 class StartupLoading:Screen{
     @Composable
     override fun Content(){
+//        DisposableEffect(Unit){/*进入界面时*/
+//            hideSystemBars()/*隐藏系统导航栏*/
+//            onDispose{/*离开界面时*/
+//                showSystemBars()/*显示系统导航栏*/
+//            }
+//        }
         Box/*堆叠布局，方便以后再加跳转计时等组件*/(Modifier.fillMaxSize().background(Color(0xFFFDFDFD))/*包裹布局与背景图组件相同底色*/){
             Image/*背部图片*/(painterResource(Res.drawable.image00_upscale_4x/*辑信启动图片原高度660.dp左右*/), contentDescription="启动加载界面图片",
                               Modifier.fillMaxWidth()/*填充容器全部宽度*/.align(Alignment.BottomCenter)/*在Box中 垂直居底 水平居中*/,
@@ -68,6 +75,10 @@ class StartupLoading:Screen{
     }
 }
 
+//@Composable
+//expect fun hideSystemNavBars/*隐藏系统导航栏-跨平台期望函数*/()
+//@Composable
+//expect fun showSystemNavBars/*显示系统导航栏-跨平台期望函数*/()
 
 
 

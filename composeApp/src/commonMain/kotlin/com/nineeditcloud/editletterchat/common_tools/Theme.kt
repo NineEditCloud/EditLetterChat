@@ -1,4 +1,4 @@
-package com.nineeditcloud.editletterchat
+package com.nineeditcloud.editletterchat.common_tools
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape

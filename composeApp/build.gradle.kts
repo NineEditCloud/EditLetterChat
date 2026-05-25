@@ -21,6 +21,8 @@ plugins{
 
 //    alias(libs.plugins.exoquery)/*应用 ExoQuery插件*/
 //    alias(libs.plugins.multiplatform.mokoResources)/*应用 MokoResources综合资源库 插件*/
+//    kotlin("plugin.serialization") version "${libs.versions.kotlin.get()}"/*应用Kotlin-serialization序列化插件*/
+    alias(libs.plugins.kotlin.serialization)/*应用 Kotlin-serialization序列化插件*/
 }
 /*若依赖丢失导致项目报错，请先连接VPN，点击 Gradle -> 重新加载所有Gradle项目，等待依赖下载完成，
 在顶部菜单点击 文件 -> 从磁盘全部重新加载 (或快捷键Ctrl+Alt+Y)
@@ -173,14 +175,15 @@ kotlin{
 
 
 
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${libs.versions.kotlinx.get()}")/*Kotlin序列化库-跨平台，ExoQuery和JSON所需依赖，包含JSON等 编解码/序列化/反序列化*/
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${libs.versions.kotlinx.get()}")/*Kotlin序列化核心库-跨平台，ExoQuery和JSON所需依赖，*/
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${libs.versions.kotlinx.get()}")/*Kotlin序列化-Json，包含JSON 编解码/序列化/反序列化*/
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.kotlinx.get()}")/*Kotlin协程-跨平台核心(为各平台分配协程依赖或内置主线程调度器，内置Kotlin/Native作为IOS依赖)，Room内部依赖需要，各平台依赖提供Dispatchers.Main，可在后台线程做复杂操作，并自动回到主线程更新UI*/
 
             implementation("io.ktor:ktor-client-core:${libs.versions.ktor.get()}")/*Ktor-客户端功能共享核心，不带引擎*/
 //            implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")/*Ktor-CIO 纯Kotlin跨平台通用网路请求引擎(建议给各平台加各自的，不加的话HttpClient方法传CIO)，或apache、java*/
             implementation("io.ktor:ktor-network:${libs.versions.ktor.get()}")/*Ktor-Network模块，提供原始TCP和UDP 套接字支持*/
             implementation("io.ktor:ktor-client-content-negotiation:${libs.versions.ktor.get()}")/*Ktor-内容协商*/
-            implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")/*Ktor协商-序列化JSON(需内容协商)*/
+            implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")/*Ktor协商-serialization适配器-序列化JSON(需内容协商)*/
 
             implementation("androidx.room:room-runtime:${libs.versions.room.get()}")/*Room核心库，Room2.x会导致KSP反射Bug，3.x不兼容安卓5.0*/
             implementation("androidx.sqlite:sqlite-bundled")/*SQLite数据库依赖*/
@@ -209,6 +212,7 @@ kotlin{
         androidMain.dependencies/*安卓依赖*/{
             implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.composeMultiplatform.get()}")/*Compose 1.9.0-rc01版本兼容安卓5.0，但不兼容IOS*/
             implementation("androidx.activity:activity-compose:1.11.0")/*安卓专用工具库，1.11.0版本兼容安卓5.0，绝对不可更改为更高版本！！！*/
+            implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")/*安卓系统栏透明库，0.36.0兼容安卓5.0*/
 
 
 
@@ -222,11 +226,12 @@ kotlin{
 //            implementation("com.h2database:h2:2.1.214")/*数据库驱动，以H2为例*/
         }
         iosMain.dependencies/*IOS端依赖*/{
+//            implementation("org.jetbrains.compose.window:window:${libs.versions.composeMultiplatform.get()}")
+
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
 
 //            implementation("com.ctrip.sqllin:sqllin-dsl:${libs.versions.sqllin.get()}")/*SQLlin，跨平台且方便分库分表的DSL数据库框架，KSP用于编译时生成代码，dsl模块已包含必要注解，无需额外添加*/
 //            implementation("com.ctrip.sqllin:sqllin-driver:${libs.versions.sqllin.get()}")/*一套通用的多平台SQLite低阶API，DSL的底层依赖*/
-
         }
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{
@@ -240,7 +245,6 @@ kotlin{
 //            implementation("com.ctrip.sqllin:sqllin-driver:${libs.versions.sqllin.get()}")/*一套通用的多平台SQLite低阶API，DSL的底层依赖*/
 //            implementation("io.exoquery:exoquery-runner-jdbc:${libs.versions.exoqueryRun.get()}")/*JVM runner*/
 //            implementation("org.postgresql:postgresql:42.7.0")/*JDBC驱动*/
-
         }
 
         nativeMain.dependencies/*Kotlin/Native IOS/MacOS/Linux*/{
@@ -286,7 +290,6 @@ dependencies/*可用于部分平台调用的共享依赖*/{
     }
     /*在AndroidX库的更新中，collection-ktx的功能已被合并进了collection主要库中，Room2.7.0内部仍然请求的是collection-ktx，所以需强制所有依赖底层用旧版collection-ktx库*/
 //    implementation("androidx.collection:collection:1.2.0")/*强制所有依赖底层用指定的 collection库版本，避免版本冲突*/
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${libs.versions.kotlinx.get()}")/*Kotlin协程，Room内部依赖需要*/
 
 //    implementation("com.attafitamim.kabin:compiler:${libs.versions.kabin.get()}")/*Kabin编译库*/
 

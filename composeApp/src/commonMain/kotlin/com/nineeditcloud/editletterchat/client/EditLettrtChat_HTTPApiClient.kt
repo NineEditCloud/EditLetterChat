@@ -1,5 +1,6 @@
 package com.nineeditcloud.editletterchat.client
 
+import com.nineeditcloud.editletterchat.common_tools.Log
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
@@ -10,12 +11,14 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.handleCoroutineException
 import kotlinx.serialization.serializer
 
 object EditLettrtChat_HTTPApiClient{
     private val client=HttpClient()/* Ktor跨平台客户端实例(引擎根据平台自动选择 若未完整添加Ktor各平台适配依赖可能出现兼容问题异常闪退) */
     private val json=Json{/* 使用 kotlinx.serialization 替换 Gson */
         ignoreUnknownKeys=true      /* 忽略服务端返回的未知字段 */
+        prettyPrint = true
         isLenient=true              /* 宽松解析，如允许单引号 */
     }
     private val jsonType/*JSON请求头类型*/="application/json; charset=UTF-8"
@@ -24,7 +27,7 @@ object EditLettrtChat_HTTPApiClient{
         return withContext(Dispatchers.IO){/*在IO协程线程执行网络请求*/
             val jsonType1="application/json; charset=UTF-8"/*Json 内容类型信息，UTF-8编码*/
             val multipartFormdata="multipart/form-data; charset=UTF-8"/*多部分/表单 内容类型信息*/
-            val contentType=if (type == "json") jsonType1 else multipartFormdata
+            val contentType=if(type=="json") jsonType1 else multipartFormdata
 
             try{
                 val response:HttpResponse=client.post("http://192.168.1.47:8080${uri}"){
@@ -53,7 +56,8 @@ object EditLettrtChat_HTTPApiClient{
             }catch(e:Exception){/*请求异常，说明服务端不存在于可访问的网络(也可能服务器内存问题导致上次服务程序进程没关掉 占用了端口 本次服务程序进程没监听到对应端口 实在不行重启电脑)，或客户端执行报错问题*/
                 Result.Error("连接异常:\n${e.message}")/*调用结果密封类中的 错误类型生效，并传递 消息 参数*/
 //                e.printStackTrace()  /*在 logcat / 控制台 查看具体异常类型和消息*/
-            }
+                Log.e("Ktor连接异常", e.message!!, e)/*在LogCat/控制台 打印 具体异常类型和消息，使用 tag:System.out 过滤*/
+            }as Result
         }
     }
 
@@ -61,16 +65,16 @@ object EditLettrtChat_HTTPApiClient{
         val jsonStr/*Json数据*/=json.encodeToString(serializer(), mapOf(
             "username" to username,
             "mobilePhoneNum" to mobilePhoneNum,
-            "password" to password
-                                                                       )) /*转为请求主体，使用 kotlinx.serialization 生成 JSON */
+            "password" to password,
+            ) ) /*转为请求主体，使用 kotlinx.serialization 生成 JSON */
         return post("/signup", jsonStr)
     }
 
     suspend fun signIn/*登录*/(id:String, password:String):Result{
         val jsonStr/*Json数据*/ = json.encodeToString(serializer(), mapOf(
             "id" to id,
-            "password" to password
-                                                                         )) /*转为请求主体*/
+            "password" to password,
+            ) ) /*转为请求主体*/
         return post("/signin", jsonStr)
     }
 
@@ -78,8 +82,8 @@ object EditLettrtChat_HTTPApiClient{
         val jsonStr/*Json数据*/=json.encodeToString(serializer(), mapOf(
             "id" to id,
             "password" to password,
-            "newPassword" to newPassword
-                                                                         )) /*转为请求主体*/
+            "newPassword" to newPassword,
+            ) ) /*转为请求主体*/
         return post("/update_password", jsonStr)
     }
 
@@ -88,8 +92,8 @@ object EditLettrtChat_HTTPApiClient{
             "id" to id,
             "token" to token,
             "username" to username,
-            "mobilePhoneNum" to mobilePhoneNum
-                                                                         ))
+            "mobilePhoneNum" to mobilePhoneNum,
+            ) )
         if (avatarPath.isNotEmpty() ){/*如果头像路径不为空，选择了头像*/
             val avatarBytes = FileKit.readBytes(avatarPath)/* 使用跨平台文件库 FileKit 读取字节，避免 java.io.File */
             val requestBody=formData{/* 构建 multipart/form-data 请求体 */
@@ -125,8 +129,8 @@ data class Response/*响应，数据类*/(/*Serializable库的JSON数据模型�
     val accountId:String="",/*账号，成功时必有值，失败时可能无此字段*/
     val username:String="",/*用户名*/
     val mobilePhoneNum:String="",/*手机号*/
-    val token:String=""/*Token令牌，成功时必有值，失败时可能无此字段*/
-                             )
+    val token:String=""/*Token令牌，成功时必有值，失败时可能无此字段*/,
+    )
 
 sealed class Result/*结果 密封类，当被调用其中一个数据类时，密封类的类型 只有被调用的数据类 类型，返回的密封类 中只有 被调用的数据类*/{
     data class Success/*成功 数据类*/(val accountId:String, val token:String):Result()

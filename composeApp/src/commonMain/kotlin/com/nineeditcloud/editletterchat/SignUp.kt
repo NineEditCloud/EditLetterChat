@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
 import com.nineeditcloud.editletterchat.client.Result
+import com.nineeditcloud.editletterchat.common_tools.EditBox
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
 import com.nineeditcloud.editletterchat.database.getDatabase
 import io.github.tbib.compose_toast.native_toast.NativeShowToast
@@ -78,37 +79,55 @@ class SignUp:Screen {
                              style=TextStyle(brush=Brush.horizontalGradient(listOf(Color(0xFF6933CC),Color.Blue))/*渐变色(蓝紫色变蓝色)*/)
                             )
 
-                EditBox/*昵称编辑框*/(value=username, onValueChange={ username=it },
+                EditBox/*昵称编辑框*/(value=username,
+                                      onValueChange={ username=it },
                                       startIcon={
-                                          Icon(Icons.Default.Person, contentDescription="头像图标",
-                                               Modifier.size(34.dp).clip(RoundedCornerShape(50.dp))/*裁剪内容(包括此组件的图片)为圆角*/)
-                                                },
-                                      labelText="昵称", background=editBoxBackground,
-                                      borderColor=editBoxBorder, underline=true/*启用下划线*/, modifier=Modifier.padding(bottom=10.dp))
-                EditBox/*手机号编辑框*/(value=mobilePhoneNum, onValueChange={ mobilePhoneNum=it }, startText=areaCode,
-                                        startOnTap={
-//                                            Toast.makeText(context,"手机号区号", Toast.LENGTH_LONG).show()
-                                        },
-                                        labelText="手机号", inputType=KeyboardType.Phone/*输入类型 手机号*/, background=editBoxBackground,
-                                        borderColor=editBoxBorder, underline=true, modifier=Modifier.padding(bottom=10.dp))
-                /*Icon图标组件有两种图标资源，矢量图imageVector 和 绘画图片资源painter*/
-                EditBox/*密码编辑框*/(value=password, onValueChange={ password=it },
-                                      startIcon={
-                                          Icon(Icons.Default.Lock, contentDescription="密码图标",
-                                               Modifier.size(30.dp).clip(RoundedCornerShape(50.dp))/*裁剪内容(包括此组件的图片)为圆角*/)
+                                          Icon(Icons.Default.Person,
+                                               contentDescription="头像图标",
+                                               Modifier.size(34.dp)
+                                                   .clip(RoundedCornerShape(50.dp))/*裁剪内容(包括此组件的图片)为圆角*/)
                                       },
-                                      labelText="密码", inputType=KeyboardType.Password/*输入类型 密码*/,
+                                      labelText="昵称",
+                                      background=editBoxBackground,
+                                      borderColor=editBoxBorder,
+                                      underline=true/*启用下划线*/,
+                                      modifier=Modifier.padding(bottom=10.dp))
+                EditBox/*手机号编辑框*/(value=mobilePhoneNum,
+                                        onValueChange={ mobilePhoneNum=it },
+                                        startText=areaCode,
+                                        startOnTap={ //                                            Toast.makeText(context,"手机号区号", Toast.LENGTH_LONG).show()
+                                        },
+                                        labelText="手机号",
+                                        inputType=KeyboardType.Phone/*输入类型 手机号*/,
+                                        background=editBoxBackground,
+                                        borderColor=editBoxBorder,
+                                        underline=true,
+                                        modifier=Modifier.padding(bottom=10.dp))
+                /*Icon图标组件有两种图标资源，矢量图imageVector 和 绘画图片资源painter*/
+                EditBox/*密码编辑框*/(value=password,
+                                      onValueChange={ password=it },
+                                      startIcon={
+                                          Icon(Icons.Default.Lock,
+                                               contentDescription="密码图标",
+                                               Modifier.size(30.dp)
+                                                   .clip(RoundedCornerShape(50.dp))/*裁剪内容(包括此组件的图片)为圆角*/)
+                                      },
+                                      labelText="密码",
+                                      inputType=KeyboardType.Password/*输入类型 密码*/,
                                       endIcon={
                                           Icon(imageVector=if(passwordVisible) Octicons.Eye16 else Octicons.EyeClosed16,
                                                contentDescription="显示/隐藏 密码 视觉切换 图标",
-                                               Modifier.pointerInput/*指针输入事件(无涟漪效果)*/(Unit) {
+                                               Modifier.pointerInput/*指针输入事件(无涟漪效果)*/(
+                                                   Unit) {
                                                    detectTapGestures/*识别点击手势*/(onTap/*点击*/={
                                                        passwordVisible=!passwordVisible/*切换密码可见状态*/
                                                    })
                                                })
                                       },
                                       contentVisualStatus=passwordVisible/*绑定内容视觉状态对象*/,
-                                      background=editBoxBackground, borderColor=editBoxBorder, modifier=Modifier.padding(bottom=32.dp))
+                                      background=editBoxBackground,
+                                      borderColor=editBoxBorder,
+                                      modifier=Modifier.padding(bottom=32.dp))
 
                 Button/*注册按钮*/(onClick={
                     if(username.isNotBlank() && mobilePhoneNum.isNotBlank() && password.length>=6)/*简单的表单验证*/ {

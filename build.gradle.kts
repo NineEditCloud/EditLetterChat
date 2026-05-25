@@ -19,4 +19,6 @@ plugins {
 
 //    id("dev.icerock.mobile.multiplatform-resources") version "${libs.versions.mokoResources.get()}" apply false/*引入 MokoResources综合资源库 插件*/
 //    alias(libs.plugins.mokoResources) apply false/*引入 MokoResources综合资源库 插件*/
+
+    alias(libs.plugins.kotlin.serialization)apply false/*引入 Kotlin-serialization序列化插件*/
 }
