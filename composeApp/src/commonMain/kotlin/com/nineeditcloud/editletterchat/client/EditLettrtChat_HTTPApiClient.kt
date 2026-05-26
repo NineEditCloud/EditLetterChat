@@ -15,12 +15,12 @@ import kotlinx.serialization.serializer
 
 object EditLettrtChat_HTTPApiClient{
     private val client=HttpClient()/* Ktor跨平台客户端实例(引擎根据平台自动选择 若未完整添加Ktor各平台适配依赖可能出现兼容问题异常闪退) */
-    private val json=Json{/* 使用 kotlinx.serialization 替换 Gson */
+    private val json=Json{/*用跨平台kotlinx.serialization(代替谷歌Gson) */
         ignoreUnknownKeys=true      /* 忽略服务端返回的未知字段 */
-        prettyPrint = true
+        prettyPrint=true
         isLenient=true              /* 宽松解析，如允许单引号 */
     }
-    private val jsonType/*JSON请求头类型*/="application/json; charset=UTF-8"
+//    private val jsonType/*JSON请求头类型*/="application/json; charset=UTF-8"
 
     suspend fun post(uri/*路径*/:String, requestBody:Any, type:String="json"/*接收请求类型，默认为json*/):Result/*返回所用的密封类对象*/{
         return/*将withContext代码块 最后执行结果(必须和方法返回值类型相同) 作为当前方法返回值*/ withContext(Dispatchers.IO){/*在IO协程线程执行网络请求*/
@@ -31,14 +31,12 @@ object EditLettrtChat_HTTPApiClient{
             try{
                 val response:HttpResponse=client.post("http://192.168.1.47:8080${uri}"){
                     header(HttpHeaders.ContentType, contentType)
-
                     when(requestBody){/* 根据请求体类型设置 body */
                         is String ->                    setBody(requestBody)/* JSON字符串 */
                         is MultiPartFormDataContent ->  setBody(requestBody)/* 多部分表单 */
                         else -> throw IllegalArgumentException("不支持的请求体类型")
                     }
                 }
-
                 val body=response.bodyAsText()
                 val resp=json.decodeFromString<Response>(body)
 
