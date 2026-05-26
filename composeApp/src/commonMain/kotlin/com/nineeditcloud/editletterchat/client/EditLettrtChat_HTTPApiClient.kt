@@ -23,7 +23,7 @@ object EditLettrtChat_HTTPApiClient{
     private val jsonType/*JSON请求头类型*/="application/json; charset=UTF-8"
 
     suspend fun post(uri/*路径*/:String, requestBody:Any, type:String="json"/*接收请求类型，默认为json*/):Result/*返回所用的密封类对象*/{
-        return withContext(Dispatchers.IO){/*在IO协程线程执行网络请求*/
+        return/*将withContext代码块 最后执行结果(必须和方法返回值类型相同) 作为当前方法返回值*/ withContext(Dispatchers.IO){/*在IO协程线程执行网络请求*/
             val jsonType1="application/json; charset=UTF-8"/*Json 内容类型信息，UTF-8编码*/
             val multipartFormdata="multipart/form-data; charset=UTF-8"/*多部分/表单 内容类型信息*/
             val contentType=if(type=="json") jsonType1 else multipartFormdata
@@ -54,9 +54,9 @@ object EditLettrtChat_HTTPApiClient{
                 }
             }catch(e:Exception){/*请求异常，说明服务端不存在于可访问的网络(也可能服务器内存问题导致上次服务程序进程没关掉 占用了端口 本次服务程序进程没监听到对应端口 实在不行重启电脑)，或客户端执行报错问题*/
 //                e.printStackTrace()/*在 logcat/控制台 查看具体异常类型和消息*/
-                Log.e("Ktor连接异常", e.message!!, e)/*在LogCat/控制台 打印 具体异常类型和消息，使用 tag:System.out 过滤，注意，不要放在末尾，否则会作为返回值 影响正确的返回值*/
+                Log.e("Ktor连接异常", e.message!!, e)/*在LogCat/控制台 打印 具体异常类型和消息(使用 tag:System.out 过滤)，注意 别放在代码块末尾 否则会当作返回值 影响正确的返回值，由于将withContext代码块 最后执行结果作为返回值 所以不能把与当前方法返回值类型不同的执行结果放在 子代码块的最后执行*/
                 Result.Error("连接异常:\n${e.message}")/*调用结果密封类中的 错误类型生效，并传递 消息 参数*/
-            }as Result/*由于此IO线程直接将执行结果出返回值，将catch块的返回值 强制转换为Result类型*/
+            }as Result/*由于此IO线程直接将最后执行结果作为返回值，将catch块的最后执行结果 强制转换为Result类型，若强制将两种无法转换的类型转换会造成错误 进程崩溃*/
         }
     }
 

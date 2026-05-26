@@ -369,11 +369,11 @@ android/*安卓目标配置*/{
 //    experimentalProperties["android.experimental.kmp.enableAndroidResources"]=true/*实验性功能：将commonMain的资源 合并为Android资源*/
 }
 
-compose.desktop/*Compose桌面目标配置*/{
+compose.desktop/*Compose桌面目标配置*/{/*JVM桌面端建议使用JBR17*/
     application/*应用*/{
         mainClass="com.nineeditcloud.editletterchat.MainKt"/*主类*/
         nativeDistributions{
-            targetFormats/*桌面目标系统平台*/(TargetFormat.Msi/*Win老安装包*/, TargetFormat.Exe/*Win执行包*/, TargetFormat.Dmg/*MacOS安装包*/,
+            targetFormats/*桌面目标系统平台*/(TargetFormat.Msi/*Win安装包*/, TargetFormat.Exe/*Win执行包*/, TargetFormat.Dmg/*MacOS安装包*/,
                                               TargetFormat.Rpm/*RedHatLinux软件包*/,TargetFormat.Deb/*DebianLinux软件包*/)
             packageName="EditLetterChat"/*包名，含中文时build.gradle.kts配置文件要用GBK中文编码？*/
             packageVersion="1.0.0"/*包版本*/
