@@ -34,7 +34,7 @@ import compose.icons.octicons.EyeClosed16
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
+import com.nineeditcloud.editletterchat.client.HTTPClient
 import com.nineeditcloud.editletterchat.client.Result
 import com.nineeditcloud.editletterchat.common_tools.EditBox
 import com.nineeditcloud.editletterchat.common_tools.Log
@@ -135,7 +135,7 @@ class SignUp:Screen {
                         isLoading=true/*登录请求等待反馈时 将按钮 设为不可点击状态*/
                         /*在ViewModel或Activity中 scope.launch{} 或 lifecycleScope.launch{}*/
                         lifecycleOwner.lifecycleScope.launch{
-                            val result=EditLettrtChat_HTTPApiClient.signUp(username=username, mobilePhoneNum=mobilePhoneNum, password=password)
+                            val result=HTTPClient.signUp(username=username, mobilePhoneNum=mobilePhoneNum, password=password)
                             when(result){/*按参数 类型或值 作选择*/
                                 is Result.Success-> {/*结果密封类 中 成功数据类 的类型生效，请求成功，处理accountId*/
                                     try{

@@ -13,7 +13,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.coroutines.IO
 import kotlinx.serialization.serializer
 
-object EditLettrtChat_HTTPApiClient{
+/*用Ktor跨平台网络请求框架写的-HTTP客户端*/
+
+object HTTPClient{
     private val client=HttpClient()/* Ktor跨平台客户端实例(引擎根据平台自动选择 若未完整添加Ktor各平台适配依赖可能出现兼容问题异常闪退) */
     private val json=Json{/*用跨平台kotlinx.serialization(代替谷歌Gson) */
         ignoreUnknownKeys=true      /* 忽略服务端返回的未知字段 */
@@ -52,7 +54,7 @@ object EditLettrtChat_HTTPApiClient{
                 }
             }catch(e:Exception){/*请求异常，说明服务端不存在于可访问的网络(也可能服务器内存问题导致上次服务程序进程没关掉 占用了端口 本次服务程序进程没监听到对应端口 实在不行重启电脑)，或客户端执行报错问题*/
 //                e.printStackTrace()/*在 logcat/控制台 查看具体异常类型和消息*/
-                Log.e("Ktor连接异常", e.message!!, e)/*在LogCat/控制台 打印 具体异常类型和消息(使用 tag:System.out 过滤)，注意 别放在代码块末尾 否则会当作返回值 影响正确的返回值，由于将withContext代码块 最后执行结果作为返回值 所以不能把与当前方法返回值类型不同的执行结果放在 子代码块的最后执行*/
+                Log.e("Ktor连接异常", e.message!!, e)/*在LogCat或控制台 打印 具体异常类型和消息(使用 tag:System.out 过滤查看)，注意 别放在代码块末尾 否则会当作返回值 影响正确的返回值，由于将withContext代码块 最后执行结果作为返回值 所以不能把与当前方法返回值类型不同的执行结果放在 子代码块的最后执行*/
                 Result.Error("连接异常:\n${e.message}")/*调用结果密封类中的 错误类型生效，并传递 消息 参数*/
             }as Result/*将catch块的最后执行结果 强制转换为Result类型，此IO线程直接将最后执行结果作为返回值，若强制将两种无法转换的类型转换会造成错误 进程崩溃，若此处as Result代码灰色 表示检查到最后执行结果与方法返回值相同*/
         }

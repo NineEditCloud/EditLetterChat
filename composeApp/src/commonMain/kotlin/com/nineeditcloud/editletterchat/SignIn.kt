@@ -33,7 +33,7 @@ import compose.icons.octicons.EyeClosed16
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.nineeditcloud.editletterchat.client.EditLettrtChat_HTTPApiClient
+import com.nineeditcloud.editletterchat.client.HTTPClient
 import com.nineeditcloud.editletterchat.client.Result
 import com.nineeditcloud.editletterchat.common_tools.EditBox
 import com.nineeditcloud.editletterchat.common_tools.Log
@@ -125,7 +125,7 @@ class SignIn :Screen{
                 Button/*登录按钮*/(
                     onClick={/*模拟登录过程*/isLoading=true
                         lifecycleOwner.lifecycleScope.launch{
-                            val result=EditLettrtChat_HTTPApiClient.signIn(accountId, password)
+                            val result=HTTPClient.signIn(accountId, password)
                             when(result){/*按参数 类型或值 作选择*/
                                 is Result.Success -> {/*请求成功，处理accountId*/
                                     try{
