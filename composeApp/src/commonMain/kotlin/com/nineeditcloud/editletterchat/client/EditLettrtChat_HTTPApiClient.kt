@@ -56,7 +56,7 @@ object EditLettrtChat_HTTPApiClient{
 //                e.printStackTrace()/*在 logcat/控制台 查看具体异常类型和消息*/
                 Log.e("Ktor连接异常", e.message!!, e)/*在LogCat/控制台 打印 具体异常类型和消息(使用 tag:System.out 过滤)，注意 别放在代码块末尾 否则会当作返回值 影响正确的返回值，由于将withContext代码块 最后执行结果作为返回值 所以不能把与当前方法返回值类型不同的执行结果放在 子代码块的最后执行*/
                 Result.Error("连接异常:\n${e.message}")/*调用结果密封类中的 错误类型生效，并传递 消息 参数*/
-            }as Result/*由于此IO线程直接将最后执行结果作为返回值，将catch块的最后执行结果 强制转换为Result类型，若强制将两种无法转换的类型转换会造成错误 进程崩溃*/
+            }as Result/*将catch块的最后执行结果 强制转换为Result类型，此IO线程直接将最后执行结果作为返回值，若强制将两种无法转换的类型转换会造成错误 进程崩溃，若此处as Result代码灰色 表示检查到最后执行结果与方法返回值相同*/
         }
     }
 
