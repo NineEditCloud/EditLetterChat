@@ -1,6 +1,6 @@
 //@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 
-package com.nineeditcloud.editletterchat
+package com.nineeditcloud.editletterchat.common_tools
 
 /*跨平台预览注解声明*/
 //@Target(AnnotationTarget.FUNCTION)

@@ -91,12 +91,10 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-//import com.nineeditcloud.editletterchat.database.getDatabase
+import com.nineeditcloud.editletterchat.common_tools.filesPath //import com.nineeditcloud.editletterchat.database.getDatabase
 import compose.icons.Octicons
 import compose.icons.octicons.DeviceCamera16
 import compose.icons.octicons.File16
@@ -107,14 +105,10 @@ import editletterchat.composeapp.generated.resources.name_edit
 import editletterchat.composeapp.generated.resources.new_user
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.ImageFormat
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.absolutePath
-import io.github.vinceglb.filekit.cacheDir
 import io.github.vinceglb.filekit.compressImage
 import io.github.vinceglb.filekit.createDirectories
 import io.github.vinceglb.filekit.dialogs.compose.util.encodeToByteArray
 import io.github.vinceglb.filekit.div
-import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.path
 import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.CoroutineScope

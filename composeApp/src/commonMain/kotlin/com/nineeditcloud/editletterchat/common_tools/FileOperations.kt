@@ -1,4 +1,4 @@
-package com.nineeditcloud.editletterchat
+package com.nineeditcloud.editletterchat.common_tools
 
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
