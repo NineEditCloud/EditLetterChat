@@ -28,13 +28,13 @@ import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.nineeditcloud.editletterchat.client.HTTPAccount_Client
 import compose.icons.Octicons
 import compose.icons.octicons.Eye16
 import compose.icons.octicons.EyeClosed16
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.nineeditcloud.editletterchat.client.HTTPClient
 import com.nineeditcloud.editletterchat.client.Result
 import com.nineeditcloud.editletterchat.common_tools.EditBox
 import com.nineeditcloud.editletterchat.common_tools.Log
@@ -42,7 +42,6 @@ import com.nineeditcloud.editletterchat.database.UserAccountLocalData
 import com.nineeditcloud.editletterchat.database.getDatabase
 import io.github.tbib.compose_toast.native_toast.NativeShowToast
 import io.github.tbib.compose_toast.native_toast.NativeToastType
-
 //import com.nineeditcloud.editletterchat.database.addData
 
 /*注册界面*/
@@ -63,10 +62,8 @@ class SignUp:Screen {
 
 
         val backgroundColor=if(!isSystemInDarkTheme()) Color(0xFFEEF2FD) else Color(0xFF1C1E1F)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
-        //    val color=Brush.horizontalGradient(listOf(Color(0xFF6933CC),Color.Magenta, Color.Blue,Color.Cyan,
-        //        Color.Green,Color.Yellow,Color(0xFFFFA500),Color.Red))/*渐变色(蓝紫色 紫蓝青绿黄橙红)*/
-        val editBoxBackground=if(!isSystemInDarkTheme()) Color.White else Color(0xED2B2D30)
-        val editBoxBorder=if(!isSystemInDarkTheme()) Color(0xED2B2D30) else Color.White
+//        val color=Brush.horizontalGradient(listOf(Color(0xFF6933CC),Color.Magenta, Color.Blue,Color.Cyan,
+//                                                  Color.Green,Color.Yellow,Color(0xFFFFA500),Color.Red))/*渐变色(蓝紫色 紫蓝青绿黄橙红)*/
 
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
 
@@ -89,8 +86,6 @@ class SignUp:Screen {
                                                    .clip(RoundedCornerShape(50.dp))/*裁剪内容(包括此组件的图片)为圆角*/)
                                       },
                                       labelText="昵称",
-                                      background=editBoxBackground,
-                                      borderColor=editBoxBorder,
                                       underline=true/*启用下划线*/,
                                       modifier=Modifier.padding(bottom=10.dp))
                 EditBox/*手机号编辑框*/(value=mobilePhoneNum,
@@ -100,8 +95,6 @@ class SignUp:Screen {
                                         },
                                         labelText="手机号",
                                         inputType=KeyboardType.Phone/*输入类型 手机号*/,
-                                        background=editBoxBackground,
-                                        borderColor=editBoxBorder,
                                         underline=true,
                                         modifier=Modifier.padding(bottom=10.dp))
                 /*Icon图标组件有两种图标资源，矢量图imageVector 和 绘画图片资源painter*/
@@ -126,8 +119,6 @@ class SignUp:Screen {
                                                })
                                       },
                                       contentVisualStatus=passwordVisible/*绑定内容视觉状态对象*/,
-                                      background=editBoxBackground,
-                                      borderColor=editBoxBorder,
                                       modifier=Modifier.padding(bottom=32.dp))
 
                 Button/*注册按钮*/(onClick={
@@ -135,7 +126,7 @@ class SignUp:Screen {
                         isLoading=true/*登录请求等待反馈时 将按钮 设为不可点击状态*/
                         /*在ViewModel或Activity中 scope.launch{} 或 lifecycleScope.launch{}*/
                         lifecycleOwner.lifecycleScope.launch{
-                            val result=HTTPClient.signUp(username=username, mobilePhoneNum=mobilePhoneNum, password=password)
+                            val result=HTTPAccount_Client.signUp(username=username, mobilePhoneNum=mobilePhoneNum, password=password)
                             when(result){/*按参数 类型或值 作选择*/
                                 is Result.Success-> {/*结果密封类 中 成功数据类 的类型生效，请求成功，处理accountId*/
                                     try{

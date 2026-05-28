@@ -27,13 +27,13 @@ import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.nineeditcloud.editletterchat.client.HTTPAccount_Client
 import compose.icons.Octicons
 import compose.icons.octicons.Eye16
 import compose.icons.octicons.EyeClosed16
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.nineeditcloud.editletterchat.client.HTTPClient
 import com.nineeditcloud.editletterchat.client.Result
 import com.nineeditcloud.editletterchat.common_tools.EditBox
 import com.nineeditcloud.editletterchat.common_tools.Log
@@ -53,15 +53,13 @@ class SignIn :Screen{
         var passwordVisible by remember { mutableStateOf(false) }
         var isLoading by remember { mutableStateOf(false) }
 
-        //    val scope=rememberCoroutineScope()/*协程*/
+//        val scope=rememberCoroutineScope()/*协程*/
         val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
 
 
         val backgroundColor=if(!isSystemInDarkTheme()) Color(0xFFEEF2FD) else Color(0xFF1C1E1F)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
-        //    val color=Brush.horizontalGradient(listOf(Color(0xFF6933CC),Color.Magenta, Color.Blue,Color.Cyan,
-        //        Color.Green,Color.Yellow,Color(0xFFFFA500),Color.Red))/*渐变色(蓝紫色 紫蓝青绿黄橙红)*/
-        val editBoxBackground=if(!isSystemInDarkTheme()) Color.White else Color(0xED2B2D30)
-        val editBoxBorder=if(!isSystemInDarkTheme()) Color(0xED2B2D30) else Color.White
+//        val color=Brush.horizontalGradient(listOf(Color(0xFF6933CC),Color.Magenta, Color.Blue,Color.Cyan,
+//                                                  Color.Green,Color.Yellow,Color(0xFFFFA500),Color.Red) )/*渐变色(蓝紫色 紫蓝青绿黄橙红)*/
 
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
 
@@ -94,8 +92,6 @@ class SignIn :Screen{
                                       },
                                       labelText/*标签文本*/="账号",
                                       inputType=KeyboardType.Number/*输入类型 数字账号*/,
-                                      background=editBoxBackground,
-                                      borderColor=editBoxBorder,
                                       modifier=Modifier.padding(bottom=10.dp))
                 EditBox/*密码编辑框*/(value=password,
                                       onValueChange={ password=it },
@@ -118,14 +114,12 @@ class SignIn :Screen{
                                                })
                                       },
                                       contentVisualStatus=passwordVisible,
-                                      background=editBoxBackground,
-                                      borderColor=editBoxBorder,
                                       modifier=Modifier.padding(bottom=24.dp))
 
                 Button/*登录按钮*/(
                     onClick={/*模拟登录过程*/isLoading=true
                         lifecycleOwner.lifecycleScope.launch{
-                            val result=HTTPClient.signIn(accountId, password)
+                            val result=HTTPAccount_Client.signIn(accountId, password)
                             when(result){/*按参数 类型或值 作选择*/
                                 is Result.Success -> {/*请求成功，处理accountId*/
                                     try{

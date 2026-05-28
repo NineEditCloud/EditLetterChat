@@ -278,7 +278,7 @@ dependencies/*可用于部分平台调用的共享依赖*/{
 //    implementation("org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}")/*Kotlin标准库*/
 //    implementation("org.jetbrains.kotlin:kotlin-reflect:${libs.versions.kotlin.get()}")/*Kotlin反射依赖，KSP必须！！！*/
     implementation(kotlin("stdlib"))/*Kotlin标准库，用Kotlin插件添加对应版本*/
-    implementation(kotlin("reflect"))/*Kotlin反射依赖，用Kotlin插件添加对应版本*/
+    implementation(kotlin("reflect"))/*Kotlin反射库，用Kotlin插件添加对应版本*/
 
 
 

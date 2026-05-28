@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
@@ -59,19 +60,18 @@ fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)
                                    startText/*开头文本*/:String="", startOnTap:( ()->Unit )?=null,
                                    labelText/*标签文本*/:String="", labelTextSize/*标签文本大小*/:TextUnit=13.sp,
                                    endIcon/*结尾图标*/:@Composable (() -> Unit)? =null,
-                                   background:Color=Color.Transparent/*编辑框背景 默认透明*/, shape:Shape=RoundedCornerShape(10.dp)/*形状，默认圆角10.dp*/,
-                                   borderColor:Color=Color.Transparent/*边框颜色 默认透明*/, underline:Boolean=false/*下划线，默认不用*/, modifier:Modifier=Modifier,
-                                   inputType:KeyboardType=KeyboardType.Text/*输入类型 默认文本*/, contentVisualStatus:Boolean=false/*内容可见状态 默认否*/){
+                                   background/*编辑框背景色 默认随主题定义*/:Color=if(!isSystemInDarkTheme()) Color.White else Color(0xED2B2D30),
+                                   shape:Shape=RoundedCornerShape(10.dp)/*形状，默认圆角10.dp*/,
+                                   borderColor/*边框色 默认随主题定义*/:Color=if(!isSystemInDarkTheme()) Color(0xED2B2D30) else Color.White,
+                                   underline:Boolean=false/*下划线，默认不用*/, modifier:Modifier=Modifier,
+                                   inputType:KeyboardType=KeyboardType.Text/*输入类型 默认文本类型*/, contentVisualStatus:Boolean=false/*内容可见状态 默认否*/){
     val underlineColor=if(!isSystemInDarkTheme()) Color.Gray else Color.White/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
-
     var hasFocus by remember { mutableStateOf(false) }/*编辑框 焦点状态(是否被选中)*/
-
     val topLabelLeftMargin/*顶部标签背部颜色块 动态左边距*/=if(hasFocus/*焦点选中状态*/ || value!=""/*值不为空*/) 13.dp else 33.dp/*顶部标签动态位置*/
     val topPadding=16.dp
     var minHeight=31.dp/*装饰盒内部 包裹组件的布局 最小高度*/
 
-    /*为什么用不了Modifier的weight属性，并不是依赖版本问题，Modifier本身没有weight属性，weight属性是用于Row、Column等布局中的子元素上的*/
-
+    /*为什么用不了Modifier的weight属性？并不是依赖版本问题，Modifier本身没有weight属性，weight属性是用于Row、Column等布局中的子元素上的*/
     Row(modifier=modifier){
         BasicTextField/*基本编辑框，默认无装饰(下划线、边框)，UI完全自定义*/(
             value=value,/*值绑定text对象*/onValueChange=onValueChange/*值变更时，text对象跟随变更*/,
@@ -154,8 +154,8 @@ fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)
 }
 
 @Composable
-fun Lable/*标签*/(text:String,fontSize:TextUnit=13.sp){
-    return Text(text,fontSize=fontSize,lineHeight=0.1.sp,fontWeight=FontWeight.Bold/*字体粗细 粗*/, color=MaterialTheme.colorScheme.onSurface)
+fun Lable/*标签*/(text:String, fontSize:TextUnit=13.sp){
+    return Text(text,fontSize=fontSize,lineHeight=0.1.sp,fontWeight=FontWeight.Bold/*字体粗细 粗*/, color=MaterialTheme.colorScheme.onSurface/*字体颜色 自适应深浅主题*/)
 }
 
 @Composable
@@ -167,7 +167,16 @@ fun convertSpToDp/*Sp转Dp单位*/(textUnit:TextUnit):Dp{
 }
 
 @Composable
-fun DecorationBox/*装饰盒*/(){
+fun DecorationBox/*装饰盒*/(boxOnClick:()->Unit={}, text:String,
+                            background/*背景色 默认随主题定义*/:Color=if(!isSystemInDarkTheme()) Color.White else Color(0xED2B2D30),
+                            shape:Shape=RoundedCornerShape(10.dp)/*形状，默认圆角10.dp*/,
+                            borderColor:Color=MaterialTheme.colorScheme.onSurface/*边框色 随深浅主题与背景色相反色*/,){
+    Box{
+        Button(onClick={ boxOnClick.invoke() }, Modifier.background(background, shape)/*设置背景颜色和背景圆角形状*/.border(3.dp, borderColor, shape)/*边框*/){
+            Lable(text)
+        }
+        Row(Modifier.padding(start=20.dp).background(background)){}
+    }
 
 }
 

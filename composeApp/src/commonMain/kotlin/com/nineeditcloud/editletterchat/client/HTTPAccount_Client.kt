@@ -1,5 +1,4 @@
 package com.nineeditcloud.editletterchat.client
-
 import com.nineeditcloud.editletterchat.common_tools.Log
 import io.ktor.client.*
 import io.ktor.client.request.*
@@ -15,7 +14,7 @@ import kotlinx.serialization.serializer
 
 /*用Ktor跨平台网络请求框架写的-HTTP客户端*/
 
-object HTTPClient{
+object HTTPAccount_Client{
     private val client=HttpClient()/* Ktor跨平台客户端实例(引擎根据平台自动选择 若未完整添加Ktor各平台适配依赖可能出现兼容问题异常闪退) */
     private val json=Json{/*用跨平台kotlinx.serialization(代替谷歌Gson) */
         ignoreUnknownKeys=true      /* 忽略服务端返回的未知字段 */
