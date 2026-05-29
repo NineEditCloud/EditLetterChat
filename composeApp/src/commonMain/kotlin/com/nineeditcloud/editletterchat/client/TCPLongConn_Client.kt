@@ -53,7 +53,7 @@ fun tcpLongConnClient(account:String, token:String, onMessage/*收到消息回�
 //            if(e is CancellationException) throw e
             if(e is IllegalArgumentException) Log.e("Ktor-TCP长连接", e.message.toString(), e)
             Log.e("Ktor-TCP长连接", "连接异常", e)
-            if(coroutineContext.isActive) delay(5_000)/*连接异常、读写异常等，等待5秒后自动重连*/
+            if(coroutineContext.isActive) delay(5_000)/*连接异常、读写异常等，连接异常后等5秒自动重连(防止连续异常时 重连太频繁造成服务端压力)*/
         }
     }
 }
