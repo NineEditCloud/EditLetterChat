@@ -1,96 +1,64 @@
 package com.nineeditcloud.editletterchat.client
 import com.nineeditcloud.editletterchat.common_tools.Log
+import com.nineeditcloud.editletterchat.common_tools.deviceType
 import com.nineeditcloud.editletterchat.common_tools.toData
+import com.nineeditcloud.editletterchat.common_tools.toHashMap
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import com.nineeditcloud.editletterchat.common_tools.toHashMap
-import kotlinx.coroutines.GlobalScope.coroutineContext
 import kotlinx.coroutines.CancellationException
 
-fun tcpLongConnClient(accountId:String, token:String)=runBlocking{/*协程作用域*/
-    val hostname="192.168.1.47";val port=9000
-    val socket=aSocket(SelectorManager(Dispatchers.IO) ) .tcp().connect(hostname, port)/*Ktor-network在输入输出流建立TCP客户端长连接*/
-    Log.msg("Ktor已连接TCP长连接服务器：", "$hostname:$port")
-    val input=socket.openReadChannel()/*输入流通道，接收*/
-    val output=socket.openWriteChannel(autoFlush=true)/*输出流通道，发送*/
-
-//    val authMsg="""{"type":"auth","token":"secret-token"}""" + "\n"/*模拟JSON认证消息*/
-    val authMsg=OnlineAccountAuthRequest(accountId,token).toData()
-    output.writeStringUtf8(authMsg)/*发送认证消息*/
-
-    val authResponseLine=input.readUTF8Line()/*读取 服务端反馈的认证响应*/ ?:/*若为空*/error("无身份验证响应")
-//    val authResponse=json.decodeFromString<ContentType.Message>(authResponseLine)/*将服务端反馈的认证响应的 JSON字符串 反序列化解析为数据类*/
-    Log.msg("Ktor-TCP客户端接收：", authResponseLine)
-    val authResponse=authResponseLine.toHashMap()/*将服务端反馈的认证响应的 键值对字符串 解析为HashMapOf*/
-    if(authResponse["type"]/*获取类型键对应值*/ !="auth_ok"){
-        Log.msg("Ktor-TCP客户端", "账号认证失败：${authResponse["message"]/*获取消息键对应值*/}")
-        socket.close()/*因为账号认证失败，关闭连接、释放资源*/
-        return@runBlocking
-    }
-    Log.msg("Ktor-TCP客户端", "账号令牌认证成功")
-
-    launch(Dispatchers.IO){/*启动I/O协程*/
-        while(isActive){/*激活状态下持续循环*/
-            val line=input.readUTF8Line()/*接收服务器消息*/ ?:break/*若接收失败则结束循环*/
-            Log.msg("Ktor-TCP客户端", "收到服务器反馈: $line")
-        }
-    }
-
-//    while(true){
-//        delay(2000)/*等待2秒*/
-//        output.writeStringUtf8("""{"type":"ping"}""" + "\n")/*发送测试消息*/
-//        output.writeStringUtf8("Hello from client at ${System.currentTimeMillis()}\n")/*主协程负责发送消息(模拟交互)*/
-//    }
-//    socket.close()/*关闭连接，长连接持续收消息不建议关闭*/
-}
-
 /**
- * 自动重连的 TCP 长连接客户端（简化版）
- *
- * @param host 服务器地址
- * @param port 端口
- * @param authToken 认证令牌
- * @param onMessage 收到消息时的回调（运行在协程所在线程，非主线程）
+ * 自动重连的 TCP长连接客户端(简化版)
+ * @param account 认证账号
+ * @param token 认证令牌
+ * @param onMessage 收到消息时的回调(运行在协程所在线程，非主线程)
  */
-suspend fun tcpLongConnClient(
-    authToken: String,
-    onMessage: (String) -> Unit){
+fun tcpLongConnClient(account:String, token:String, onMessage/*收到消息回调*/:(HashMap<String,String>)->Unit)=runBlocking{
     val host="192.168.1.47";val port=9000
     while(coroutineContext.isActive){
-        try {
+        try{
             aSocket(SelectorManager(Dispatchers.IO) ).tcp().connect(host, port)
                 .use{ socket ->
-                    val input=socket.openReadChannel()
-                    val output=socket.openWriteChannel(autoFlush = true)
+                    /*.use是个扩展函数，它会自动关闭资源(类似Java的try-with-resources)，所以即使内部抛出异常，use块结束后、退出作用域时 socket都会被关闭，对应的输入输出通道也会关闭。因此不会有多余遗留内容，资源会自动清理*/
+                    Log.msg("Ktor已连接TCP长连接服务器：", "$host:$port")
+                    val input=socket.openReadChannel()/*输入流通道，接收*/
+                    val output=socket.openWriteChannel(autoFlush=true)/*输出流通道，发送*/
 
-                    // 发送认证信息
-                    output.writeStringUtf8("""{"type":"auth","token":"$authToken"}""" + "\n")
+                    val authMsg=OnlineAccountAuthRequest(account,token,deviceType() ).toData()
+                    output.writeStringUtf8(authMsg)/*发送认证信息*/
 
-                    // 读取认证响应
-                    val authResponse = input.readUTF8Line()
-                        ?: throw Exception("认证响应为空")
-                    require(authResponse.contains("\"auth_ok\"")) {
-                        "认证失败: $authResponse"
+                    val authResponse=input.readUTF8Line()/*读取认证响应*/ ?:throw Exception("认证响应为空")/*若读取响应为空，抛出异常触发自动重连*/
+//                    require(authResponse.contains("\"auth_ok\"")/*正常条件*/ ){/*若不达成正常条件 则接收此块内异常信息并抛出异常*/
+//                        "认证失败: $authResponse"/*异常信息*/
+//                    }
+                    if(authResponse.contains("auth_ok") ) Log.msg("Ktor-TCP长连接", "账号令牌认证成功")
+                    else{
+                        throw IllegalArgumentException("账号令牌认证失败: $authResponse")/*抛出异常信息*/
                     }
 
-                    // 循环接收服务端消息
-                    while (coroutineContext.isActive) {
-                        val line = input.readUTF8Line() ?: break  // 服务端断开
-                        onMessage(line)
+                    while(coroutineContext.isActive){/*循环等待接收服务端消息*/
+                        val line=input.readUTF8Line() ?:break/*若接收结果为空 说明服务端断开，跳出接收循环*/
+                        /*未跳出情况下执行以下代码*/
+                        val msg=line.toHashMap()
+                        onMessage(msg)
+                        Log.msg("Ktor-TCP长连接", "收到服务器反馈：$line")
                     }
                 }
         }catch(e:CancellationException){
+            Log.e("Ktor-TCP长连接", "连接异常", e)
             throw e/*正常取消时直接抛出，不吞掉取消*/
         }catch(e:Exception){
 //            if(e is CancellationException) throw e
-            if (coroutineContext.isActive) delay(5_000)/*连接异常、读写异常等，等待 5 秒后自动重连*/
+            if(e is IllegalArgumentException) Log.e("Ktor-TCP长连接", e.message.toString(), e)
+            Log.e("Ktor-TCP长连接", "连接异常", e)
+            if(coroutineContext.isActive) delay(5_000)/*连接异常、读写异常等，等待5秒后自动重连*/
         }
     }
 }
 
-fun main()=runBlocking{
+fun main(){
 //    startTcpLongConnClient()/*调用*/ /*.join()*//*等待长连接协程结束(显式等待返回的Job 替代delay)，它通常是永不结束的*/
 //    delay(Long.MAX_VALUE)/*保持进程运行*/
     /*CoroutineScope.startTcpLongConnClient方案，在CoroutineScope中调用，返回Job 可用于取消
@@ -112,4 +80,5 @@ fun main()=runBlocking{
 data class OnlineAccountAuthRequest/*上线账号认证请求-结构模型数据类*/(
     val account:String,/*账号*/
     val token:String,/*Token令牌*/
+    val authDeviceType:String,/*认证客户端设备平台类型*/
     )

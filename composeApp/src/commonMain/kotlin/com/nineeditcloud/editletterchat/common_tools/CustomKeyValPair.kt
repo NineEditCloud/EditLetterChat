@@ -8,7 +8,14 @@ fun <T:Any>/*可调用处 泛型*/ T.toData/*对象模型转数据(序列化) �
     val left=str.indexOf('(')/*获取字符串中从头开始第一个(字符的索引，若获取失败返回-1*/
     return str.substring(left+1, str.length-1)/*截取字符串中 第一个(字符和最后一个字符 之间的字符串，索引从0开始 含索引对应的字符*/
 //        .replace(Regex("\\s+"), "")/*将空格、制表符、换行等所有空白字符 替换为不存在*/
-        .replace(", ",delimiter)/*将", "替换为更简略的"`"分隔符*/
+        .replace(", ",delimiter)/*将", "替换为更简略的"`"分隔符*/ + "\n"/*追加换行符以作为一条消息结束*/
+    /*writeStringUtf8本身不添加换行符
+    常见需要添加 \n 的场景：
+    基于行的协议(Line-based protocols)，很多 TCP 文本协议(如 IRC、SMTP、简单的聊天协议)都规定：一条消息=一行文本，以\n或\r\n结束，若不加\n，接收方就会一直等待后续字节，直到超时或连接关闭，无法判断当前消息是否完整
+    NDJSON(换行分隔的 JSON)，用于流式JSON数据，每行一个完整的JSON对象。
+    在某些 Kotlin/Ktor 应用中，用 Flow或通道发送消息，用\n作为帧分隔符 以方便解析。
+    网络流(Socket) 中手动实现消息边界
+    若不加\n，接收方可能不知道一条消息在何处结束，尤其是连续发送多条消息时*/
 }
 
 fun String?.toHashMap/*数据转哈希表键值对 定义String的扩展函数*/():HashMap<String, String>{
