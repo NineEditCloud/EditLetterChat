@@ -21,7 +21,8 @@ import com.nineeditcloud.editletterchat.common_tools.AppTheme
 
 /*Android移动端*/
 class MainActivity:ComponentActivity(){
-    override fun onCreate(savedInstanceState: Bundle?){
+    override fun onCreate(savedInstanceState:Bundle?){
+//        val splashScreen=installSplashScreen()/*先安装SplashScreen控制*/
         super.onCreate(savedInstanceState)
         FileKit.init(this)/*FileKit跨平台 应用私有路径获取&文件操作 框架 初始化*/
         enableEdgeToEdge()/*界面无边界*/

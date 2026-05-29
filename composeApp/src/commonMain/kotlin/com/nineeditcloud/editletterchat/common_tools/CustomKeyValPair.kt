@@ -1,6 +1,6 @@
 package com.nineeditcloud.editletterchat.common_tools
 
-/*自定义-键值对*/
+/*自定义-字符串键值对*/
 
 const val delimiter="`"/*分隔符，`(反引号) 并非英文句子中常用的'(单引号)*/
 fun <T:Any>/*可调用处 泛型*/ T.toData/*对象模型转数据(序列化) 定义数据类的扩展函数*/():String{
