@@ -1,6 +1,6 @@
 package com.nineeditcloud.editletterchat.common_tools
 
-/*纯Kotlin-stdlib标准库实现，适合TCP长连接的 二进制键值对(值可加入图片二进制数据)*/
+/*纯Kotlin-stdlib标准库实现，适合TCP长连接的 字节串(二进制)键值对(值可加入图片二进制数据)*/
 
 /*========== 大端序工具 ==========*/
 /*转字节串(二进制)*/
@@ -143,3 +143,28 @@ class FrameBuffer {
         return frames
     }
 }
+
+val frameBuffer=FrameBuffer()
+/*每次收到 socket 数据时调用*/
+fun onDataReceived(data:ByteArray){
+    val frames=frameBuffer.feed(data)
+    for(body in frames){
+        try{
+            val reader=MessageReader(body)
+            for(entry in reader.readAll() ){
+                when(entry.key){
+                    "image" ->{
+                        /*图片已通过 CRC32校验，可以直接保存或显示*/
+//                        saveImage(entry.value)
+                        println("收到图片，大小=${entry.value.size}，校验通过")
+                    }
+                    "userId" -> println("用户ID: ${entry.textValue}")
+                }
+            }
+        }catch(e:Exception){/*校验失败或解析错误，丢弃该帧*/
+            println("消息损坏，已丢弃: ${e.message}")
+        }
+    }
+}
+
+
