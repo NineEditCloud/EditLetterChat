@@ -18,9 +18,9 @@ fun <T:Any>/*可调用处 泛型*/ T.toData/*对象模型转数据(序列化) �
     若不加\n，接收方可能不知道一条消息在何处结束，尤其是连续发送多条消息时*/
 }
 
-fun String?.toHashMap/*数据转哈希表键值对 定义String的扩展函数*/():HashMap<String, String>{
+fun String?.toHashMap/*数据转哈希表键值对 定义String的扩展函数*/():HashMap<String,String>{
     val strs=this?.split(delimiter)/*?安全调用，若是String，则将调用此函数的字符串 以分割字符 分割为数组*/
-    val map=hashMapOf<String, String>()/*hashMapOf集合对象中存在一个HashMap，创建集合操作对象时声明val常量 依旧能更改其对应HashMap的元素*/
+    val map=hashMapOf<String,String>()/*hashMapOf集合对象中存在一个HashMap，创建集合操作对象时声明val常量 依旧能更改其对应HashMap的元素*/
     strs?.forEach{ str -> /*遍历strs数组*/
         val key=str.substringBefore('=')/*截取 =字符前的 字符串*/
         val value=str.substringAfter('=')/*截取 =字符后的 字符串*/
