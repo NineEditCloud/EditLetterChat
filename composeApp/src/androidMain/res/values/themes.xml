@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--安卓12+ 无默认启动背景图的主题-->
+    <!--安卓12+ 无默认启动图的主题-->
     <style name="Theme.AppLauncher" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@android:color/transparent</item><!--启动背景色设为透明(transparent) 或白色(white)-->
         <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item><!--启动图标设为透明(或全透明drawable资源)-->

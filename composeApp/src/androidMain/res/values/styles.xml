@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--安卓12以下 无默认启动背景图的 Theme.AppCompat.NoActionBar风格主题-->
+    <!--安卓12以下 无默认启动背景和预览的 Theme.AppCompat.NoActionBar风格主题-->
     <style name="Theme.Launcher" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item><!--将窗口背景设为透明-->
         <item name="android:windowDisablePreview">true</item><!--禁用启动预览窗口(可选，但推荐)-->
