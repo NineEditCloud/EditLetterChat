@@ -23,7 +23,8 @@ import com.nineeditcloud.editletterchat.common_tools.KMPTheme
 /*Android移动端*/
 class MainActivity:ComponentActivity(){
     override fun onCreate(savedInstanceState:Bundle?){
-        val splashScreen=installSplashScreen()/*先安装SplashScreen控制(启用自定义SplashScreen主题)，为确保安卓12+ 无默认启动图*/
+        val splashScreen=installSplashScreen()/*先安装SplashScreen控制(启用自定义SplashScreen主题)，为确保安卓12+ 默认启动画面 无启动图*/
+//        splashScreen.setKeepOnScreenCondition{ false }/*setKeepOnScreenCondition决定何时让启动画面消失 常用于等待数据加载、初始化完毕后再进入主界面，显式返回false 即使数据未就绪也强制立即移除(依旧无法移除安卓12+启动画面) 与不用setKeepOnScreenCondition一样无法缩短启动画面时长*/
         super.onCreate(savedInstanceState)
         FileKit.init(this)/*FileKit跨平台 应用私有路径获取&文件操作 框架 初始化*/
         enableEdgeToEdge()/*界面无边界*/

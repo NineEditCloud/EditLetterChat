@@ -2,8 +2,8 @@ package com.nineeditcloud.editletterchat.common_tools
 
 /*纯Kotlin-stdlib标准库实现，适合TCP长连接的 字节串(二进制)键值对(值可加入图片二进制数据)*/
 
-/*========== 大端序工具 ==========*/
-/*转字节串(二进制)*/
+/*========== 大端字节序工具 ==========*/
+/*转大端字节序 字节串(二进制)数组*/
 fun Short.toBigEndianBytes()=byteArrayOf(
     (toInt() shr 8 and 0xFF).toByte(),
     (toInt() and 0xFF).toByte(), )
@@ -12,7 +12,7 @@ fun Int.toBigEndianBytes()=byteArrayOf(
     (this shr 16 and 0xFF).toByte(),
     (this shr 8 and 0xFF).toByte(),
     (this and 0xFF).toByte(), )
-/*读字节串*/
+/*读 大端字节序*/
 fun ByteArray.readBigEndianShort(offset:Int=0):Short{
     val high=this[offset].toInt() and 0xFF
     val low=this[offset + 1].toInt() and 0xFF
@@ -50,7 +50,7 @@ object CRC32{
 
 /*========== 消息构建器 ==========*/
 class MessageBuilder{
-    private val chunks=mutableListOf<ByteArray>()
+    private val chunks=mutableListOf<ByteArray>()/*用于构建 字节串数组的 (mutableListOf)可写有序集合*/
     fun addText(key:String, text:String){
         addEntry(key, text.encodeToByteArray(), 0x01, withChecksum=false)
     }
@@ -80,12 +80,12 @@ class MessageBuilder{
     }
 
     private fun buildBody():ByteArray{
-        val totalSize=chunks.sumOf { it.size }
+        val totalSize=chunks.sumOf{ it.size }
         val result=ByteArray(totalSize)
         var offset=0
-        for (chunk in chunks) {
+        for(chunk in chunks){
             chunk.copyInto(result, offset)
-            offset += chunk.size
+            offset+=chunk.size
         }
         return result
     }
@@ -101,7 +101,7 @@ class MessageReader(private val data:ByteArray){
 
     fun readAll():List<Entry>{
         val entries=mutableListOf<Entry>()
-        while (pos < data.size) {
+        while(pos < data.size){
             entries.add(readNext())
         }
         return entries
