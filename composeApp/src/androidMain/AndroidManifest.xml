@@ -16,11 +16,11 @@
         android:name=".database.MyApp"
         android:usesCleartextTraffic="true">
         <!--icon为应用图标，label为应用标签，name为获取安卓应用Context(上下文调用实例) 的类(若对应类不存在会闪退)，usesCleartextTraffic为允许HTTP请求(必须)-->
-
         <activity
             android:exported="true"
             android:name=".MainActivity"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar">
+            android:theme="@style/AppTheme.Launcher">
+            <!--theme可为主活动设定自定义主题，@style/AppTheme.Launcher是个无默认启动背景图的主题-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

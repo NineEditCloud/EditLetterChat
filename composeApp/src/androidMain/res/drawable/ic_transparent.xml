@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--透明图标-为解决安卓12+软件启动时显示软件图标的问题-->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="@android:color/transparent" />
-    <size android:width="1dp" android:height="1dp" />
-</shape>
-
