@@ -207,7 +207,6 @@ kotlin{
 //            implementation("dev.zwander:kmpfile:${libs.versions.kmpFile.get()}")/*KMPFile，文件操作、应用私有路径获取框架*/
 //            implementation("dev.zwander:kmpfile-filekit:${libs.versions.kmpFile.get()}")/*KMPFile与FileKit协作，包含其依赖*/
 //            implementation("dev.zwander:kmpfile-okio:${libs.versions.kmpFile.get()}")   /*KMPFile与Okio协作，包含其依赖*/
-
         }
         commonTest.dependencies/*常规测试共享依赖*/{
             implementation("org.jetbrains.kotlin:kotlin-test:${libs.versions.kotlin.get()}")/*Kotlin测试依赖*/
@@ -218,6 +217,7 @@ kotlin{
             implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.composeMultiplatform.get()}")/*Compose 1.9.0-rc01版本兼容安卓5.0，但不兼容IOS*/
             implementation("androidx.activity:activity-compose:1.11.0")/*安卓专用工具库，1.11.0版本兼容安卓5.0，绝对不可更改为更高版本！！！*/
             implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")/*安卓系统栏透明库，0.36.0兼容安卓5.0*/
+            implementation("androidx.core:core-splashscreen:1.0.1")/*为解决 安卓12+启动背景图*/
 
 
 

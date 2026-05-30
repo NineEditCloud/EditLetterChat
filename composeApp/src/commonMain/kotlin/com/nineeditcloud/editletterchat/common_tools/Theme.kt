@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 
 /*KMP跨平台 Compose应用主题*/
 @Composable
-fun AppTheme(darkTheme:Boolean=isSystemInDarkTheme(), content:@Composable ()->Unit ){
+fun KMPTheme(darkTheme:Boolean=isSystemInDarkTheme(), content:@Composable ()->Unit ){
     val colors=if(darkTheme) DarkColors else LightColors
 
     MaterialTheme(colorScheme=colors, typography=AppTypography, shapes=AppShapes, content=content)

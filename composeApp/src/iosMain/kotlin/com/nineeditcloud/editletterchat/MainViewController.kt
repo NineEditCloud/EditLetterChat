@@ -2,7 +2,7 @@ package com.nineeditcloud.editletterchat
 
 import androidx.compose.ui.window.ComposeUIViewController
 import cafe.adriel.voyager.navigator.Navigator
-import com.nineeditcloud.editletterchat.common_tools.AppTheme
+import com.nineeditcloud.editletterchat.common_tools.KMPTheme
 
 //import platform.darwin.nil
 //import platform.UIKit.UIViewController
@@ -21,7 +21,7 @@ import com.nineeditcloud.editletterchat.common_tools.AppTheme
 
 /*IOS移动端-应用主函数*/
 fun MainViewController()=ComposeUIViewController{
-    AppTheme {
+    KMPTheme{
         Navigator(StartupLoading())/*使用Voyager跨平台界面*/
     }
 }/*.apply{*//*在 ComposeUIViewController 的工厂方法中使用*//*

@@ -6,12 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import cafe.adriel.voyager.navigator.Navigator
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 import androidx.core.view.WindowCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.nineeditcloud.editletterchat.common_tools.AppTheme
+import com.nineeditcloud.editletterchat.common_tools.KMPTheme
 
 //import androidx.compose.runtime.Composable
 //import android.app.Activity
@@ -22,12 +23,12 @@ import com.nineeditcloud.editletterchat.common_tools.AppTheme
 /*Android移动端*/
 class MainActivity:ComponentActivity(){
     override fun onCreate(savedInstanceState:Bundle?){
-//        val splashScreen=installSplashScreen()/*先安装SplashScreen控制*/
+        val splashScreen=installSplashScreen()/*先安装SplashScreen控制，为确保安卓12+ 无默认启动背景图*/
         super.onCreate(savedInstanceState)
         FileKit.init(this)/*FileKit跨平台 应用私有路径获取&文件操作 框架 初始化*/
         enableEdgeToEdge()/*界面无边界*/
         setContent{
-            AppTheme {
+            KMPTheme{
                 Navigator(StartupLoading())/*使用Voyager跨平台界面*/
             }
             /*以下设置系统导航栏 颜色透明 和 图标深浅主题*/
