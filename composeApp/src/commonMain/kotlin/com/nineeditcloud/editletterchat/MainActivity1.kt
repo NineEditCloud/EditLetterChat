@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,6 +62,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -93,6 +95,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -128,6 +132,20 @@ var selectedName=""
 var imagePath:String=""
 var backgroundColor:Color=Color.White/*全局背景色初始化值*/
 
+var navController:NavHostController?=null/*NavHost导航控制器 初始值*/
+var listState:LazyListState?=null/*列表状态 初始值*/
+val navItems=listOf(/*导航项信息列表*/
+                    NavItem("消息", "message", Icons.Default.Home, badgeCount=0,"用户名"),
+                    NavItem("联系人", "contact", Icons.Default.Person, badgeCount=23,"联系人"),
+                    NavItem("动态", "dynamic", Icons.Default.Favorite, badgeCount=100,"动态"),
+                   )
+var contactMessageItems:List<AccountFriendLocalData>?=null/*联系人消息集 初始值*/
+var navBSE:NavBackStackEntry?=null/*navBSE对象 初始值*/
+var currentRoute:String?=null/*当前导航页获取结果 初始值，equals(比较)扩展函数支持String?类型*/
+
+var showPopup1=false/*列表弹窗菜单状态 初始值*/
+var anchorCoordinates1:LayoutCoordinates?=null
+
 @OptIn(ExperimentalComposeUiApi::class)
 class MainActivity1:Screen{
     @OptIn(ExperimentalMaterial3Api::class)
@@ -145,16 +163,12 @@ class MainActivity1:Screen{
         val drawerState=remember{ DrawerState(DrawerValue.Closed) }/*抽屉状态对象*/
         val scope=rememberCoroutineScope()/*协程作用域(抽屉控制器操作执行工具)*/
 
-        val navController=rememberNavController()//常量 导航控制器对象(导航图和导航栏共用同一个导航控制器，实现控制导航图)
+        navController=rememberNavController() as NavHostController/*导航控制器对象(导航图和导航栏共用同一个导航控制器，实现控制导航图)*/
 //        var presses by remember{ mutableIntStateOf(0) }
-        val items=listOf(/*导航项信息列表*/
-            NavItem("消息", "message", Icons.Default.Home, badgeCount = 0,"用户名"),
-            NavItem("联系人", "contact", Icons.Default.Person, badgeCount = 23,"联系人"),
-            NavItem("动态", "dynamic", Icons.Default.Favorite, badgeCount = 100,"动态"),
-            )
 
-        val navBackStackEntry by navController.currentBackStackEntryAsState()/*创建NavBSE对象*/
-        val currentRoute=navBackStackEntry?.destination?.route/*获取当前导航页 对象，用于顶部标题栏 动态给出对应内容*/
+        val navBackStackEntry by navController!!.currentBackStackEntryAsState()/*赋值NavBSE对象，绑定navHostController导航控制器对象(不为空则调用)*/
+        navBSE=navBackStackEntry
+        currentRoute=navBackStackEntry?.destination?.route/*获取当前导航页 对象，用于顶部标题栏 动态给出对应内容*/
 
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigator跨平台Screen界面导航 绑定当前界面的导航控制器*/
 
@@ -188,7 +202,7 @@ class MainActivity1:Screen{
         }
 
         /*假设收到的最新每一条消息集，联系人消息集*/
-        val contactMessageItems=listOf(
+        contactMessageItems=listOf(
             AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
             AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
             AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
@@ -207,7 +221,7 @@ class MainActivity1:Screen{
             AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
             AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
             AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-                                      )
+            )
 
         //    var lastDownTime by remember { mutableLongStateOf(0L) }
         /*监听长按对象，由于combinedClickable闪退Bug，所以写一个 按下抬起 监听让 超文本按钮onClick判断*/
@@ -225,7 +239,8 @@ class MainActivity1:Screen{
         val topCoverBackground=painterResource(Res.drawable.cover07)
 
 
-        var showPopup by remember { mutableStateOf(false) }
+        var showPopup by remember{ mutableStateOf(false) }
+        showPopup1=showPopup
         //    var popupOffset by remember { mutableStateOf(Offset.Zero) }
 
 
@@ -233,7 +248,8 @@ class MainActivity1:Screen{
         val systemBars=WindowInsets.systemBars
         val bottomBarInsets=systemBars.getBottom(density)
 
-        var anchorCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }/*存储屏幕坐标瞄点位置的状态*/
+        var anchorCoordinates by remember{ mutableStateOf<LayoutCoordinates?>(null) }/*存储屏幕坐标瞄点位置的状态*/
+        anchorCoordinates1=anchorCoordinates
         var anchorSize by remember { mutableStateOf(IntSize.Zero) }/*存储锚点尺寸*/
 
         /*当锚点坐标变化时，计算弹窗偏移量*/
@@ -246,7 +262,7 @@ class MainActivity1:Screen{
             }
         }
 
-        val listState=rememberLazyListState()
+        listState=rememberLazyListState()
 
         Box(Modifier.fillMaxSize().background(backgroundColor)/*.semantics(mergeDescendants=true){}*//*合并子组件语义*/
            ){
@@ -274,10 +290,11 @@ class MainActivity1:Screen{
                                     }
                                     Row/*水平布局*/(Modifier.fillMaxWidth().padding(horizontal=20.dp)/*水平外边距*/.height(80.dp)
                                                         .background(
-                                                            //                                        brush=Brush.horizontalGradient(listOf(Color.Gray,Color.White)),/*水平渐变色(灰渐变白)*/
-                                                            drawerBackgroundColor,RoundedCornerShape(12.dp)/*圆角背景*/)
-                                                        //                                    .align(Alignment.BottomCenter)/*子项对齐方式，垂直居底 水平居中*/
-                                                        //                                    .clip(RoundedCornerShape(8.dp))/*裁剪内容为圆角(包括子组件)，并不波及当前组件背景为圆角*/
+//                                                            brush=Brush.horizontalGradient(listOf(Color.Gray,Color.White) )/*水平渐变色(灰渐变白)*/,
+                                                            drawerBackgroundColor,RoundedCornerShape(12.dp)/*圆角背景*/,
+                                                            )
+//                                                        .align(Alignment.BottomCenter)/*子项对齐方式，垂直居底 水平居中*/
+//                                                        .clip(RoundedCornerShape(8.dp))/*裁剪内容为圆角(包括子组件)，并不波及当前组件背景为圆角*/
                                                         .border(1.dp,Color.Gray.copy(0.3f),RoundedCornerShape(12.dp))/*圆角显0.3灰色边框*/
                                                    ){
                                         Icon(painterResource(Res.drawable.new_user), contentDescription="用户头像图片",
@@ -306,7 +323,7 @@ class MainActivity1:Screen{
                                     }
                                 }
                                 Column(Modifier.fillMaxWidth().background(drawerBackgroundColor)){
-                                    //                                HorizontalDivider()/*功能项分割线，Divider()已废弃，更名为HorizontalDivider()*/
+//                                    HorizontalDivider()/*功能项分割线，Divider()已废弃，更名为HorizontalDivider()*/
                                     NavigationDrawerItem/*导航项*/(
                                         label={ Text("钱包", color=MaterialTheme.colorScheme.onSurface) }, selected=false,
                                         onClick={
@@ -375,22 +392,21 @@ class MainActivity1:Screen{
 
                     }
 
-                }
-                                                                                              ) {/*抽屉外的界面*/
+                }, ){/*抽屉外的界面*/
                 Box(Modifier.fillMaxSize()){
                     Scaffold/*脚手架*/(
                         topBar/*顶部栏*/={
                             TopAppBar/*顶部应用栏*/(
                                 colors/*样式*/=topAppBarColors(
-                                    containerColor=backgroundColor,/*背景色，浅色主题下白色*/
-                                    titleContentColor=MaterialTheme.colorScheme.onSurface,/*标题色，浅色主题下黑色*/
-                                                              ),
-                                navigationIcon/*顶部左侧导航项图标按钮*/ = {
+                                    containerColor=backgroundColor/*背景色，浅色主题下白色*/,
+                                    titleContentColor=MaterialTheme.colorScheme.onSurface/*标题色，浅色主题下黑色*/,
+                                    ),
+                                navigationIcon/*顶部左侧导航项图标按钮*/={
                                     IconButton/*顶部左侧导航 图标按钮*/(
                                         onClick={
                                             scope.launch { drawerState.open()/*启动左侧抽屉*/ }
-                                        }
-                                                                       ){
+                                        },
+                                        ){
                                         Icon(imageVector/*顶部左侧导航按钮图标*/=Icons.Default.Person, contentDescription="用户头像，打开名片抽屉",
                                              Modifier.size(40.dp) )
                                     }
@@ -400,9 +416,8 @@ class MainActivity1:Screen{
                                     //                            Text("用户昵称")
                                     //                        }
 
-                                    Row(Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically/*子项垂直居中对齐*/) {
-                                        if(currentRoute.equals("message")){/*如果导航图是在导航消息界面*/
+                                    Row(Modifier.fillMaxWidth(), verticalAlignment=Alignment.CenterVertically/*子项垂直居中对齐*/){
+                                        if(currentRoute.equals("message") ){/*如果导航图是在导航消息界面*/
                                             Column/*竖直布局*/(
                                                 Modifier.combinedClickable(
                                                     onClick = {/*单击事件*/
@@ -412,11 +427,11 @@ class MainActivity1:Screen{
 
                                                     }),
                                                               ){
-                                                Text("用户昵称", fontSize=10.sp/*字体大小*/, lineHeight = 1.sp/*控件行间隔高度*/)
+                                                Text("用户昵称", fontSize=10.sp/*字体大小*/, lineHeight=1.sp/*控件行间隔高度*/)
                                                 Row/*水平布局*/(verticalAlignment=Alignment.CenterVertically/*子控件垂直居中对齐*/){
                                                     Icon(imageVector=Icons.Default.AddCircle, contentDescription="状态图标", Modifier.size(12.dp))
                                                     Text("状态", fontSize=8.sp/*字体大小*/,
-                                                        //                                        modifier = Modifier.border(width = 1.dp, color = Color.Blue, shape = RoundedCornerShape(8.dp)),//绘制边框查看偏移问题
+//                                                         modifier=Modifier.border(width=1.dp, color=Color.Blue, shape=RoundedCornerShape(8.dp)),//绘制边框查看偏移问题
                                                          lineHeight=1.sp/*文本行间隔高度*/)
                                                 }
                                             }
@@ -446,8 +461,8 @@ class MainActivity1:Screen{
                                 )
                         },
                         bottomBar/*底部栏*/={
-                            NavigationBar(Modifier.height(111.dp), containerColor=backgroundColor/*底部导航栏背景色*/) {//导航栏
-                                items.forEach/*遍历items*/ { item/*每次赋值给新建item变量*/ ->
+                            NavigationBar(Modifier.height(111.dp), containerColor=backgroundColor/*底部导航栏背景色*/ ){/*导航栏*/
+                                navItems.forEach/*遍历items*/ { navItem/*每次赋值给新建navItem变量*/ ->
                                     NavigationBarItem(
                                         icon/*图标集*/={
 
@@ -456,11 +471,11 @@ class MainActivity1:Screen{
                                         label/*标签集*/={
                                             BadgedBox/*徽章布局 给图标旁加徽章*/(
                                                 badge={//徽章集
-                                                    if (item.badgeCount > 0) {/*判断徽章消息数如果大于0则执行*/
+                                                    if (navItem.badgeCount > 0) {/*判断徽章消息数如果大于0则执行*/
                                                         Badge/*徽章*/(containerColor=Color.Red/*徽章背景颜色*/, contentColor=Color.White/*徽章内控件颜色*/){
                                                             Text(
-                                                                text=if (item.badgeCount > 99) "99+"/*徽章消息数显示上限*/
-                                                                else item.badgeCount.toString()/*99以下显示完整消息数*/,
+                                                                text=if (navItem.badgeCount > 99) "99+"/*徽章消息数显示上限*/
+                                                                else navItem.badgeCount.toString()/*99以下显示完整消息数*/,
                                                                 fontSize=8.sp/*徽章字体大小*/, lineHeight=1.sp/*文本行间隔高度*/
                                                                 )
                                                         }
@@ -468,10 +483,10 @@ class MainActivity1:Screen{
                                                 }
                                                                                 ){/*徽章布局内的其它组件*/
                                                 Column(horizontalAlignment=Alignment.CenterHorizontally/*子内容水平居中对齐*/){
-                                                    Icon/*图标*/(imageVector=item.icon,contentDescription=item.title,
+                                                    Icon/*图标*/(imageVector=navItem.icon,contentDescription=navItem.title,
                                                                  Modifier.size(23.dp)/*图标大小*/)
-                                                    Text/*标签*/(item.title, fontSize=8.sp/*标签字体大小*/, lineHeight=1.sp/*文本行间隔高度*/,
-                                                                 color=if(currentRoute==item.route) Color(0xFF6933CC) /*导航图导航页符合导航项为蓝紫色(0xFF6933CC)，Magenta为紫色*/
+                                                    Text/*标签*/(navItem.title, fontSize=8.sp/*标签字体大小*/, lineHeight=1.sp/*文本行间隔高度*/,
+                                                                 color=if(currentRoute==navItem.route) Color(0xFF6933CC) /*导航图导航页符合导航项为蓝紫色(0xFF6933CC)，Magenta为紫色*/
                                                                  else MaterialTheme.colorScheme.onSurface/*未导航此导航项页面则为该主题下文字颜色*/
                                                                 )
                                                 }
@@ -479,11 +494,11 @@ class MainActivity1:Screen{
                                             }
                                         },
 
-                                        selected=currentRoute==item.route,/*是否为选中状态，判断当前导航页是否符合此导航项*/
+                                        selected=currentRoute==navItem.route,/*是否为选中状态，判断当前导航页是否符合此导航项*/
                                         onClick={/*导航项点击事件*/
-                                            navController.navigate(item.route)/*导航控制器使用对应导航页*/{
+                                            navController!!.navigate(navItem.route)/*导航控制器(不为空则调用) 使用对应导航页*/{
                                                 /*配置导航动作行为*/
-                                                popUpTo/*导航前弹出回退栈中的片段*/(navController.graph.startDestinationId/*获取导航图起始页面*/) { saveState=true/*保存弹出的片段状态，以便下次导航依旧是保存的状态*/ }
+                                                popUpTo/*导航前弹出回退栈中的片段*/(navController!!.graph.startDestinationId/*获取导航图起始页面*/) { saveState=true/*保存弹出的片段状态，以便下次导航依旧是保存的状态*/ }
                                                 launchSingleTop=true//单顶模式(SingleTop)重要配置：如果目标页面已在回退栈的顶部，就不创建新实例，而是重用现有实例
                                                 restoreState=true//当导航目标已访问过且其状态被保存，则自动恢复该页面状态
                                             }
@@ -508,83 +523,9 @@ class MainActivity1:Screen{
                         Box(Modifier.fillMaxSize() ){
                             Column/*竖直布局*/(verticalArrangement=Arrangement.spacedBy(16.dp),
                                                modifier=Modifier.padding(innerPadding).background(backgroundColor)
-                                              ){
+                                          ){
                                 /*放置导航图(内嵌界面加载)*/
-                                /*改了导航界面路由名称，不要忘了改初始导航页界面路由名称*/
-                                NavHost/*导航图主体组件*/(navController=navController,/*使用导航控制器*/ startDestination="message"/*初始导航界面*/){
-                                    composable("message"){/*消息界面*/
-
-                                        Box(Modifier.fillMaxSize()){
-                                            LazyColumn/*竖直列表*/(Modifier.fillMaxSize(1f), state=listState){
-                                                items(contactMessageItems){ contactMessageItem/*赋值给新建item变量*/ ->/*此Lambda表达式代表接下来使用本次变量*/
-
-                                                    Column(Modifier.combinedClickable(/*事件，列表项事件，不能获取触摸指针位置*/
-                                                                                      onClick={/*单击事件*/
-                                                                                          if(!showPopup){
-                                                                                              selectedId=contactMessageItem.id
-                                                                                              selectedName=contactMessageItem.name
-                                                                                              navigator.push(Session())/*跳转 消息会话界面*/
-                                                                                          }
-                                                                                      },
-                                                                                      onLongClick={/*长按事件*/
-                                                                                          showPopup=true
-                                                                                      }
-                                                                                     ).onGloballyPositioned{ coordinates ->
-                                                        anchorCoordinates=coordinates/*获取列表项在屏幕上的坐标*/
-                                                    }
-                                                          ){
-                                                        Row/*水平布局*/(Modifier.fillMaxWidth()/*填充容器全部宽度，否则如果在Button按钮容器中会默认被放置中间*/
-                                                                            .padding(7.dp)/*内边距*/
-                                                            //                                                .onGloballyPositioned{ layoutCoordinates ->
-                                                            //                                                    buttonBounds=layoutCoordinates.boundsInWindow()/*获取按钮在屏幕上的位置和大小，用于菜单位置计算*/
-                                                            //                                                }
-                                                                       ){
-                                                            Image(painter=painterResource(Res.drawable.new_user)
-                                                                //                                                    rememberAsyncImagePainter(model=File("${contactMessageItem.id}.jpg"))/*Image图片资源，加载账号Id对应的头像路径*/
-                                                                  ,contentDescription="头像圆角图片",/*Image描述(必填此项，否则报错)*/
-                                                                  Modifier.size(45.dp)//设置图片尺寸
-                                                                      .clip(RoundedCornerShape(5.dp))//设置圆角半径，12.dp为圆形
-                                                                      .background(Color.LightGray)/*可选：添加背景色，便于观察圆角效果*/,
-                                                                  contentScale=ContentScale.Crop,//可选：缩放类型，如裁剪适应
-                                                                 )
-                                                            Column/*竖直布局*/(Modifier.padding(start=10.dp)/*竖直布局外边距(因为是在Row水平布局中，所以是左边距)*/) {
-                                                                /*此布局内是昵称和最新消息 控件*/
-                                                                Text/*昵称文本*/(contactMessageItem.name,color=MaterialTheme.colorScheme.onSurface/*昵称黑白色，导航图和列表里的界面必须用MaterialTheme，否则出现不会实时跟随系统深浅主题变色的Bug*/,
-                                                                                 fontSize = 10.sp, lineHeight=15.sp)
-                                                                Text/*最新消息文本*/(contactMessageItem.newMessage,color=Color.Gray/*内容灰色*/,
-                                                                                     fontSize = 8.sp, lineHeight=10.sp)
-                                                            }
-
-                                                        }
-
-                                                        //                                            Divider(Modifier.padding(start = 80.dp))//列表项分割线，已废弃，更名为HorizontalDivider
-                                                        HorizontalDivider(Modifier.padding(start=80.dp), color=Color.LightGray)/*水平分割线*/
-                                                    }
-
-                                                }
-                                            }
-
-                                            //
-
-
-                                        }
-
-
-                                    }
-                                    composable("contact"){//联系人界面
-                                        Column(Modifier.fillMaxSize()){
-                                            Text("联系人页界面")
-                                        }
-
-                                    }
-                                    composable("dynamic"){//动态界面
-                                        Column(Modifier.fillMaxSize()){
-                                            Text("动态页界面")
-                                        }
-
-                                    }
-
-                                }
+                                Nav()
 
                             }
 
@@ -754,11 +695,85 @@ class MainActivity1:Screen{
     }
 
 
+    @Composable
+    fun Nav(){
+        val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigator跨平台Screen界面导航 绑定当前界面的导航控制器*/
+        /*改了导航界面路由名称，不要忘了改初始导航页界面路由名称*/
+        NavHost/*导航图主体组件*/(navController=navController!!,/*使用导航控制器*/ startDestination="message"/*初始导航界面*/){
+            composable("message"){/*消息界面*/
+                Box(Modifier.fillMaxSize()){
+                    LazyColumn/*竖直列表*/(Modifier.fillMaxSize(1f), state=listState!!){
+                        items(contactMessageItems!!){ contactMessageItem/*赋值给新建item变量*/ ->/*此Lambda表达式代表接下来使用本次变量*/
+                            Column(Modifier.combinedClickable(/*事件，列表项事件，不能获取触摸指针位置*/
+                                                              onClick={/*单击事件*/
+                                                                  if(!showPopup1){
+                                                                      selectedId=contactMessageItem.id
+                                                                      selectedName=contactMessageItem.name
+                                                                      navigator.push(Session() )/*跳转 消息会话界面*/
+                                                                  }
+                                                              },
+                                                              onLongClick={/*长按事件*/
+                                                                  showPopup1=true
+                                                              },
+                                                              )
+                                       .onGloballyPositioned{ coordinates ->
+                                           anchorCoordinates1=coordinates/*获取列表项在屏幕上的坐标*/
+                            }
+                                  ){
+                                Row/*水平布局*/(Modifier.fillMaxWidth()/*填充容器全部宽度，否则如果在Button按钮容器中会默认被放置中间*/
+                                                    .padding(7.dp)/*内边距*/
+                                    //                                                .onGloballyPositioned{ layoutCoordinates ->
+                                    //                                                    buttonBounds=layoutCoordinates.boundsInWindow()/*获取按钮在屏幕上的位置和大小，用于菜单位置计算*/
+                                    //                                                }
+                                               ){
+                                    Image(painter=painterResource(Res.drawable.new_user)
+                                        //                                                    rememberAsyncImagePainter(model=File("${contactMessageItem.id}.jpg"))/*Image图片资源，加载账号Id对应的头像路径*/
+                                          ,contentDescription="头像圆角图片",/*Image描述(必填此项，否则报错)*/
+                                          Modifier.size(45.dp)//设置图片尺寸
+                                              .clip(RoundedCornerShape(5.dp))//设置圆角半径，12.dp为圆形
+                                              .background(Color.LightGray)/*可选：添加背景色，便于观察圆角效果*/,
+                                          contentScale=ContentScale.Crop,//可选：缩放类型，如裁剪适应
+                                         )
+                                    Column/*竖直布局*/(Modifier.padding(start=10.dp)/*竖直布局外边距(因为是在Row水平布局中，所以是左边距)*/) {
+                                        /*此布局内是昵称和最新消息 控件*/
+                                        Text/*昵称文本*/(contactMessageItem.name,color=MaterialTheme.colorScheme.onSurface/*昵称黑白色，导航图和列表里的界面必须用MaterialTheme，否则出现不会实时跟随系统深浅主题变色的Bug*/,
+                                                         fontSize = 10.sp, lineHeight=15.sp)
+                                        Text/*最新消息文本*/(contactMessageItem.newMessage,color=Color.Gray/*内容灰色*/,
+                                                             fontSize = 8.sp, lineHeight=10.sp)
+                                    }
 
+                                }
+
+                                //                                            Divider(Modifier.padding(start = 80.dp))//列表项分割线，已废弃，更名为HorizontalDivider
+                                HorizontalDivider(Modifier.padding(start=80.dp), color=Color.LightGray)/*水平分割线*/
+                            }
+
+                        }
+                    }
+
+                    //
+
+
+                }
+
+
+            }
+            composable("contact"){//联系人界面
+                Column(Modifier.fillMaxSize()){
+                    Text("联系人页界面")
+                }
+
+            }
+            composable("dynamic"){//动态界面
+                Column(Modifier.fillMaxSize()){
+                    Text("动态页界面")
+                }
+
+            }
+
+        }
+    }
 }
-
-
-
 
 
 

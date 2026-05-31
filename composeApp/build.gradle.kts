@@ -246,6 +246,7 @@ kotlin{
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{
             implementation(compose.desktop.currentOs)/*桌面端GUI预览引擎依赖，1.7.x已自动包含，手补以防万一*/
+//            implementation("org.jetbrains.compose.desktop:desktop:1.6.2")
 //            implementation("androidx.compose.material3.adaptive:adaptive:${libs.versions.composeMultiplatform.get()}")
 //            implementation("androidx.compose.material3.adaptive:adaptive-layout:${libs.versions.composeMultiplatform.get()}")
 //            implementation("androidx.compose.material3.adaptive:adaptive-navigation:${libs.versions.composeMultiplatform.get()}")
