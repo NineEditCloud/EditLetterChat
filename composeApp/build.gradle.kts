@@ -112,8 +112,12 @@ kotlin{
 //    linuxX64();linuxArm64()
 //    mingwX64()
 
-//    js{
-//        browser()
+//    js(IR){
+//        browser{
+//            runTask {
+//                devServer?.apply { port = 3000 }
+//            }
+//        }
 //        binaries.executable()
 //    }
 //    @OptIn(ExperimentalWasmDsl::class)
@@ -252,12 +256,14 @@ kotlin{
 //            implementation("org.postgresql:postgresql:42.7.0")/*JDBC驱动*/
         }
 
-        nativeMain.dependencies/*Kotlin/Native IOS/MacOS/Linux*/{
+//        nativeMain.dependencies/*Kotlin/Native中间层原生源代码集，目标平台IOS/MacOS/Linux共享*/{
 //            implementation("io.exoquery:exoquery-runner-native:1.0.0")/*Native runner*/
 //            implementation("app.cash.sqldelight:native-driver:2.0.2")/*SQLDelight native driver (可选)*/
-        }
+//        }
 
 //        jsMain.dependencies/*JS运行依赖*/{
+//            ksp{ arg("option", "value")/*可传参键值对*/ }
+//            implementation("org.jetbrains.compose.html:html:1.6.0")/*ComposeHTML，WEB网页DOM模式*/
 //        }
 //        wasmJsMain.dependencies/*wasmJS运行依赖*/{
 //            implementation("org.jetbrains.compose.material3:material3:1.10.0")/*支持wasmJS的material3版本*/
@@ -300,6 +306,8 @@ dependencies/*可用于部分平台调用的共享依赖*/{
 
 //    implementation("io.coil-kt.coil3:coil:${libs.versions.coil.get()}")/*fileKit-coil的内部底层依赖*/
 //    implementation("io.coil-kt.coil3:coil-compose:${libs.versions.coil.get()}")/*fileKit-coil的内部底层依赖*/
+
+//    ksp(project(":processor"))/*WEB端 将Compose生成DOM模式网页 注解需要的*/
 }
 configurations.all{/*全部配置*/
     resolutionStrategy.eachDependency{/*遍历依赖*/
