@@ -22,7 +22,7 @@ import com.nineeditcloud.editletterchat.common_tools.KMPTheme
 /*IOS移动端-应用主函数*/
 fun MainViewController()=ComposeUIViewController{
     KMPTheme{
-        Navigator(StartupLoading())/*使用Voyager跨平台界面*/
+        Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
     }
 }/*.apply{*//*在 ComposeUIViewController 的工厂方法中使用*//*
     this.setViewControllers(listOf(HideHomeIndicatorController()), animated=false)*//*替换默认的UIViewController 为自定义的*//*

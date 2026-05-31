@@ -1,12 +1,10 @@
 package com.nineeditcloud.editletterchat.client
 import com.nineeditcloud.editletterchat.common_tools.Log
-import com.nineeditcloud.editletterchat.common_tools.MessageBuilder
 import com.nineeditcloud.editletterchat.common_tools.MessageReader
 import com.nineeditcloud.editletterchat.common_tools.MessageReader.Entry
 import com.nineeditcloud.editletterchat.common_tools.deviceType
 import com.nineeditcloud.editletterchat.common_tools.readBigEndianInt
 import com.nineeditcloud.editletterchat.common_tools.toData
-import com.nineeditcloud.editletterchat.common_tools.toHashMap
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
@@ -16,8 +14,7 @@ import kotlinx.coroutines.CancellationException
 /**自动重连的 TCP长连接客户端(简化版)
  * @param account 认证账号
  * @param token 认证令牌
- * @param 某OnMessage 收到消息时的回调(运行在协程所在线程，非主线程)
- */
+ * @param 某OnMessage 收到消息时的回调(运行在协程所在线程，非主线程)*/
 fun tcpLongConnClient(account:String, token:String, onHashMapMessage/*收到哈希表字符串键值对消息回调*/:(HashMap<String,String>)->Unit,
                       onBytesMessage/*收到字节串键值对消息回调*/:(List<Entry>)->Unit )=runBlocking{
     val host="192.168.1.47";val port=9000

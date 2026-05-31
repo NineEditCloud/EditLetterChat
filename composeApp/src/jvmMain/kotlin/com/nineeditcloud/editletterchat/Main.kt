@@ -12,7 +12,7 @@ fun main(){
     application{
         Window(onCloseRequest=::exitApplication, title="辑信"){
             KMPTheme{
-                Navigator(StartupLoading())/*使用Voyager跨平台界面*/
+                Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
             }
 
         }

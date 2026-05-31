@@ -155,8 +155,8 @@ kotlin{
 //            implementation("org.jetbrains.androidx.navigation:navigation-dynamic-features-fragment:$navVersion")/*Nav功能特性模块 跨平台*/
 //            implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.0.0-alpha05")/*navigation3(navigation新版)，所有新版皆支持KMP跨平台*/
 
-            implementation("cafe.adriel.voyager:voyager-navigator:${libs.versions.voyager.get()}")/*Voyager-Navigation 跨平台通用界面导航依赖，1.1.0-beta03*/
-            implementation("cafe.adriel.voyager:voyager-screenmodel:${libs.versions.voyager.get()}")/*Voyager-Screen模块*/
+            implementation("cafe.adriel.voyager:voyager-navigator:${libs.versions.voyager.get()}")/*Voyager-Navigator 跨平台通用界面导航依赖，1.1.0-beta03*/
+            implementation("cafe.adriel.voyager:voyager-screenmodel:${libs.versions.voyager.get()}")/*Voyager-Screen界面模块*/
             implementation("cafe.adriel.voyager:voyager-transitions:${libs.versions.voyager.get()}")
 
             implementation(compose.materialIconsExtended)/*MaterialIcons图标库 跨平台通用版，自动根据项目配置 为所有目标平台解析正确依赖，该库包含所有Material图标，体积庞大，务必启用 R8/ProGuard 以缩减包体积*/

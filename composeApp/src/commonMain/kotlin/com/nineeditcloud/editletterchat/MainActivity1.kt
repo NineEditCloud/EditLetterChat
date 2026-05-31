@@ -91,11 +91,13 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.nineeditcloud.editletterchat.common_tools.filesPath
-//import com.nineeditcloud.editletterchat.database.getDatabase
+import com.nineeditcloud.editletterchat.database.getDatabase
 import compose.icons.Octicons
 import compose.icons.octicons.DeviceCamera16
 import compose.icons.octicons.File16
@@ -131,51 +133,44 @@ class MainActivity1:Screen{
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content(){
-//        val accountDatabase=getDatabase("userAccount_localData")/*获取 用户账号本地数据 数据库实例*/
-//        val userAccountDao=accountDatabase.userAccountDao()/*获取数据库中的 已登录账号本地数据 表实例*/
-//        val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
-//        lifecycleOwner.lifecycleScope.launch{/*协程*/
-//            if(userAccountDao.getHisCurrentUseAccount()){/*如果存在正在使用的账号*/
-//                account=userAccountDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号*/
-//            }
-//        }
+        val accountDatabase=getDatabase("userAccount_localData")/*获取 用户账号本地数据 数据库实例*/
+        val userAccountDao=accountDatabase.userAccountDao()/*获取数据库中的 已登录账号本地数据 表实例*/
+        val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
+        lifecycleOwner.lifecycleScope.launch{/*协程*/
+            if(userAccountDao.getHisCurrentUseAccount()){/*如果存在正在使用的账号*/
+                account=userAccountDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号*/
+            }
+        }
 
         val drawerState=remember{ DrawerState(DrawerValue.Closed) }/*抽屉状态对象*/
         val scope=rememberCoroutineScope()/*协程作用域(抽屉控制器操作执行工具)*/
 
         val navController=rememberNavController()//常量 导航控制器对象(导航图和导航栏共用同一个导航控制器，实现控制导航图)
 //        var presses by remember{ mutableIntStateOf(0) }
-        val items=listOf(//导航项信息列表
+        val items=listOf(/*导航项信息列表*/
             NavItem("消息", "message", Icons.Default.Home, badgeCount = 0,"用户名"),
             NavItem("联系人", "contact", Icons.Default.Person, badgeCount = 23,"联系人"),
-            NavItem("动态", "dynamic", Icons.Default.Favorite, badgeCount = 100,"动态")
-                        )
+            NavItem("动态", "dynamic", Icons.Default.Favorite, badgeCount = 100,"动态"),
+            )
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()/*创建NavBSE对象*/
-        val currentRoute=navBackStackEntry?.destination?.route/*获取当前导航页 对象*/
+        val currentRoute=navBackStackEntry?.destination?.route/*获取当前导航页 对象，用于顶部标题栏 动态给出对应内容*/
 
-        val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
+        val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigator跨平台Screen界面导航 绑定当前界面的导航控制器*/
 
-        /*这部分是把好友头像保存到本地，如果正式上架的话要把头像改成遍历所有接收到此账号好友的头像*/
+        /*这部分是把好友头像保存到本地，若正式上架的话要把头像改成遍历所有接收到此账号好友的头像*/
         /*获取外部私有 文件路径和缓存路径
         应用外部文件路径：/storage/emulated/0/Android/data/包名/files
         应用外部缓存路径：/storage/emulated/0/Android/data/包名/cache
-        Context需要处在主函数可用this调用当前类所继承的Context类，其它可用LocalContext.current创建的对象
-        */
+        安卓下Context参数 要在主函数处用this表示 那个调用当前类的 Context上下文对象，其它可用LocalContext.current创建Context上下文对象*/
 
-
-//        val targetDir=FileKit.filesDir ?:run{/*获取目录对象，若获取失败则直接返回或处理错误*/
-//            println("错误：无法获取应用文件目录。请检查是否已正确初始化FileKit")/*可选：显示用户提示或记录日志*/
-////            return /*或者抛出异常，取决于你的应用策略*/
-//        }
-        /*以下两行是用FileKit获取私有路径的错误实例*/
+        /*以下两行是用FileKit获取私有路径的错误示例*/
 //        val filesPath:PlatformFile?=(FileKit.filesDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有文件目录，   若获取失败则为空，错误示例(返回值Boolean强制转换为PlatformFile?导致闪退)*/
 //        val cachePath:PlatformFile?=(FileKit.cacheDir ?.absolutePath()?.isNotBlank() ) as PlatformFile?/*获取应用私有临时缓存目录，若获取失败则为空，错误示例(返回值Boolean强制转换为PlatformFile?导致闪退闪退)*/
-
-        if(filesPath!=null){/*如果确实获取到了外部私有文件路径*/
+        if(filesPath()!=null){/*若获取到了 外部私有文件绝对路径*/
             val dir=filesPath/"avatar"/*目标文件夹*/
             dir.createDirectories()/*创建不存在的文件夹及其不存在的父目录 行为幂等(Idempotent)，若文件夹存在 什么都不执行 也不要报错*/
-//            if(!dir.exists()){/*若文件夹不存在，(!代表反面，文件夹存在的反面)，其实FileKit会自行判断，若要判断是否为已存在还是刚创建 可添加判断*/
+//            if(!dir.exists()){/*若文件夹不存在，(!代表反面，文件夹存在的反面)，其实FileKit会自行判断(不存在时自动创建)，若要判断是否为已存在还是刚创建 可添加判断*/
 //                dir.createDirectories()/*创建文件夹，否则在不存在此文件夹的情况下，向不存在的目录保存文件会报错并闪退*/
 //            }
             val imageFile=dir/"new_user.png"/*目标图片文件*/
@@ -243,7 +238,7 @@ class MainActivity1:Screen{
 
         /*当锚点坐标变化时，计算弹窗偏移量*/
         val popupOffset=remember(anchorCoordinates){
-            if(anchorCoordinates != null){
+            if(anchorCoordinates!=null){
                 val position=anchorCoordinates!!.positionInWindow()
                 IntOffset(position.x.toInt(), position.y.toInt())
             }else{

@@ -30,7 +30,7 @@ class MainActivity:ComponentActivity(){
         enableEdgeToEdge()/*界面无边界*/
         setContent{
             KMPTheme{
-                Navigator(StartupLoading())/*使用Voyager跨平台界面*/
+                Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
             }
             /*以下设置系统导航栏 颜色透明 和 图标深浅主题*/
             val systemUiController=rememberSystemUiController()
