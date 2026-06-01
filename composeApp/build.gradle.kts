@@ -383,14 +383,22 @@ android/*安卓目标配置*/{
 //    experimentalProperties["android.experimental.kmp.enableAndroidResources"]=true/*实验性功能：将commonMain的资源 合并为Android资源*/
 }
 
-compose.desktop/*Compose桌面目标配置*/{/*JVM桌面端建议使用JBR17*/
+compose.desktop/*Compose桌面目标配置 桌面端建议JBR用17*/{
     application/*应用*/{
         mainClass="com.nineeditcloud.editletterchat.MainKt"/*主类*/
         nativeDistributions{
             targetFormats/*桌面目标系统平台*/(TargetFormat.Msi/*Win安装包*/, TargetFormat.Exe/*Win执行包*/, TargetFormat.Dmg/*MacOS安装包*/,
                 TargetFormat.Rpm/*RedHatLinux软件包*/,TargetFormat.Deb/*DebianLinux软件包*/)
-            packageName="EditLetterChat"/*包名，含中文时build.gradle.kts配置文件要用GBK中文编码？*/
-            packageVersion="1.0.0"/*包版本*/
+            /*CMP的RC版本主要供测试，若希望稳定开发 建议使用ComposeMultiplatform 1.6.10或1.7.0正式版，它们DSL更成熟 appName直接可用*/
+//            name="\u8f91\u4fe1"/*应用名，含中文时 gradle.properties配置文件要明确配置文件UTF-8编码systemProp.file.encoding=UTF-8*/
+            /*name中文显示乱码 通常是构建脚本编码错误，确认build.gradle.kts为UTF-8，并且终端/CI环境 也支持UTF-8
+            若急需解决，可先用英文名打包 后续再修改生成的执行文件(Windows) 或.app包名(macOS)，或者将中文转义为Unicode编码
+            安装包文件名不建议含中文，即使Windows允许，在自动化流水线 或 某些FTP工具中 容易出错，建议分开管理：appName用中文 packageName用英文
+            macOS上appName含中文，完全支持，生成的.app包会以中文显示在 Finder和Dock中*/
+            packageName="EditLetterChat"/*包名(应用执行备注)，不建议打包时中文(打包出的安装程序文件名可改中文)*/
+            packageVersion="1.0.1"/*包版本(安装时会比较已安装版本 判断为更新还是重复安装)*/
+            vendor="NineEditCloud"/*开发团队*/
+
             /*各平台图标，桌面应用打包失败后清理AndroidStudio缓存，重启再试*/
             val iconFilePath="src/commonMain/composeResources/drawable/"/*图片文件路径，注意drawable目录资源不能有相同名称文件(即使扩展名不同也不行)，否则Res.drawable选择有重复名文件时执行异常*/
             windows{
