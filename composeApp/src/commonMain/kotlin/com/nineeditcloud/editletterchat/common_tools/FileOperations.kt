@@ -10,18 +10,18 @@ import io.github.vinceglb.filekit.filesDir
 val filesPath=FileKit.filesDir /*获取应用私有文件目录，   若获取失败则为空*/
 val cachePath=FileKit.cacheDir /*获取应用私有临时缓存目录，若获取失败则为空*/
 
-val filesDir=FileKit.filesDir.run{
-    if(this!=null && this ?.absolutePath()/*是否为绝对路径*/ ?.isNotBlank()/*是否不为空*/!!) return@run this
-}?:run{/*若获取失败则直接返回或处理错误*/
-    println("错误：无法获取应用文件目录，请检查是否已正确初始化FileKit")/*可选：显示用户提示或记录日志*/
-    return@run null/*或者抛出异常，取决于你的应用策略*/
-}
-val cacheDir=FileKit.cacheDir.run{
-    if(this!=null && this ?.absolutePath()/*是否为绝对路径*/ ?.isNotBlank()/*是否不为空*/!!) return@run this
-}?:run{/*若获取失败则直接返回或处理错误*/
-    println("错误：无法获取应用文件目录，请检查是否已正确初始化FileKit")/*可选：显示用户提示或记录日志*/
-    return@run null/*或者抛出异常，取决于你的应用策略*/
-}
+//val filesDir=filesPath.run{
+//    if(filesPath!=null && filesPath?.absolutePath()/*是否为绝对路径*/ ?.isNotBlank()/*是否不为空*/!!) return@run this
+//}?:run{/*若获取失败则直接返回或处理错误*/
+//    println("错误：无法获取应用文件目录，请检查是否已正确初始化FileKit")/*可选：显示用户提示或记录日志*/
+//    return@run null/*或者抛出异常，取决于你的应用策略*/
+//}
+//val cacheDir=FileKit.cacheDir.run{
+//    if(filesPath!=null && filesPath?.absolutePath()/*是否为绝对路径*/ ?.isNotBlank()/*是否不为空*/!!) return@run this
+//}?:run{/*若获取失败则直接返回或处理错误*/
+//    println("错误：无法获取应用文件目录，请检查是否已正确初始化FileKit")/*可选：显示用户提示或记录日志*/
+//    return@run null/*或者抛出异常，取决于你的应用策略*/
+//}
 
 fun filesPath():PlatformFile?{
     if(filesPath!=null && filesPath ?.absolutePath()/*是否为绝对路径*/ ?.isNotBlank()/*是否不为空*/!!) return filesPath

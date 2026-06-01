@@ -132,19 +132,10 @@ var selectedName=""
 var imagePath:String=""
 var backgroundColor:Color=Color.White/*全局背景色初始化值*/
 
-var navController:NavHostController?=null/*NavHost导航控制器 初始值*/
-var listState:LazyListState?=null/*列表状态 初始值*/
-val navItems=listOf(/*导航项信息列表*/
-                    NavItem("消息", "message", Icons.Default.Home, badgeCount=0,"用户名"),
-                    NavItem("联系人", "contact", Icons.Default.Person, badgeCount=23,"联系人"),
-                    NavItem("动态", "dynamic", Icons.Default.Favorite, badgeCount=100,"动态"),
-                   )
-var contactMessageItems:List<AccountFriendLocalData>?=null/*联系人消息集 初始值*/
-var navBSE:NavBackStackEntry?=null/*navBSE对象 初始值*/
-var currentRoute:String?=null/*当前导航页获取结果 初始值，equals(比较)扩展函数支持String?类型*/
-
+var navController:NavHostController?=null
 var showPopup1=false/*列表弹窗菜单状态 初始值*/
-var anchorCoordinates1:LayoutCoordinates?=null
+
+var currentRoute:String?=null/*当前导航页获取结果 初始值，equals(比较)扩展函数支持String?类型*/
 
 @OptIn(ExperimentalComposeUiApi::class)
 class MainActivity1:Screen{
@@ -163,12 +154,17 @@ class MainActivity1:Screen{
         val drawerState=remember{ DrawerState(DrawerValue.Closed) }/*抽屉状态对象*/
         val scope=rememberCoroutineScope()/*协程作用域(抽屉控制器操作执行工具)*/
 
-        navController=rememberNavController() as NavHostController/*导航控制器对象(导航图和导航栏共用同一个导航控制器，实现控制导航图)*/
+        navController=rememberNavController()/*导航控制器对象(导航图和导航栏共用同一个导航控制器，实现控制导航图)*/
 //        var presses by remember{ mutableIntStateOf(0) }
 
-        val navBackStackEntry by navController!!.currentBackStackEntryAsState()/*赋值NavBSE对象，绑定navHostController导航控制器对象(不为空则调用)*/
-        navBSE=navBackStackEntry
-        currentRoute=navBackStackEntry?.destination?.route/*获取当前导航页 对象，用于顶部标题栏 动态给出对应内容*/
+        val navItems=listOf(/*导航项信息列表，底部导航栏内容(放进主题块中 或主题块调用的部分 否则选中状态不变色)*/
+                            NavItem("消息", "message", Icons.Default.Home, badgeCount=0,"用户名"),
+                            NavItem("联系人", "contact", Icons.Default.Person, badgeCount=23,"联系人"),
+                            NavItem("动态", "dynamic", Icons.Default.Favorite, badgeCount=100,"动态"),
+                           )
+
+        val navBackStackEntry by navController!!.currentBackStackEntryAsState()/*创建NavBSE对象，绑定navHostController导航控制器对象(不为空则调用)*/
+        currentRoute=navBackStackEntry?.destination?.route/*获取当前导航页 字符串 并赋值给全局变量(可随处访问)，用于顶部标题栏 动态给出对应内容*/
 
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigator跨平台Screen界面导航 绑定当前界面的导航控制器*/
 
@@ -189,8 +185,7 @@ class MainActivity1:Screen{
 //            }
             val imageFile=dir/"new_user.png"/*目标图片文件*/
 
-            val imageBitmap:ImageBitmap=
-                imageResource(Res.drawable.new_user)/*处理图片(Compress & Save)，假设已在 Composable 函数中获取到 ImageBitmap*/
+            val imageBitmap:ImageBitmap=imageResource(Res.drawable.new_user)/*处理图片(Compress & Save)，假设已在 Composable 函数中获取到 ImageBitmap*/
 
             CoroutineScope(Dispatchers.Default).launch {/*在协程中执行图片保存操作*/
                 val imageBytes=imageBitmap.encodeToByteArray(format=ImageFormat.PNG, quality=90)/*将ImageBitmap 编码为字节数组*/
@@ -202,7 +197,7 @@ class MainActivity1:Screen{
         }
 
         /*假设收到的最新每一条消息集，联系人消息集*/
-        contactMessageItems=listOf(
+        val contactMessageItems=listOf(
             AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
             AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
             AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
@@ -223,15 +218,15 @@ class MainActivity1:Screen{
             AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
             )
 
-        //    var lastDownTime by remember { mutableLongStateOf(0L) }
+//        var lastDownTime by remember { mutableLongStateOf(0L) }
         /*监听长按对象，由于combinedClickable闪退Bug，所以写一个 按下抬起 监听让 超文本按钮onClick判断*/
 
-        //    var provider=if (isSystemInDarkTheme()) Color.White else Color.Black/*根据主题选择文本颜色，否则系统不自动刷新，因为是固定的两种颜色，所以写val常量更省内存资源，请把变量放在抽屉、导航图和列表外，否则开关一次抽屉就可能出Bug，在深色模式开关一次抽屉再浅色也会出Bug*/
+//        var provider=if (isSystemInDarkTheme()) Color.White else Color.Black/*根据主题选择文本颜色，否则系统不自动刷新，因为是固定的两种颜色，所以写val常量更省内存资源，请把变量放在抽屉、导航图和列表外，否则开关一次抽屉就可能出Bug，在深色模式开关一次抽屉再浅色也会出Bug*/
 
         var expanded by remember { mutableStateOf(false)/*默认为关闭状态*/ }/*弹出式菜单列表是否打开*/
 
-        //    var listItemWindowExpanded by remember { mutableStateOf(false)/*默认为关闭状态*/ }/*弹出式菜单列表是否打开*/
-        //    var buttonBounds by remember { mutableStateOf<Rect?>(null) }/*触发按钮的坐标信息，用于精准定位，适合列表项长按弹窗视图功能菜单*/
+//        var listItemWindowExpanded by remember { mutableStateOf(false)/*默认为关闭状态*/ }/*弹出式菜单列表是否打开*/
+//        var buttonBounds by remember { mutableStateOf<Rect?>(null) }/*触发按钮的坐标信息，用于精准定位，适合列表项长按弹窗视图功能菜单*/
 
 
         backgroundColor=if(!isSystemInDarkTheme())Color(0xFFEEF2FD) else Color(0xFF1C1E1F)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
@@ -241,28 +236,14 @@ class MainActivity1:Screen{
 
         var showPopup by remember{ mutableStateOf(false) }
         showPopup1=showPopup
-        //    var popupOffset by remember { mutableStateOf(Offset.Zero) }
+//        var popupOffset by remember { mutableStateOf(Offset.Zero) }
 
 
         val density=LocalDensity.current
         val systemBars=WindowInsets.systemBars
         val bottomBarInsets=systemBars.getBottom(density)
 
-        var anchorCoordinates by remember{ mutableStateOf<LayoutCoordinates?>(null) }/*存储屏幕坐标瞄点位置的状态*/
-        anchorCoordinates1=anchorCoordinates
-        var anchorSize by remember { mutableStateOf(IntSize.Zero) }/*存储锚点尺寸*/
-
-        /*当锚点坐标变化时，计算弹窗偏移量*/
-        val popupOffset=remember(anchorCoordinates){
-            if(anchorCoordinates!=null){
-                val position=anchorCoordinates!!.positionInWindow()
-                IntOffset(position.x.toInt(), position.y.toInt())
-            }else{
-                IntOffset.Zero
-            }
-        }
-
-        listState=rememberLazyListState()
+        val listState=rememberLazyListState()
 
         Box(Modifier.fillMaxSize().background(backgroundColor)/*.semantics(mergeDescendants=true){}*//*合并子组件语义*/
            ){
@@ -525,7 +506,7 @@ class MainActivity1:Screen{
                                                modifier=Modifier.padding(innerPadding).background(backgroundColor)
                                           ){
                                 /*放置导航图(内嵌界面加载)*/
-                                Nav()
+                                Nav(navController!!, listState, contactMessageItems)
 
                             }
 
@@ -696,14 +677,26 @@ class MainActivity1:Screen{
 
 
     @Composable
-    fun Nav(){
+    fun Nav(navController:NavHostController, listState:LazyListState, contactMessageItems:List<AccountFriendLocalData>, ){
+        var anchorCoordinates by remember{ mutableStateOf<LayoutCoordinates?>(null) }/*存储屏幕坐标瞄点位置的状态*/
+        var anchorSize by remember { mutableStateOf(IntSize.Zero) }/*存储锚点尺寸*/
+        /*当锚点坐标变化时，计算弹窗偏移量*/
+        val popupOffset=remember(anchorCoordinates){
+            if(anchorCoordinates!=null){
+                val position=anchorCoordinates!!.positionInWindow()
+                IntOffset(position.x.toInt(), position.y.toInt())
+            }else{
+                IntOffset.Zero
+            }
+        }
+
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigator跨平台Screen界面导航 绑定当前界面的导航控制器*/
         /*改了导航界面路由名称，不要忘了改初始导航页界面路由名称*/
-        NavHost/*导航图主体组件*/(navController=navController!!,/*使用导航控制器*/ startDestination="message"/*初始导航界面*/){
+        NavHost/*导航图主体组件*/(navController=navController,/*绑定导航控制器*/ startDestination="message"/*初始导航界面*/){
             composable("message"){/*消息界面*/
                 Box(Modifier.fillMaxSize()){
-                    LazyColumn/*竖直列表*/(Modifier.fillMaxSize(1f), state=listState!!){
-                        items(contactMessageItems!!){ contactMessageItem/*赋值给新建item变量*/ ->/*此Lambda表达式代表接下来使用本次变量*/
+                    LazyColumn/*竖直列表*/(Modifier.fillMaxSize(1f), state=listState){
+                        items(contactMessageItems){ contactMessageItem/*赋值给新建item变量*/ ->/*此Lambda表达式代表接下来使用本次变量*/
                             Column(Modifier.combinedClickable(/*事件，列表项事件，不能获取触摸指针位置*/
                                                               onClick={/*单击事件*/
                                                                   if(!showPopup1){
@@ -713,11 +706,11 @@ class MainActivity1:Screen{
                                                                   }
                                                               },
                                                               onLongClick={/*长按事件*/
-                                                                  showPopup1=true
+//                                                                  showPopup1=true
                                                               },
                                                               )
                                        .onGloballyPositioned{ coordinates ->
-                                           anchorCoordinates1=coordinates/*获取列表项在屏幕上的坐标*/
+                                           anchorCoordinates=coordinates/*获取列表项在屏幕上的坐标*/
                             }
                                   ){
                                 Row/*水平布局*/(Modifier.fillMaxWidth()/*填充容器全部宽度，否则如果在Button按钮容器中会默认被放置中间*/

@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.FrameWindowScope
@@ -34,13 +35,11 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import cafe.adriel.voyager.navigator.Navigator
 import com.nineeditcloud.editletterchat.common_tools.KMPTheme
+import editletterchat.composeapp.generated.resources.Res
+import editletterchat.composeapp.generated.resources.icon00
 import io.github.vinceglb.filekit.FileKit
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.withContext
 import java.awt.geom.RoundRectangle2D
 import java.beans.PropertyChangeListener
 
@@ -49,27 +48,25 @@ import java.beans.PropertyChangeListener
 fun main(){
     FileKit.init(appId="EditLetterChat")/*FileKit跨平台 应用私有路径获取&文件操作 框架 初始化，应用入口点调用 为桌面应用指定唯一ID，构建系统路径*/
     application{
-        val verticalNarrowWindowState/*竖直窄窗状态*/=rememberWindowState(width=350.dp/*宽度，Dp.Unspecified由内容决定*/, height=680.dp/*高度，Dp.Unspecified由内容决定*/,
-                                            placement=WindowPlacement.Floating/*设置初始位置为浮动*/,
-                                            position=WindowPosition((800-350).dp/*水平坐标*/, 0.dp/*垂直坐标*/)/*窗口位置(桌面屏幕常规尺寸为1280*720的倍数 或按最小尺寸800*600)*/,
-                                            )
-//        Window(onCloseRequest/*关闭请求功能*/=::exitApplication, title="辑信", state=verticalNarrowWindowState, ){
-//            KMPTheme{
+        KMPTheme{
+            val icon=painterResource(Res.drawable.icon00)
+//            val verticalNarrowWindowState/*竖直窄窗状态*/=rememberWindowState(width=350.dp/*宽度，Dp.Unspecified由内容决定*/, height=680.dp/*高度，Dp.Unspecified由内容决定*/,
+//                placement=WindowPlacement.Floating/*设置初始位置为浮动*/,
+//                position=WindowPosition((800-350).dp/*水平坐标*/, 0.dp/*垂直坐标*/)/*窗口位置(桌面屏幕常规尺寸为1280*720的倍数 或按最小尺寸800*600)*/, )
+//            Window(icon=icon, title="辑信", onCloseRequest/*关闭请求功能*/=::exitApplication/*exitApplication是ApplicationScope的扩展函数*/,
+//            state=verticalNarrowWindowState, resizable=false/*边缘是否可 缩放/调整大小*/, ){
 //                Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
 //            }
-//        }
-
-        val horizontalWindowState/*水平窗状态*/=rememberWindowState(width=911.dp/*宽度，Dp.Unspecified由内容决定*/, height=641.dp/*高度，Dp.Unspecified由内容决定*/,
-                                            placement=WindowPlacement.Floating/*设置初始缩放为浮动*/,
-                                            position=WindowPosition(180.dp/*水平坐标*/, 20.dp/*垂直坐标*/)/*窗口位置(桌面屏幕常规尺寸为1280*720的倍数 或按最小尺寸800*600)*/,
-                                            )
-        Window(onCloseRequest/*关闭请求功能*/=::exitApplication/*exitApplication是ApplicationScope的扩展函数*/, title="辑信", state=horizontalWindowState,
-               undecorated=true/*去掉默认原生标题栏*/, transparent=false/*保留窗口背景(可设true做异形窗口)*/, resizable=false/*边缘是否可 缩放/调整大小*/, ){
-            KMPTheme{
+            val horizontalWindowState/*水平窗状态*/=rememberWindowState(width=911.dp/*宽度，Dp.Unspecified由内容决定*/, height=641.dp/*高度，Dp.Unspecified由内容决定*/,
+                placement=WindowPlacement.Floating/*设置初始缩放为浮动*/,
+                position=WindowPosition(180.dp/*水平坐标*/, 20.dp/*垂直坐标*/)/*窗口位置(桌面屏幕常规尺寸为1280*720的倍数 或按最小尺寸800*600)*/, )
+            Window(icon=icon, onCloseRequest/*关闭请求功能*/=::exitApplication/*exitApplication是ApplicationScope的扩展函数*/, state=horizontalWindowState,
+                   undecorated=true/*去掉默认原生标题栏*/, transparent=false/*保留窗口背景(可设true做异形窗口)*/, resizable=false/*边缘是否可 缩放/调整大小*/, ){
 //                Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
                 App("辑信", horizontalWindowState, ::exitApplication/*::后边代表传递的方法 或Lambda包装onCloseApp={ exitApplication() }*/)
             }
         }
+
     }
 }
 
@@ -124,39 +121,40 @@ fun FrameWindowScope.App(title:String, windowState:WindowState, onCloseApp:()->U
             }
         }
     }
-
     Column(modifier=Modifier.fillMaxSize() ){
-        /*========== 自定义标题栏 ==========*/
-        Row(modifier=Modifier.fillMaxWidth().height(40.dp).background(Color(0xFF2D2D2D) )/*标题栏背景色*/
-            /*.windowDraggableArea()*//*拖拽移动窗口*/, verticalAlignment=Alignment.CenterVertically, ){
-            Spacer(modifier=Modifier.width(8.dp) )
-            if(isMacOS){/*macOS 风格：窗口控制按钮在左边*/
-                WindowControlButtons(isMaximized=isMaximized,
-                    onMinimize={ window.isMinimized=true },
-                    onMaximize={
-                        windowState.placement/*窗口缩放*/=if(isMaximized) WindowPlacement.Floating/*浮动*/ else WindowPlacement.Maximized/*最大窗口*/
-                    },
-                    onClose={ onCloseApp.invoke() },
-                    )
+        WindowDraggableArea/*可拖动窗体组件*/{
+            /*========== 自定义标题栏 ==========*/
+            Row(modifier=Modifier.fillMaxWidth().height(40.dp).background(Color(0xFF2D2D2D) )/*标题栏背景色*/
+                /*.windowDraggableArea()*//*拖拽移动窗口*/, verticalAlignment=Alignment.CenterVertically, ){
                 Spacer(modifier=Modifier.width(8.dp) )
-            }
+                if(isMacOS){/*macOS 风格：窗口控制按钮在左边*/
+                    WindowControlButtons(isMaximized=isMaximized,
+                                         onMinimize={ window.isMinimized=true },
+                                         onMaximize={
+                                             windowState.placement/*窗口缩放*/=if(isMaximized) WindowPlacement.Floating/*浮动*/ else WindowPlacement.Maximized/*最大窗口*/
+                                         },
+                                         onClose={ onCloseApp.invoke() },
+                                        )
+                    Spacer(modifier=Modifier.width(8.dp) )
+                }
 
-            Text(text=title, color=Color.White, fontSize=14.sp, modifier=Modifier.weight(1f) )/*标题文本(居中)*/
+                Text(text=title, color=Color.White, fontSize=14.sp, modifier=Modifier.weight(1f) )/*标题文本(居中)*/
 
-            if(!isMacOS){/*Windows/Linux 风格：按钮在右边*/
-                WindowControlButtons(isMaximized=isMaximized,
-                    onMinimize={ window.isMinimized = true },
-                    onMaximize={
-                        windowState.placement=if(isMaximized) WindowPlacement.Floating else WindowPlacement.Maximized
-                    },
-                    onClose={ onCloseApp.invoke() },
-                    )
+                if(!isMacOS){/*Windows/Linux 风格：按钮在右边*/
+                    WindowControlButtons(isMaximized=isMaximized,
+                                         onMinimize={ window.isMinimized = true },
+                                         onMaximize={
+                                             windowState.placement=if(isMaximized) WindowPlacement.Floating else WindowPlacement.Maximized
+                                         },
+                                         onClose={ onCloseApp.invoke() },
+                                        )
+                }
             }
         }
 
         /*========== 窗口内容区域 ==========*/
         Box(modifier=Modifier.fillMaxSize().background(Color(0xFF3C3C3C) ) ){
-            Text("这里是应用内容", color=Color.White, modifier=Modifier.align(Alignment.Center) )
+
         }
     }
 }
