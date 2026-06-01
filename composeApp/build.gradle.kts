@@ -392,7 +392,7 @@ compose.desktop/*Compose桌面目标配置*/{/*JVM桌面端建议使用JBR17*/
             packageName="EditLetterChat"/*包名，含中文时build.gradle.kts配置文件要用GBK中文编码？*/
             packageVersion="1.0.0"/*包版本*/
             /*各平台图标*/
-            val iconFilePath="commonMain/composeResources/drawable/"/*图片文件路径*/
+            val iconFilePath="src/commonMain/composeResources/drawable/"/*图片文件路径*/
             windows{
                 iconFile.set(project.file("${iconFilePath}icon00.ico") )
             }
