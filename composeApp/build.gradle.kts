@@ -371,7 +371,7 @@ android/*安卓目标配置*/{
 //            signingConfig/*签名配置*/=signingConfigs.getByName/*根据签名名称获取*/("release")
 //        }
         getByName/*根据签名名称获取*/("release"){
-            isMinifyEnabled=false/*是否开启 安装包体积最小化，不建议启用(保持false，注释会闪退)，会混淆类(容易导致某些类互相影响)，MultiDex需要手动配置，容易导致很麻烦*/
+            isMinifyEnabled=false/*是否开启 安装包体积最小化，不建议启用(保持false)，会混淆类(容易导致某些类互相影响)，MultiDex需要手动配置，容易导致很麻烦*/
         }
     }
     compileOptions/*编译选项*/{
