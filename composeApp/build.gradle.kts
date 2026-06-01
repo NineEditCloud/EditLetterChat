@@ -388,9 +388,20 @@ compose.desktop/*Compose桌面目标配置*/{/*JVM桌面端建议使用JBR17*/
         mainClass="com.nineeditcloud.editletterchat.MainKt"/*主类*/
         nativeDistributions{
             targetFormats/*桌面目标系统平台*/(TargetFormat.Msi/*Win安装包*/, TargetFormat.Exe/*Win执行包*/, TargetFormat.Dmg/*MacOS安装包*/,
-                                              TargetFormat.Rpm/*RedHatLinux软件包*/,TargetFormat.Deb/*DebianLinux软件包*/)
+                TargetFormat.Rpm/*RedHatLinux软件包*/,TargetFormat.Deb/*DebianLinux软件包*/)
             packageName="EditLetterChat"/*包名，含中文时build.gradle.kts配置文件要用GBK中文编码？*/
             packageVersion="1.0.0"/*包版本*/
+
+            /*各平台图标*/
+            windows{
+                iconFile.set(project.file("src/commonMain/composeResources/drawable/icon00.ico"))
+            }
+            macOS{
+                iconFile.set(project.file("src/commonMain/composeResources/drawable/icon00.icns"))
+            }
+            linux{
+                iconFile.set(project.file("src/commonMain/composeResources/drawable/icon00.png"))
+            }
         }
     }
 }

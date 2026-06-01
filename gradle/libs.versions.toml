@@ -55,6 +55,8 @@ okio="3.9.1"#OkIO3.9.1兼容Kotlin2.0、安卓5.0，3.10.2兼容Kotlin2.1，4.x�
 kmpFile="0.8.0"
 material3Android = "1.4.0"#KMP0.8.0兼容Kotlin2.0、安卓5.0
 
+jvmAppName="辑信"
+
 
 
 [libraries]#依赖库，若指定的版本变量不存在或已改名，则会引起异常：Problem: In version catalog libs, version reference '不存在的那个变量名' doesn't exist，如：Reason: Dependency 'org.jetbrains.kotlinx:kotlinx-coroutines-swing' references version 'kotlinx.coroutines' which doesn't exist.

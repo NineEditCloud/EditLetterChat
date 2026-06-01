@@ -6,6 +6,7 @@
         <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item><!--启动图标 设为透明 或全透明drawable资源)-->
         <!--        <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>&lt;!&ndash;图标背景色 设为透明(可选)，图标背景色默认无，除非你想设成别的颜色&ndash;&gt;-->
         <item name="android:windowSplashScreenBrandingImage">@android:color/transparent</item><!--底部品牌图-->
+        <item name="windowSplashScreenAnimationDuration">0</item><!--启动动画持续时间-->
         <item name="postSplashScreenTheme">@style/Theme.Launcher</item><!--启动画面结束后使用的真实主题，请替换为你自己的-->
     </style>
 </resources>

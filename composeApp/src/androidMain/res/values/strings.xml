@@ -1,13 +1,4 @@
 <resources>
     <string name="app_name">辑信</string>
-
-<!--    <style name="Theme.App.NoIconSplash" parent="Theme.SplashScreen">-->
-        <!-- 启动背景色，建议设为主页背景色 -->
-<!--        <item name="windowSplashScreenBackground">@color/white</item>-->
-        <!-- 换成透明图标 -->
-<!--        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_transparent</item>-->
-        <!-- 如果有底部品牌图也设透明或删除 -->
-<!--        <item name="windowSplashScreenAnimationDuration">300</item>-->
-<!--    </style>-->
 </resources>
 
