@@ -391,16 +391,16 @@ compose.desktop/*Compose桌面目标配置*/{/*JVM桌面端建议使用JBR17*/
                 TargetFormat.Rpm/*RedHatLinux软件包*/,TargetFormat.Deb/*DebianLinux软件包*/)
             packageName="EditLetterChat"/*包名，含中文时build.gradle.kts配置文件要用GBK中文编码？*/
             packageVersion="1.0.0"/*包版本*/
-
             /*各平台图标*/
+            val iconFilePath="commonMain/composeResources/drawable/"/*图片文件路径*/
             windows{
-                iconFile.set(project.file("src/commonMain/composeResources/drawable/icon00.ico"))
+                iconFile.set(project.file("${iconFilePath}icon00.ico") )
             }
             macOS{
-                iconFile.set(project.file("src/commonMain/composeResources/drawable/icon00.icns"))
+                iconFile.set(project.file("${iconFilePath}icon00.icns") )
             }
             linux{
-                iconFile.set(project.file("src/commonMain/composeResources/drawable/icon00.png"))
+                iconFile.set(project.file("${iconFilePath}icon00.png") )
             }
         }
     }
