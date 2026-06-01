@@ -49,7 +49,7 @@ fun main(){
     FileKit.init(appId="EditLetterChat")/*FileKit跨平台 应用私有路径获取&文件操作 框架 初始化，应用入口点调用 为桌面应用指定唯一ID，构建系统路径*/
     application{
         KMPTheme{
-            val icon=painterResource(Res.drawable.icon00)
+            val icon=painterResource(Res.drawable.icon00)/*注意drawable目录资源不能有相同名称文件(即使扩展名不同也不行)，否则Res.drawable选择有重复名文件时执行异常*/
 //            val verticalNarrowWindowState/*竖直窄窗状态*/=rememberWindowState(width=350.dp/*宽度，Dp.Unspecified由内容决定*/, height=680.dp/*高度，Dp.Unspecified由内容决定*/,
 //                placement=WindowPlacement.Floating/*设置初始位置为浮动*/,
 //                position=WindowPosition((800-350).dp/*水平坐标*/, 0.dp/*垂直坐标*/)/*窗口位置(桌面屏幕常规尺寸为1280*720的倍数 或按最小尺寸800*600)*/, )
