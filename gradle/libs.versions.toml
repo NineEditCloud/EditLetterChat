@@ -11,7 +11,8 @@ androidx-espresso="3.7.0"
 androidx-lifecycle="2.9.4"#2.9.4兼容安卓5.0、KMP，2.8.0+都支持KMP
 androidx-testExt="1.3.0"
 composeHotReload="1.1.0"#ComposeHotReload，仅Kotlin2.1.x+支持的插件
-composeMultiplatform="1.9.0-rc01"#CMP插件和Compose依赖版本，最高1.9.0-rc01兼容安卓5.0且有CMP插件，1.7+兼容Kotlin2.1/2.2，1.6.11兼容Kotlin2.0.x
+composeMultiplatform="1.9.0-rc01"#CMP插件和JetpackCompose依赖版本，最高1.9.0-rc01兼容安卓5.0且有CMP插件，1.7+兼容Kotlin2.1/2.2，1.6.11兼容Kotlin2.0.x
+kuiklyCompose="2.0.0"#KuiklyCompose跨平台适应原生界面框架，2.0.0兼容Kotlin2.1.x、安卓5.0、IOS12
 junit="4.13.2"
 junitJupiter = "5.14.0"#
 logback="1.5.32"
@@ -94,11 +95,11 @@ composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "com
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }#Kotlin2.0.21版的ComposeCompiler插件有Bug
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kuiklyCompose={id="com.tencent.kuikly", version.ref="kuiklyCompose"}#KuiklyCompose跨平台适应原生界面插件-支持小程序端必须
 
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-
 androidx-room = { id = "androidx.room", version.ref = "room" }
 realm={ id="io.realm.kotlin", version.ref="realm" }#Realm插件
 krdb={id="io.github.xilinjia.krdb.gradle-plugin", version.ref="krdb"}#Krdb插件 Realm的新版 支持Kotlin2.1+
@@ -106,5 +107,4 @@ serialization={id="plugin.serialization", version.ref="kotlin"}
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }#kotlin-serialization序列化插件
 exoquery={id="io.exoquery.exoquery-plugin", version.ref="exoquery"}#ExoQuery插件
 exoqueryRun={id="io.exoquery.exoquery-runner-jdbc", version.ref="exoqueryRun"}#ExoQuery需要的平台运行器
-
 multiplatform-mokoResources={id="dev.icerock.mobile.multiplatform-resources", version.ref="mokoResources"}#mokoResources综合资源库 插件

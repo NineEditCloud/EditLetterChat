@@ -3,6 +3,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 /*若用了shared区分模块，composeApp部分负责共享应用GUI(不包括将Compose用于HTML)，若未用shared模块 则composeApp模块包括KMP项目全部内容*/
 plugins{
@@ -18,9 +19,10 @@ plugins{
     alias(libs.plugins.androidx.room)/*应用 Room插件*/
 //    alias(libs.plugins.realm)/*应用 Realm插件(对象型数据存储框架)*/
 //    alias(libs.plugins.krdb)/*应用 Krdb插件(Realm新版，支持Kotlin2.1+)*/
-
 //    alias(libs.plugins.exoquery)/*应用 ExoQuery插件*/
+
 //    alias(libs.plugins.multiplatform.mokoResources)/*应用 MokoResources综合资源库 插件*/
+
     kotlin("plugin.serialization") version "${libs.versions.kotlin.get()}"/*应用Kotlin-serialization序列化插件*/
 //    alias(libs.plugins.kotlin.serialization)/*应用 Kotlin-serialization序列化插件，闪退*/
 }
@@ -81,6 +83,11 @@ gradlew build --refresh-dependencies
 * ExoQuery(功能强大且独特 发展中 新社区)，依赖编译器插件编译时转换成原生SQL，JS即将支持，无需为各平台单独写构建器-通过不同的运行器(runner)模块配置(平台差异由框架内部处理)
 * RealmKotlinSDK(功能完备稳定 不支持Kotlin2.1.0 兼容安卓4.1 最低维护状态 MongoDB团队)，编译器插件 操作、持久化 Kotlin对象，无为各平台写构建器-用本地Configuration对象一件初始化(平台差异在SDK内部处理)
 * Krdb(Realm的新版 支持Kotlin2.1+ 兼容安卓4.1)
+*
+* ---KMP跨平台 Gradle构建工具-快捷打包各桌面系统应用 指令
+* packageExe打包Win应用执行包 packageMsi打包Win应用安装包
+* packageDmg打包MacOS应用安装包
+* packageDeb打包DebianLinux系列软胶包 packageRpm打包RedHatLinux系列软胶包
 */
 
 kotlin{
@@ -114,10 +121,16 @@ kotlin{
 
 //    js(IR){
 //        browser{
-//            runTask {
-//                devServer?.apply { port = 3000 }
+//            runTask{/*运行任务*/
+//                devServerProperty/*代替过旧的devServer*/.set(KotlinWebpackConfig.DevServer(port=3000) )
 //            }
-//        }
+//            webpackTask{/*WEB打包任务*/
+//                mainOutputFileName/*代替过旧的outputFileName*/="H5App.js"/*最终输出的JavaScript脚本文件名*/
+//            }
+//            commonWebpackConfig{/*常规共享WEB打包配置*/
+//                output?.library=null/*不导出全局对象，只导出必要的输入方法*/
+//            }
+//        }/*将渲染代码和H5App代码打包在一起并直接执行*/
 //        binaries.executable()
 //    }
 //    @OptIn(ExperimentalWasmDsl::class)
@@ -127,18 +140,21 @@ kotlin{
 //    }
     
     sourceSets/*源依赖集合*/{
-        commonMain.dependencies/*常规依赖*/{
+        commonMain.dependencies/*常规共享依赖*/{
 //            implementation(projects.shared)/*应用 shared(非UI共享代码) 模块*/
 
             implementation("org.jetbrains.compose.runtime:runtime:${libs.versions.composeMultiplatform.get()}")
             implementation("org.jetbrains.compose.foundation:foundation:${libs.versions.composeMultiplatform.get()}")
             implementation("org.jetbrains.compose.ui:ui:${libs.versions.composeMultiplatform.get()}")
-            implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.composeMultiplatform.get()}")/*CMP跨平台 返回键事件库*/
+            implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.composeMultiplatform.get()}")/*CMP跨平台JetpackCompose 返回键事件库*/
             implementation("org.jetbrains.compose.components:components-resources:${libs.versions.composeMultiplatform.get()}")
             implementation("org.jetbrains.compose.material:material:${libs.versions.material.get()}")/*Material组件与主题属性，跨平台版，最高1.7.0*/
 //            implementation("org.jetbrains.compose.material:material-icons-extended:${libs.versions.material.get()}")/*MaterialIcons图标库 跨平台通用版*/
-            implementation("org.jetbrains.compose.material3:material3:1.9.0")/*Compose基础Material包控件、组件，最高1.4.0兼容安卓5.0，但不支持wasmJS，1.6.0兼容安卓5.0*/
+            implementation("org.jetbrains.compose.material3:material3:1.9.0")/*ComposeMP基础Material包控件、组件，最高1.4.0兼容安卓5.0，但不支持wasmJS，1.6.0兼容安卓5.0*/
 //            implementation("org.jetbrains.compose.animation:animation")
+
+//            implementation("com.tencent.kuikly-open:core:${libs.versions.kuiklyCompose.get()}")/*KuiklyCompose跨平台适应原生界面框架 共享核心库*/
+//            implementation("com.tencent.kuikly-open:core-annotations:${libs.versions.kuiklyCompose.get()}")
 
 //            implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${libs.versions.androidx.lifecycle.get()}")/*lifecycle-ViewModelCompose，KMP跨平台 ViewModel-Compose协程库*/
 //            implementation("androidx.lifecycle:lifecycle-runtime-compose:${libs.versions.androidx.lifecycle.get()}")
@@ -215,14 +231,16 @@ kotlin{
         }
         commonTest.dependencies/*常规测试共享依赖*/{
             implementation("org.jetbrains.kotlin:kotlin-test:${libs.versions.kotlin.get()}")/*Kotlin测试依赖*/
+//            implementation(kotlin("test") )/*便捷导入对应Kotlin版本的测试依赖*/
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${libs.versions.kotlinx.get()}")/*Kotlin协程依赖测试版*/
         }
 
         androidMain.dependencies/*安卓依赖*/{
-            implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.composeMultiplatform.get()}")/*Compose 1.9.0-rc01版本兼容安卓5.0，但不兼容IOS*/
+            implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.composeMultiplatform.get()}")/*JetpackCompose 1.9.0-rc01版本兼容安卓5.0，但不兼容IOS*/
             implementation("androidx.activity:activity-compose:1.11.0")/*安卓专用工具库，1.11.0版本兼容安卓5.0，绝对不可更改为更高版本！！！*/
             implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")/*安卓系统栏透明库，0.36.0兼容安卓5.0*/
             implementation("androidx.core:core-splashscreen:1.0.1")/*为解决 安卓12+启动背景图*/
+//            implementation("com.tencent.kuikly-open:core-render-android:${libs.versions.kuiklyCompose.get()}")/*KuiklyCompose跨平台适应原生界面框架 安卓核心库*/
 
 
 
@@ -270,6 +288,9 @@ kotlin{
 //        jsMain.dependencies/*JS运行依赖*/{
 //            ksp{ arg("option", "value")/*可传参键值对*/ }
 //            implementation("org.jetbrains.compose.html:html:1.6.0")/*ComposeHTML，WEB网页DOM模式*/
+//            implementation("com.tencent.kuikly-open:.core-render-web:base:${libs.versions.kuiklyCompose.get()}")/*导入WEB渲染共享库*/
+//            implementation("com.tencent.kuikly-open:.core-render-web:h5:${libs.versions.kuiklyCompose.get()}")/*HTML5*/
+//            implementation("com.tencent.kuikly-open:.core-render-web:miniapp:${libs.versions.kuiklyCompose.get()}")/*KuiklyCompose跨平台适应原生小程序界面*/
 //        }
 //        wasmJsMain.dependencies/*wasmJS运行依赖*/{
 //            implementation("org.jetbrains.compose.material3:material3:1.10.0")/*支持wasmJS的material3版本*/
@@ -289,7 +310,7 @@ dependencies/*可用于部分平台调用的共享依赖*/{
 
 //    implementation("org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}")/*Kotlin标准库*/
 //    implementation("org.jetbrains.kotlin:kotlin-reflect:${libs.versions.kotlin.get()}")/*Kotlin反射依赖，KSP必须！！！*/
-    implementation(kotlin("stdlib"))/*Kotlin标准库，用Kotlin插件添加对应版本*/
+    implementation(kotlin("stdlib")) /*Kotlin标准库，用Kotlin插件添加对应版本*/
     implementation(kotlin("reflect"))/*Kotlin反射库，用Kotlin插件添加对应版本*/
 
 
@@ -297,16 +318,16 @@ dependencies/*可用于部分平台调用的共享依赖*/{
     listOf(
 //        "kspCommonMainMetadata"/*commonMain(用于处理共享代码)，设备不足以编译至所有目标时添加会导致异常*/,
         "kspAndroid"/*安卓目标*/,
-        "kspIosArm64", "kspIosX64", "kspIosSimulatorArm64", /*IOS系列架构目标，设备不足以编译时添加会导致异常*/
+        "kspIosArm64", "kspIosX64", "kspIosSimulatorArm64", /*IOS系列架构目标，设备不足以编译时 gradle.properties要启用IOS的UIKit原生框架支持 否则添加会导致异常*/
         "kspJvm",/*Kotlin块中JVM桌面目标的命名*/
 //        "kspJs",/* Kotlin/JS 目标*/
 //        "kspNative"/* Kotlin/Native 目标*/
-        ).forEach{ target ->/*循环遍历 每次赋值给target*/
+        ).forEach{ target ->/*循环遍历 每次赋值给target(不设变量名时默认赋值给新变量it)*/
             add(target, libs.androidx.room.compiler)/*为各平台添加Room处理器，缺少此依赖会导致异常：Caused by: java.lang.ClassNotFoundException: com.nineeditcloud.editletterchat.database.AppDatabase_Impl*/
 //            add(target, "com.ctrip.sqllin:sqllin-processor:${libs.versions.sqllin.get()}")/*除安卓外，配置KSP以处理使用SQLlin依赖中的注解*/
     }
     /*在AndroidX库的更新中，collection-ktx的功能已被合并进了collection主要库中，Room2.7.0内部仍然请求的是collection-ktx，所以需强制所有依赖底层用旧版collection-ktx库*/
-//    implementation("androidx.collection:collection:1.2.0")/*强制所有依赖底层用指定的 collection库版本，避免版本冲突*/
+//    implementation("androidx.collection:collection:1.2.0")/*强制所有依赖底层用指定的 collection库版本，避免版本冲突，失败*/
 
 //    implementation("com.attafitamim.kabin:compiler:${libs.versions.kabin.get()}")/*Kabin编译库*/
 
@@ -314,6 +335,12 @@ dependencies/*可用于部分平台调用的共享依赖*/{
 //    implementation("io.coil-kt.coil3:coil-compose:${libs.versions.coil.get()}")/*fileKit-coil的内部底层依赖*/
 
 //    ksp(project(":processor"))/*WEB端 将Compose生成DOM模式网页 注解需要的*/
+
+    listOf("kspAndroid",
+           "kspIosArm64", "kspIosX64", "kspIosSimulatorArm64", /*IOS系列架构目标，设备不足以编译时添加会导致异常*/
+           "kspJs").forEach{
+//               add(it/*配置平台名*/, "com.tencent.kuikly-open:core-ksp:${libs.versions.kuiklyCompose.get()}")/*Kotlin块中 无Js配置或暂注释时 会找不到Js添加目标 不用Kuikly适应原生H5和小程序界面时请将这行也暂时注释*/
+           }
 }
 configurations.all{/*全部配置*/
     resolutionStrategy.eachDependency{/*遍历依赖*/
@@ -330,8 +357,8 @@ configurations.all{/*全部配置*/
         }
     }
 }
-//tasks.withType<KotlinCompile>{/*MokoResources资源问题-为解决KSP 在KotlinMultiplatform中的元数据依赖问题*/
-//    if(name != "kspCommonMainKotlinMetadata"){
+//tasks.withType<KotlinCompile>{
+//    if(name!="kspCommonMainKotlinMetadata"){/*MokoResources资源问题-为解决KSP 在KotlinMultiplatform中的元数据依赖问题*/
 //        dependsOn("kspCommonMainKotlinMetadata")
 //    }
 //}
@@ -341,10 +368,10 @@ room{/*Room配置*/
 
 //multiplatformResources{/*moko-resources 配置块*/
 //    resourcesPackage.set("com.nineeditcloud.editletterchat")/*【必需】生成的资源类包名*/
-//    resourcesClassName.set("MR")                /*【可选】生成的资源类名，默认为MR*/
-//    resourcesVisibility.set(MRVisibility.Public)/*【可选】资源类可见性，默认为Public*/
-//    iosBaseLocalizationRegion.set("en")         /*【可选】iOS基础本地化区域*/
-//    iosMinimalDeploymentTarget.set("11.0")      /*【可选】iOS最低版本*/
+//    resourcesClassName.set("MR")                            /*【可选】生成的资源类名，默认为MR*/
+//    resourcesVisibility.set(MRVisibility.Public)            /*【可选】资源类可见性，默认为Public*/
+//    iosBaseLocalizationRegion.set("en")                     /*【可选】iOS基础本地化区域*/
+//    iosMinimalDeploymentTarget.set("11.0")                  /*【可选】iOS最低版本*/
 //}
 
 android/*安卓目标配置*/{
@@ -378,17 +405,22 @@ android/*安卓目标配置*/{
         sourceCompatibility=JavaVersion.VERSION_21
         targetCompatibility=JavaVersion.VERSION_21
     }
-//    experimental { enableAndroidResources=true }
+//    experimental{ enableAndroidResources=true }
 //    @Suppress("UnstableApiUsage") @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 //    experimentalProperties["android.experimental.kmp.enableAndroidResources"]=true/*实验性功能：将commonMain的资源 合并为Android资源*/
+//    sourceSets{
+//        named("main"){
+//            assets.srcDirs("src/commonMain/composeResources")
+//        }
+//    }
 }
-
 compose.desktop/*Compose桌面目标配置 桌面端建议JBR用17*/{
     application/*应用*/{
         mainClass="com.nineeditcloud.editletterchat.MainKt"/*主类*/
         nativeDistributions{
-            targetFormats/*桌面目标系统平台*/(TargetFormat.Msi/*Win安装包*/, TargetFormat.Exe/*Win执行包*/, TargetFormat.Dmg/*MacOS安装包*/,
-                TargetFormat.Rpm/*RedHatLinux软件包*/,TargetFormat.Deb/*DebianLinux软件包*/)
+            targetFormats/*桌面目标系统平台*/(TargetFormat.Msi/*Win应用安装包*/, TargetFormat.Exe/*Win应用执行包*/,
+                TargetFormat.Dmg/*MacOS应用安装包*/,
+                TargetFormat.Deb/*DebianLinux软件包*/, TargetFormat.Rpm/*RedHatLinux软件包*/, )
             /*CMP的RC版本主要供测试，若希望稳定开发 建议使用ComposeMultiplatform 1.6.10或1.7.0正式版，它们DSL更成熟 appName直接可用*/
 //            name="\u8f91\u4fe1"/*应用名，含中文时 gradle.properties配置文件要明确配置文件UTF-8编码systemProp.file.encoding=UTF-8*/
             /*name中文显示乱码 通常是构建脚本编码错误，确认build.gradle.kts为UTF-8，并且终端/CI环境 也支持UTF-8
@@ -396,10 +428,10 @@ compose.desktop/*Compose桌面目标配置 桌面端建议JBR用17*/{
             安装包文件名不建议含中文，即使Windows允许，在自动化流水线 或 某些FTP工具中 容易出错，建议分开管理：appName用中文 packageName用英文
             macOS上appName含中文，完全支持，生成的.app包会以中文显示在 Finder和Dock中*/
             packageName="EditLetterChat"/*包名(应用执行备注)，不建议打包时中文(打包出的安装程序文件名可改中文)*/
-            packageVersion="1.0.1"/*包版本(安装时会比较已安装版本 判断为更新还是重复安装)*/
+            packageVersion="1.0.0"/*包版本(安装时会比较已安装版本 判断为更新还是重复安装)*/
             vendor="NineEditCloud"/*开发团队*/
 
-            /*各平台图标，桌面应用打包失败后清理AndroidStudio缓存，重启再试*/
+            /*各平台图标，遇到桌面应用打包失败后清理AndroidStudio缓存 重启再试*/
             val iconFilePath="src/commonMain/composeResources/drawable/"/*图片文件路径，注意drawable目录资源不能有相同名称文件(即使扩展名不同也不行)，否则Res.drawable选择有重复名文件时执行异常*/
             windows{
                 iconFile.set(project.file("${iconFilePath}icon00_win.ico") )
@@ -413,3 +445,5 @@ compose.desktop/*Compose桌面目标配置 桌面端建议JBR用17*/{
         }
     }
 }
+
+

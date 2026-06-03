@@ -5,6 +5,7 @@ import com.nineeditcloud.editletterchat.common_tools.MessageReader.Entry
 import com.nineeditcloud.editletterchat.common_tools.deviceType
 import com.nineeditcloud.editletterchat.common_tools.readBigEndianInt
 import com.nineeditcloud.editletterchat.common_tools.toData
+import com.nineeditcloud.editletterchat.common_tools.toHashMap
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
@@ -15,7 +16,8 @@ import kotlinx.coroutines.CancellationException
  * @param account 认证账号
  * @param token 认证令牌
  * @param 某OnMessage 收到消息时的回调(运行在协程所在线程，非主线程)*/
-fun tcpLongConnClient(account:String, token:String, onHashMapMessage/*收到哈希表字符串键值对消息回调*/:(HashMap<String,String>)->Unit,
+fun tcpLongConnClient(account:String, token:String,
+                      onHashMapMessage/*收到哈希表字符串键值对消息回调*/:(HashMap<String,String>)->Unit,
                       onBytesMessage/*收到字节串键值对消息回调*/:(List<Entry>)->Unit )=runBlocking{
     val host="192.168.1.47";val port=9000
     while(coroutineContext.isActive){
@@ -38,8 +40,10 @@ fun tcpLongConnClient(account:String, token:String, onHashMapMessage/*收到哈�
 //                    require(authResponse.contains("\"auth_ok\"")/*正常条件*/ ){/*若不达成正常条件 则接收此块内异常信息并抛出异常*/
 //                        "认证失败: $authResponse"/*异常信息*/
 //                    }
-                    if(authResponse.contains("auth_ok") )/*若包含认证成功内容*/ Log.msg("Ktor-TCP长连接", "账号令牌认证成功")
-                    else throw IllegalArgumentException("账号令牌认证失败: $authResponse")/*抛出异常信息*/
+                    if(authResponse.contains("auth_ok") ){/*若包含认证成功内容*/
+                        Log.msg("Ktor-TCP长连接", "账号令牌认证成功")
+                        onHashMapMessage(authResponse.toHashMap() )/*返回参数 认证响应解析的哈希表键值对*/
+                    }else if(authResponse.contains("tokenError") )/*若包含Token令牌错误*/ throw IllegalArgumentException("账号令牌认证失败: $authResponse")/*抛出异常信息*/
 
                     /*---------- 用户向服务器发送 传给好友 带图片的消息：两方账号ID + 消息+图片 ----------*/
 //                    val imageBytes=java.io.File("avatar.jpg").readBytes()/*获取图片字节串，实际开发中用FileKit跨平台框架 获取图片并读取字节串*/
@@ -72,9 +76,11 @@ fun tcpLongConnClient(account:String, token:String, onHashMapMessage/*收到哈�
             throw e/*正常取消时直接抛出，不吞掉取消*/
         }catch(e:Exception){
 //            if(e is CancellationException) throw e
-            if(e is IllegalArgumentException) Log.e("Ktor-TCP长连接", e.message.toString(), e)
-            Log.e("Ktor-TCP长连接", "连接异常", e)
-            if(coroutineContext.isActive) delay(5_000)/*连接异常、读写异常等，连接异常后等5秒自动重连(防止连续异常时 重连太频繁造成服务端压力)*/
+            if(e is IllegalArgumentException){
+                Log.e("Ktor-TCP长连接", e.message.toString(), e)
+
+            }else Log.e("Ktor-TCP长连接", "连接异常", e)
+            if(coroutineContext.isActive) delay(5_000)/*连接异常、读写异常等，等5秒自动重连(防止连续异常时 重连太频繁造成服务端压力)*/
         }
     }
 }
