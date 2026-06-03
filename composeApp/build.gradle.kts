@@ -109,7 +109,7 @@ kotlin{
     listOf(iosX64(), iosArm64(), iosSimulatorArm64() ).forEach{ iosTarget ->/*遍历多个IOS架构，每次赋值给iosTarget(若不写传参名 则默认it)*/
         iosTarget.binaries.framework{/*IOS目标二进制框架*/
             baseName="TodoApp"
-            isStatic=true
+            isStatic=true/*生成静态框架，加速编译*/
 //            linkerOpts.add("-lsqlite3")/*Required when using NativeSQLiteDriver*/
 //            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖API，以便从Swift进行访问*/
         }
@@ -252,6 +252,10 @@ kotlin{
 //            implementation("org.jetbrains.exposed:exposed-jdbc:1.2.0")/*Exposed数据传输模块(必须)：使用 JDBC 作为传输层*/
 //            implementation("org.jetbrains.exposed:exposed-dao:1.2.0")/*Exposed DAO模块(可选)：提供更高层级的 DAO API*/
 //            implementation("com.h2database:h2:2.1.214")/*数据库驱动，以H2为例*/
+
+            implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付SDK，6.8.34仍兼容安卓4.1*/
+            implementation("com.alipay.sdk:alipaysdk-android:+@aar")         /*安卓调起支付宝支付SDK +@aar代表下载aar软件包版，15.8.2@aar仍兼容安卓5.0*/
+            /*客户端无银联云闪付SDK等，绑卡支付功能是放在服务端执行*/
         }
         iosMain.dependencies/*IOS端依赖*/{
 //            implementation("org.jetbrains.compose.window:window:${libs.versions.composeMultiplatform.get()}")
