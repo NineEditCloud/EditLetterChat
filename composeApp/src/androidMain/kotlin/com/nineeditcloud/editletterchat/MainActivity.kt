@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import cafe.adriel.voyager.navigator.Navigator
 import io.github.vinceglb.filekit.FileKit
@@ -29,6 +30,9 @@ class MainActivity:ComponentActivity(){
         FileKit.init(this)/*FileKit跨平台 应用私有路径获取&文件操作 框架 初始化*/
         enableEdgeToEdge()/*界面无边界*/
         setContent{
+            val context=LocalContext.current/*创建 安卓Context上下文调用 对象*/
+            val activity=context as ComponentActivity/*创建Intent，绑定当前活动*/
+            exitApp={ activity.finish() }/*向全局变量传递 退出当前活动的代码*/
             KMPTheme{
                 Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
             }

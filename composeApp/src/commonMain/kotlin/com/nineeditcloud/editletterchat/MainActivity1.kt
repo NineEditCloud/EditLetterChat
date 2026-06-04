@@ -63,6 +63,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -102,6 +103,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.nineeditcloud.editletterchat.common_tools.filesPath
 import com.nineeditcloud.editletterchat.database.getDatabase
+import com.nineeditcloud.editletterchat.exitApp
 import compose.icons.Octicons
 import compose.icons.octicons.DeviceCamera16
 import compose.icons.octicons.File16
@@ -136,6 +138,8 @@ var navController:NavHostController?=null
 var showPopup1=false/*列表弹窗菜单状态 初始值*/
 
 var currentRoute:String?=null/*当前导航页获取结果 初始值，equals(比较)扩展函数支持String?类型*/
+
+var exitApp:( ()->Unit)={}/*全局默认空实现，避免未注入时崩溃*/
 
 @OptIn(ExperimentalComposeUiApi::class)
 class MainActivity1:Screen{
@@ -374,7 +378,7 @@ class MainActivity1:Screen{
                     }
 
                 }, ){/*抽屉外的界面*/
-                Box(Modifier.fillMaxSize()){
+                Box(Modifier.fillMaxSize() ){
                     Scaffold/*脚手架*/(
                         topBar/*顶部栏*/={
                             TopAppBar/*顶部应用栏*/(
@@ -510,12 +514,18 @@ class MainActivity1:Screen{
 
                             }
 
-                            @Suppress("DEPRECATION") BackHandler/*拦截返回键*/{
+                            @Suppress("DEPRECATION")
+                            BackHandler/*拦截返回键*/{
                                 if(drawerState.isClosed)/*如果抽屉是关闭状态)*/
                                     if(expanded||showPopup){/*如果有弹窗视图是打开状态*/
                                         expanded=false
                                         showPopup=false
-                                    }else/*否则，抽屉是关闭状态*/ navigator.pop()/*结束当前界面*/
+                                    }else/*否则，抽屉是关闭状态*/
+                                        if(navigator.canPop)/*若回退栈中有上个界面*/ navigator.pop()/*Voyager导航返回上个界面*/
+                                        else{
+//                                            exitProcess(0)/*无法回退界面时暴力结束进程(不确定在某些条件下是否会导致发生问题)，Koltin/Native 中不可用*/
+                                            exitApp.invoke()
+                                        }
                                 else /*否则，抽屉是打开状态*/
                                     scope.launch/*启动协程作用域(抽屉控制器操作执行工具)*/ { drawerState.close()/*关闭抽屉*/ }
                             }
@@ -535,12 +545,11 @@ class MainActivity1:Screen{
                                                                                     }
                                                                                                                                            )
                                                                             }
-                                                                            .background(Color.Black.copy(0.4f))/*背景黑色 透明(显示0.3 30%)*/,
-                                                                        horizontalArrangement = Arrangement.End/*子项靠右*/
-                                                                       ) {
+                                                                            .background(Color.Black.copy(0.4f) )/*背景黑色 透明(显示0.3 30%)*/,
+                                                                        horizontalArrangement=Arrangement.End/*子项靠右*/){
                                         Column/*为不影响菜单外整页显示阴影大小，中间加个布局用来写内边距，(由于Compose的内边距会把当前布局的背景向内推)*/(Modifier
-                                                                                                                                                            .padding(top = 50.dp,end = 10.dp)/*顶部和右侧内边距，防止遮挡顶部应用栏，以及右侧内边距*/
-                                                                                                                                                            .fillMaxWidth(0.4f)) {
+                                                                                                               .padding(top=50.dp,end=10.dp)/*顶部和右侧内边距，防止遮挡顶部应用栏，以及右侧内边距*/
+                                                                                                               .fillMaxWidth(0.4f) ){
                                             Column(Modifier /*.align(Alignment.TopEnd)*/ /*居顶靠右*/    .width(180.dp)
                                                        .background(backgroundColor,RoundedCornerShape(13.dp))
                                                        .clip(RoundedCornerShape(13.dp))/*裁剪内容为圆角，以待子项最上一行和最下一行点击涟漪为圆角(必须在点击事件前裁剪)*/
@@ -576,7 +585,7 @@ class MainActivity1:Screen{
                                                 }
                                                 HorizontalDivider(Modifier.padding(start=40.dp,top=0.dp), color=Color.LightGray)/*水平分割线*/
                                                 Row(Modifier.fillMaxWidth().height(50.dp)
-                                                        //                                        .clip(RoundedCornerShape(bottomStart = 13.dp, bottomEnd = 13.dp))/*裁剪底部为圆角，以待点击圆角涟漪(必须在点击事件前用)*/
+//                                                        .clip(RoundedCornerShape(bottomStart = 13.dp, bottomEnd = 13.dp))/*裁剪底部为圆角，以待点击圆角涟漪(必须在点击事件前用)*/
                                                         .clickable{/*收付款选项点击事件*/
                                                             navigator.push(PaymentAndReceipt())/*跳转 收付款界面*/
                                                         }/*.background(Color.White, RoundedCornerShape(bottomStart = 13.dp, bottomEnd = 13.dp))*//*背景白色，底部圆角*/,
@@ -588,7 +597,7 @@ class MainActivity1:Screen{
                                                     }
                                                     Text("收付款", /*lineHeight = 1.sp,*/ fontSize = 10.sp,color= MaterialTheme.colorScheme.onSurface)
                                                 }
-                                                //                            DropdownMenuItem(onClick = {}, text = {Text("选项")})/*内容选项默认排列(没什么用处，不如直接写布局)*/
+//                                                DropdownMenuItem(onClick = {}, text = {Text("选项")})/*内容选项默认排列(没什么用处，不如直接写布局)*/
                                             }
                                         }
 
@@ -711,23 +720,22 @@ class MainActivity1:Screen{
                                                               )
                                        .onGloballyPositioned{ coordinates ->
                                            anchorCoordinates=coordinates/*获取列表项在屏幕上的坐标*/
-                            }
+                                       }
                                   ){
                                 Row/*水平布局*/(Modifier.fillMaxWidth()/*填充容器全部宽度，否则如果在Button按钮容器中会默认被放置中间*/
-                                                    .padding(7.dp)/*内边距*/
-                                    //                                                .onGloballyPositioned{ layoutCoordinates ->
-                                    //                                                    buttonBounds=layoutCoordinates.boundsInWindow()/*获取按钮在屏幕上的位置和大小，用于菜单位置计算*/
-                                    //                                                }
+                                                .padding(7.dp)/*内边距*/
+//                                                .onGloballyPositioned{ layoutCoordinates ->
+//                                                    buttonBounds=layoutCoordinates.boundsInWindow()/*获取按钮在屏幕上的位置和大小，用于菜单位置计算*/
+//                                                }
                                                ){
                                     Image(painter=painterResource(Res.drawable.new_user)
-                                        //                                                    rememberAsyncImagePainter(model=File("${contactMessageItem.id}.jpg"))/*Image图片资源，加载账号Id对应的头像路径*/
+//                                            rememberAsyncImagePainter(model=File("${contactMessageItem.id}.jpg"))/*Image图片资源，加载账号Id对应的头像路径*/
                                           ,contentDescription="头像圆角图片",/*Image描述(必填此项，否则报错)*/
-                                          Modifier.size(45.dp)//设置图片尺寸
-                                              .clip(RoundedCornerShape(5.dp))//设置圆角半径，12.dp为圆形
+                                          Modifier.size(45.dp)/*设置图片尺寸*/.clip(RoundedCornerShape(5.dp) )/*设置圆角半径，12.dp为圆形*/
                                               .background(Color.LightGray)/*可选：添加背景色，便于观察圆角效果*/,
-                                          contentScale=ContentScale.Crop,//可选：缩放类型，如裁剪适应
+                                          contentScale=ContentScale.Crop,/*可选：缩放类型，如裁剪适应*/
                                          )
-                                    Column/*竖直布局*/(Modifier.padding(start=10.dp)/*竖直布局外边距(因为是在Row水平布局中，所以是左边距)*/) {
+                                    Column/*竖直布局*/(Modifier.padding(start=10.dp)/*竖直布局外边距(因为是在Row水平布局中，所以是左边距)*/){
                                         /*此布局内是昵称和最新消息 控件*/
                                         Text/*昵称文本*/(contactMessageItem.name,color=MaterialTheme.colorScheme.onSurface/*昵称黑白色，导航图和列表里的界面必须用MaterialTheme，否则出现不会实时跟随系统深浅主题变色的Bug*/,
                                                          fontSize = 10.sp, lineHeight=15.sp)
@@ -737,14 +745,13 @@ class MainActivity1:Screen{
 
                                 }
 
-                                //                                            Divider(Modifier.padding(start = 80.dp))//列表项分割线，已废弃，更名为HorizontalDivider
+//                                Divider(Modifier.padding(start = 80.dp))//列表项分割线，已废弃，更名为HorizontalDivider
                                 HorizontalDivider(Modifier.padding(start=80.dp), color=Color.LightGray)/*水平分割线*/
                             }
 
                         }
                     }
 
-                    //
 
 
                 }

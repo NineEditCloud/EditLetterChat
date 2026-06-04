@@ -56,10 +56,10 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun EditBox/*多功能自定义_编辑框*/(value:String, onValueChange:(String)->Unit, maxLines:Int=1/*Int.MAX_VALUE无限行数*/,
-                                   startIcon/*开头图标*/:@Composable (() -> Unit)?/*接收Comp作为参数 slot模式*/=null,
+                                   startIcon/*开头图标*/:@Composable ( ()->Unit)?/*接收Comp作为参数 slot模式*/=null,
                                    startText/*开头文本*/:String="", startOnTap:( ()->Unit )?=null,
                                    labelText/*标签文本*/:String="", labelTextSize/*标签文本大小*/:TextUnit=13.sp,
-                                   endIcon/*结尾图标*/:@Composable (() -> Unit)? =null,
+                                   endIcon/*结尾图标*/:@Composable ( ()->Unit)? =null,
                                    background/*编辑框背景色 默认随主题定义*/:Color=if(!isSystemInDarkTheme()) Color.White else Color(0xED2B2D30),
                                    shape:Shape=RoundedCornerShape(10.dp)/*形状，默认圆角10.dp*/,
                                    borderColor/*边框色 默认随主题定义*/:Color=if(!isSystemInDarkTheme()) Color(0xED2B2D30) else Color.White,

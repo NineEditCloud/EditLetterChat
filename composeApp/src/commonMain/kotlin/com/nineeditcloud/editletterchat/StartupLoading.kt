@@ -28,10 +28,15 @@ import org.jetbrains.compose.resources.painterResource
 /*---Voyager-Navigation核心导航操作
 Navigator()：各平台下启动Voyager-Navigation的Screen跨平台通用界面
 LocalNavigator.currentOrThrow ：Voyager-Navigation 获取绑定当前界面的导航控制器
-navigator.push(): 跳转到新界面
-navigator.pop(): 返回上个界面
-navigator.replace(): 将当前界面 替换成目标界面
-navigator.popUntil(): 返回到导航栈中的指定界面
+navigator. 导航控制器可调用方法作用：
+push()：跳转到新界面
+pop()：     返回上个界面(若回退栈中没上个界面了 则无动作)
+popUntil()：返回到导航栈中的指定界面
+canPop：    判断回退栈中 是否还有上个界面
+replace()：   将当前界面 替换成目标界面
+replaceAll()：启动新目标界面 清空回退栈中其它界面
+
+exitProcess(0)：回退栈中无上个界面了 暴力结束进程(不确定在某些条件下是否导致问题)，iOS上不推荐(跳过生命周期直接杀死进程) 但确实能退出
 */
 
 var doesAnAccountExist=false

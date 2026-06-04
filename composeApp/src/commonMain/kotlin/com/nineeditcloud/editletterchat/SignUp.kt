@@ -148,7 +148,7 @@ class SignUp:Screen {
 //                                    }
                                     withContext(Dispatchers.Main){/*在UI活动线程中执行(UI在主线程)*/
                                         isLoading=true
-                                        navigator.replaceAll(MainActivity1() )/*将当前界面 替换成首页界面，新界面覆盖原本界面，并清空回退栈中其它界面*/
+                                        navigator.replaceAll(MainActivity1() )/*将当前界面 替换成首页界面(新界面覆盖原本界面)，并清空回退栈中其它界面，，此处用replace 在华为安卓改造鸿蒙3中运行时 新界面不会覆盖原本界面*/
                                     }
                                 }
                                 is Result.Error-> {/*结果密封类 中 错误数据类 的类型生效，显示错误信息*/

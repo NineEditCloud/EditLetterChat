@@ -3,6 +3,8 @@ package com.nineeditcloud.editletterchat
 import androidx.compose.ui.window.ComposeUIViewController
 import cafe.adriel.voyager.navigator.Navigator
 import com.nineeditcloud.editletterchat.common_tools.KMPTheme
+import platform.UIKit.UIApplication
+import platform.posix.exit
 
 //import platform.darwin.nil
 //import platform.UIKit.UIViewController
@@ -21,6 +23,10 @@ import com.nineeditcloud.editletterchat.common_tools.KMPTheme
 
 /*IOS移动端-应用主函数*/
 fun MainViewController()=ComposeUIViewController{
+    exitApp={
+        exit(0)/*iOS退出应用(非正常推荐方式，但能做到)*/
+        /*或用UIApplication相关方法*/
+    }
     KMPTheme{
         Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
     }
