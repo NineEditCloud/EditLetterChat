@@ -114,6 +114,8 @@ kotlin{
 //            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖API，以便从Swift进行访问*/
         }
     }
+
+//    ohosArm64()/*HarmonyOSNext(华为独立鸿蒙系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
     
     jvm()/*JVM桌面目标*/
 //    linuxX64();linuxArm64()
@@ -254,7 +256,7 @@ kotlin{
 //            implementation("com.h2database:h2:2.1.214")/*数据库驱动，以H2为例*/
 
             implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付SDK，6.8.34仍兼容安卓4.1*/
-            implementation("com.alipay.sdk:alipaysdk-android:+@aar")         /*安卓调起支付宝支付SDK +@aar代表下载aar软件包版，15.8.2@aar仍兼容安卓5.0*/
+            implementation("com.alipay.sdk:alipaysdk-android:+@aar")          /*安卓调起支付宝支付SDK +@aar代表下载最新aar软件包版，15.8.2@aar仍兼容安卓5.0*/
             /*客户端无银联云闪付SDK等，绑卡支付功能是放在服务端执行*/
         }
         iosMain.dependencies/*IOS端依赖*/{

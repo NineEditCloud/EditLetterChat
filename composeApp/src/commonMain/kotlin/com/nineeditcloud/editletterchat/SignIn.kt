@@ -141,7 +141,7 @@ class SignIn :Screen{
 //                                    }
                                     withContext(Dispatchers.Main){/*在UI活动线程中执行(UI在主线程)*/
                                         isLoading=true
-                                        navigator.replace(MainActivity1())/*将当前界面 替换成 首页界面，覆盖原本界面*/
+                                        navigator.replaceAll(MainActivity1() )/*将当前界面 替换成首页界面，新界面覆盖原本界面，并清空回退栈中其它界面*/
                                     }
 
                                 }
