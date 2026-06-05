@@ -26,7 +26,7 @@ plugins{
     kotlin("plugin.serialization") version "${libs.versions.kotlin.get()}"/*应用Kotlin-serialization序列化插件*/
 //    alias(libs.plugins.kotlin.serialization)/*应用 Kotlin-serialization序列化插件，闪退*/
 
-    id("org.jetbrains.kotlin.native.cocoapods")/*iOS CocoaPods插件，方便集成*/
+    id("org.jetbrains.kotlin.native.cocoapods")/*iOS CocoaPods插件，方便集成，IOS端调起微信/支付宝支付接口SDK需要*/
 }
 /*若依赖丢失导致项目报错，请先连接VPN，点击 Gradle -> 重新加载所有Gradle项目，等待依赖下载完成，
 在顶部菜单点击 文件 -> 从磁盘全部重新加载 (或快捷键Ctrl+Alt+Y)
