@@ -25,6 +25,8 @@ plugins{
 
     kotlin("plugin.serialization") version "${libs.versions.kotlin.get()}"/*应用Kotlin-serialization序列化插件*/
 //    alias(libs.plugins.kotlin.serialization)/*应用 Kotlin-serialization序列化插件，闪退*/
+
+    id("org.jetbrains.kotlin.native.cocoapods")/*iOS CocoaPods插件，方便集成*/
 }
 /*若依赖丢失导致项目报错，请先连接VPN，点击 Gradle -> 重新加载所有Gradle项目，等待依赖下载完成，
 在顶部菜单点击 文件 -> 从磁盘全部重新加载 (或快捷键Ctrl+Alt+Y)
@@ -114,8 +116,16 @@ kotlin{
 //            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖API，以便从Swift进行访问*/
         }
     }
+    cocoapods{/*配置CocoaPods，iOS端通过Pod引入共享模块*/
+        name="SharedModule"/*Pod名称，iOS端会用到*/
+        version="1.0.0"
+        summary="KMP 共享模块：登录 + 支付"
+        homepage="https://github.com/your-repo"
+        ios.deploymentTarget="12.0"/*支持iOS12+*/
+        podfile=project.file("../iosApp/Podfile")/*指向iOS项目的Podfile*/
+    }
 
-//    ohosArm64()/*HarmonyOSNext(华为独立鸿蒙系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
+//    ohosArm64()/*HarmonyOSNext(华为独立鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
     
     jvm()/*JVM桌面目标*/
 //    linuxX64();linuxArm64()
@@ -255,8 +265,8 @@ kotlin{
 //            implementation("org.jetbrains.exposed:exposed-dao:1.2.0")/*Exposed DAO模块(可选)：提供更高层级的 DAO API*/
 //            implementation("com.h2database:h2:2.1.214")/*数据库驱动，以H2为例*/
 
-            implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付SDK，6.8.34仍兼容安卓4.1*/
-            implementation("com.alipay.sdk:alipaysdk-android:+@aar")          /*安卓调起支付宝支付SDK +@aar代表下载最新aar软件包版，15.8.2@aar仍兼容安卓5.0*/
+            implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付-SDK，6.8.34仍兼容安卓4.1*/
+            implementation("com.alipay.sdk:alipaysdk-android:+@aar")          /*安卓调起支付宝支付-SDK +@aar代表下载最新aar软件包版，15.8.2@aar仍兼容安卓5.0*/
             /*客户端无银联云闪付SDK等，绑卡支付功能是放在服务端执行*/
         }
         iosMain.dependencies/*IOS端依赖*/{

@@ -38,7 +38,7 @@ dependencyResolutionManagement{
         mavenCentral()/*公共仓库*/
         mavenLocal()/*本地仓库*/
         /*maven{url=uri("")}依赖仓库综合写法，maven("")依赖仓库便捷写法*/
-        maven{ url=uri("https://company/com/maven2")/*通用自定义Maven仓库写法*/ }/*Company仓库*/
+        maven{ url=uri("https://company/com/maven2") }/*Company仓库*/
         maven{ url=uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }/*JetBrains-ComposeMultiplatform专用仓库(关键！)*/
         maven{ url=uri("https://dl.google.com/dl/android/maven2") }/*谷歌官方仓库，若上述仓库仍找不到，可尝试添加此仓库*/
         maven("https://jitpack.io")/*GitHub项目仓库方案*/
