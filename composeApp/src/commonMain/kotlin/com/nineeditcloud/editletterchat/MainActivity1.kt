@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -62,7 +61,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -99,6 +101,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.nineeditcloud.editletterchat.common_tools.filesPath
+import com.nineeditcloud.editletterchat.database.AccountFriendLocalData
 import com.nineeditcloud.editletterchat.database.getDatabase
 import compose.icons.Octicons
 import compose.icons.octicons.DeviceCamera16
@@ -118,12 +121,14 @@ import io.github.vinceglb.filekit.path
 import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 
 /*首页 导航图 界面*/
 
-var account:String="10000000001"
+var account:String?=null/*因为若表中不存在正在使用的账号时要返回null，所以类型为String?*/
 var selectedId=""
 var selectedName=""
 
@@ -137,18 +142,17 @@ var currentRoute:String?=null/*当前导航页获取结果 初始值，equals(�
 
 var exitApp:( ()->Unit)={}/*全局默认空实现，避免未注入时崩溃*/
 
+val userAccountDBTableDao=getDatabase("userAccount_localData")/*获取 用户账号本地数据 数据库实例*/.userAccountDao()/*获取数据库中的 已登录账号本地数据 表Dao*/
+val currentAccount_FriendDBTableDao=getDatabase("${account!!}friend")/*获取 当前账号(不为空则调用)好友本地数据 数据库实例*/.friendDao()/*获取数据库中的 好友表Dao*/
+
 @OptIn(ExperimentalComposeUiApi::class)
 class MainActivity1:Screen{
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content(){
-        val accountDatabase=getDatabase("userAccount_localData")/*获取 用户账号本地数据 数据库实例*/
-        val userAccountDao=accountDatabase.userAccountDao()/*获取数据库中的 已登录账号本地数据 表实例*/
         val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
-        lifecycleOwner.lifecycleScope.launch{/*协程*/
-            if(userAccountDao.getHisCurrentUseAccount()){/*如果存在正在使用的账号*/
-                account=userAccountDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号*/
-            }
+        lifecycleOwner.lifecycleScope.launch{/*协程作用域*/
+            account=userAccountDBTableDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号，不存在时返回null*/
         }
 
         val drawerState=remember{ DrawerState(DrawerValue.Closed) }/*抽屉状态对象*/
@@ -199,9 +203,9 @@ class MainActivity1:Screen{
 //        var lastDownTime by remember { mutableLongStateOf(0L) }
         /*监听长按对象，由于combinedClickable闪退Bug，所以写一个 按下抬起 监听让 超文本按钮onClick判断*/
 
-//        var provider=if (isSystemInDarkTheme()) Color.White else Color.Black/*根据主题选择文本颜色，否则系统不自动刷新，因为是固定的两种颜色，所以写val常量更省内存资源，请把变量放在抽屉、导航图和列表外，否则开关一次抽屉就可能出Bug，在深色模式开关一次抽屉再浅色也会出Bug*/
+//        var provider=if(isSystemInDarkTheme() ) Color.White else Color.Black/*根据主题选择文本颜色，否则系统不自动刷新，因为是固定的两种颜色，所以写val常量更省内存资源，请把变量放在抽屉、导航图和列表外，否则开关一次抽屉就可能出Bug，在深色模式开关一次抽屉再浅色也会出Bug*/
 
-        var expanded by remember { mutableStateOf(false)/*默认为关闭状态*/ }/*弹出式菜单列表是否打开*/
+        var expanded by remember{ mutableStateOf(false)/*默认为关闭状态*/ }/*弹出式菜单列表是否打开*/
 
 //        var listItemWindowExpanded by remember { mutableStateOf(false)/*默认为关闭状态*/ }/*弹出式菜单列表是否打开*/
 //        var buttonBounds by remember { mutableStateOf<Rect?>(null) }/*触发按钮的坐标信息，用于精准定位，适合列表项长按弹窗视图功能菜单*/
@@ -214,7 +218,7 @@ class MainActivity1:Screen{
 
         var showPopup by remember{ mutableStateOf(false) }
         showPopup1=showPopup
-//        var popupOffset by remember { mutableStateOf(Offset.Zero) }
+//        var popupOffset by remember{ mutableStateOf(Offset.Zero) }
 
 
         val density=LocalDensity.current
@@ -675,30 +679,59 @@ class MainActivity1:Screen{
             composable("message"){/*消息界面*/
                 Box(Modifier.fillMaxSize() ){
                     val listState=rememberLazyListState()/*LazyList有序列表状态*/
-                    /*假设收到的最新每一条消息集，联系人消息集*/
-                    val contactMessageItems=listOf(
-                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-                        )
+                    val listAlreadyExistsFriendItem=mutableSetOf<String>()/*列表已存在好友项 记录集合*/
+                    val contactMessageItems=remember{ mutableStateListOf<AccountFriendLocalData>() }/*在任何地方调用add/remove/addAll 都会自动触发LazyColumn列表重组的 列表项集合*/
+
+                    val allFriendsFlow by currentAccount_FriendDBTableDao.getAllFriend_Flow()/*获取当前账号好友数据库表中所有数据 Flow(数据变化自动发射新数据)*/.collectAsState(initial=emptyList()/*初始值*/ )
+
+                    /*contactMessageItems列表项集合 和 Room返回的表数据集合 元素必须用同一个对象类型*/
+
+                    LaunchedEffect(Unit){/*LaunchedEffect监听参数变化自动重载 协程作用域*/
+
+//                        contactMessageItems.addAll(/*初始化列表项集合*/
+//                            listOf(/*假设收到的最新每一条消息集，联系人消息集*/
+//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+//                                   ),
+//                            )
+//                        currentAccount_FriendDBTableDao.getAllFriend_Flow()/*获取当前账号好友数据库表中所有数据*/.collect{ allFriendsListFlow->/*收集Room返回的Flow，每次将List集合赋值给friendList变量名(若不写则默认赋值给it)*/
+//                            contactMessageItems.clear()/*直接替换整个列表(避免手动去重)，由于是初始化(将本地已知数据加入) 所以不必*/
+//                            contactMessageItems.addAll(allFriendsListFlow)/*添加集合全部内容，自动刷新列表*/
+//                        }
+//                        contactMessageItems.addAll(allFriends)/*在列表项集合中 添加 全部元素(全部好友数据集合)，不方便记录列表已存在好友项*/
+
+
+                    }
+                    val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
+                    lifecycleOwner.lifecycleScope.launch{
+                        val allFriends=currentAccount_FriendDBTableDao.getAllFriend()/*获取当前账号好友数据库表中所有数据*/
+                        allFriends.forEach{/*遍历List集合元素，默认每次赋值给it*/
+                            contactMessageItems.add(it)/*列表项集合添加元素*/
+                            listAlreadyExistsFriendItem.add(it.id)/*在 列表已存在好友项记录集合中 添加对应好友ID*/
+
+                        }
+                    }
+
+
 
                     LazyColumn/*垂直有序列表*/(Modifier.fillMaxSize(1f), state=listState){
-                        items/*列表多项*/(contactMessageItems){ contactMessageItem/*赋值给新建item变量*/ ->/*此Lambda表达式代表接下来使用本次变量*/
+                        items/*遍历列表多项*/(contactMessageItems){ contactMessageItem->/*Lambda表达式，赋值每次遍历值的变量名(若不写则默认赋值给it)*/
                             Column(Modifier.combinedClickable(/*事件，列表项事件，不能获取触摸指针位置*/
                                                               onClick={/*单击事件*/
                                                                   if(!showPopup1){
@@ -778,13 +811,3 @@ data class NavItem(
     var topAppBarTitle:String="顶部应用栏",/*顶部应用栏标题*/
 //    val icon1: ImageVector,/*导航键图标选中状态*/
 )
-data class AccountFriendLocalData(
-    val id: String,/*好友账号或群聊ID*/
-    var name: String,/*用户名*/
-    var newMessage: String,/*最新消息简略*/
-    val withFriendMessageSession: String,/*与好友的消息会话*/
-    var user_status: String="这家伙很忙，没发表状态",/*好友发表的用户状态，若调用处不传参数则 默认状态*/
-    var top: Boolean=false,         /*是否为置顶，若调用处不传参数则默认false*/
-    var message_list: Boolean=true, /*是否在消息列表中，若调用处不传参数则默认true*/
-    var menu: Boolean=false/*长按菜单状态*/   )
-

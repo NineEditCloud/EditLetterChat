@@ -52,7 +52,7 @@ fun getDatabase/*获取数据库操作实例*/(dbName:String):AppDatabase{
 
 /*结构：
 * 用户账号数据库只存储所有已添加的账号信息
-* 另外每个账号一个额外数据库存储好友和消息
+* 另外每个账号一个额外数据库存储好友信息和消息
 */
 
 @Entity(tableName="user_accounts_local"/*表名*/)/*用户账号本地数据 表结构实体类，并定义表名，此表不带头像路径，头像保存在账号对应的路径*/
@@ -66,7 +66,7 @@ data class UserAccountLocalData(
     var user_status: String="",/*用户状态*/
 
     @ColumnInfo("current_use")/*字段名*/
-    var currentUse: Boolean=true/*是否为当前正在使用的账号*/
+    var currentUse: Boolean=true,/*是否为当前正在使用的账号*/
 )
 @Dao/*对于用户账号数据表的 数据访问(DAO实例)*/
 interface UserAccountDao{
@@ -74,7 +74,7 @@ interface UserAccountDao{
     suspend fun insertAccount(userAccount:UserAccountLocalData):Long/*返回插入的行ID(Long类型)*/
 
     @Update/*更新用户账号信息*/
-    suspend fun updateAccount(userAccount:UserAccountLocalData)
+    suspend fun updateAccountInfo(userAccount:UserAccountLocalData)
 
     @Query("DELETE FROM user_accounts_local WHERE id=:accountId")/*根据ID删除 本地保存的 用户账号，注意SQL语句中表名别写错(否则找不到表实例)*/
     suspend fun deleteAccountById(accountId:String):Int/*返回 被删除数据的 行索引*/
@@ -86,12 +86,12 @@ interface UserAccountDao{
     @Query("SELECT token FROM user_accounts_local WHERE id==:accountId")/*根据账号ID查询用户Token身份令牌*/
     suspend fun getAccountCookieById(accountId:String):String?/*返回数据类型不可选表类型*/
 
-    @Query("SELECT id from user_accounts_local where current_use==1")/*查询正在使用的账号*/
-    suspend fun getCurrentUseAccountIdByCurrentUse():String
 
-    /*查询是否存在正在使用的账号*/
-    @Query("SELECT COUNT(*) > 0 FROM user_accounts_local WHERE current_use==1")
+    @Query("SELECT COUNT(*) > 0 FROM user_accounts_local WHERE current_use==1")/*查询是否存在正在使用的账号(current_use字段值为true的数据量 >0)*/
     suspend fun getHisCurrentUseAccount():Boolean
+
+    @Query("SELECT id from user_accounts_local where current_use==1")/*查询正在用的账号，若不存在current_use字段值为true的数据时 返回null*/
+    suspend fun getCurrentUseAccountIdByCurrentUse():String?/*返回值类型String?，因为不存在current_use字段值为true的数据时 要返回null*/
 
     /*除查询账号外的 其它账号current_use字段都改成false，将指定账号外的其它账号改为未在使用，如果没有复合条件的数据也不会报错，只是该更新操作会影响0行*/
     @Query("UPDATE user_accounts_local SET current_use = 0 WHERE id!=:currentUseAccountId")/* “:”符号在此处表示使用变量传参 */
@@ -118,20 +118,24 @@ data class AccountFriendLocalData(
     var user_status: String="这家伙很忙，没发表状态",/*好友发表的用户状态，若调用处不传参数则 默认状态*/
     var top: Boolean=false,         /*是否为置顶，若调用处不传参数则默认false*/
     var message_list: Boolean=true, /*是否在消息列表中，若调用处不传参数则默认true*/
-    var menu: Boolean=false/*长按菜单状态*/   )
+    var menu: Boolean=false,/*长按菜单状态*/
+)
 @Dao/*对于好友数据表的 数据访问(DAO实例)*/
 interface FriendDao{
     @Insert(onConflict=OnConflictStrategy.REPLACE)/*插入单个好友数据*/
     suspend fun insertFriend(friendID:AccountFriendLocalData):Long/*返回插入的行ID(Long类型)*/
 
     @Update/*更新好友信息*/
-    suspend fun updateAccount(userAccount:UserAccountLocalData)
+    suspend fun updateFriendInfo(userAccount:UserAccountLocalData)
 
     @Query("DELETE FROM friend WHERE id=:accountId")/*根据ID删除 本地保存的 好友，注意SQL语句中表名别写错(否则找不到表实例)*/
-    suspend fun deleteAccountById(accountId:String):Int/*返回 被删除数据的 行索引*/
+    suspend fun deleteFriendById(accountId:String):Int/*返回 被删除数据的 行索引*/
 
-    @Query("SELECT * FROM friend")/*查询所有好友*/
-    fun getAllAccount():Flow<List<AccountFriendLocalData> >/*返回值用Flow类型 数据变化时自动发射新数据*/
+    @Query("SELECT * FROM friend")/*查询 好友表(friend)中 所有好友数据*/
+    fun getAllFriend():List<AccountFriendLocalData>/*List<数据类对象>是listOf集合 元素是数据类对象*/
+
+    @Query("SELECT * FROM friend")/*查询 好友表(friend)中 所有好友数据*/
+    fun getAllFriend_Flow():Flow<List<AccountFriendLocalData> >/*返回值用Flow类型 数据变化时自动发射新数据，若表无数据则发射空表(emptyList() )，List<数据类对象>是listOf集合 元素是数据类对象*/
 }
 
 @Entity(tableName="message")
@@ -144,7 +148,7 @@ data class AccountFriendMessage(
     val messageSession:String,/*消息会话*/
 )
 @Dao/*对于消息数据表的 数据访问(DAO实例)*/
-interface AccountFriendMessageDao {
+interface AccountFriendMessageDao{
 
 }
 
