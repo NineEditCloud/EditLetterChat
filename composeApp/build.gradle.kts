@@ -223,7 +223,7 @@ kotlin{
             implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")/*Ktor协商-serialization适配器-序列化JSON(需内容协商)*/
 
             implementation("androidx.room:room-runtime:${libs.versions.room.get()}")/*Room核心库，Room2.x会导致KSP反射Bug，3.x不兼容安卓5.0*/
-            implementation("androidx.sqlite:sqlite-bundled")/*SQLite数据库依赖*/
+            implementation("androidx.sqlite:sqlite-bundled:2.5.2")/*跨平台SQLite数据库依赖，驱动类BundledSQLiteDriver，支持Android|IOS|JVM(Win/MacOS/Linux)，2.5.0兼容安卓5.0*/
 //            implementation("com.attafitamim.kabin:core:${libs.versions.kabin.get()}")/*Kabin核心库，机制防Room*/
 //            implementation("io.realm.kotlin:library-base:${libs.versions.realm.get()}")/*Realm 对象型数据存储框架*/
 

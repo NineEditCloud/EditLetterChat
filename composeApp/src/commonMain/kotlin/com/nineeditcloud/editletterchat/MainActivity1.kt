@@ -62,8 +62,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,14 +94,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.nineeditcloud.editletterchat.common_tools.filesPath
 import com.nineeditcloud.editletterchat.database.getDatabase
-import com.nineeditcloud.editletterchat.exitApp
 import compose.icons.Octicons
 import compose.icons.octicons.DeviceCamera16
 import compose.icons.octicons.File16
@@ -200,28 +196,6 @@ class MainActivity1:Screen{
             }
         }
 
-        /*假设收到的最新每一条消息集，联系人消息集*/
-        val contactMessageItems=listOf(
-            AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-            AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-            AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-            AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-            AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-            AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-            AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-            AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-            AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-            AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-            AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-            AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-            AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-            AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-            AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-            AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-            AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-            AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-            )
-
 //        var lastDownTime by remember { mutableLongStateOf(0L) }
         /*监听长按对象，由于combinedClickable闪退Bug，所以写一个 按下抬起 监听让 超文本按钮onClick判断*/
 
@@ -247,18 +221,15 @@ class MainActivity1:Screen{
         val systemBars=WindowInsets.systemBars
         val bottomBarInsets=systemBars.getBottom(density)
 
-        val listState=rememberLazyListState()
-
         Box(Modifier.fillMaxSize().background(backgroundColor)/*.semantics(mergeDescendants=true){}*//*合并子组件语义*/
            ){
-
             ModalNavigationDrawer/*左侧抽屉，会自动适应系统 顶部状态栏和底部导航栏 部分的边距*/(
                 drawerState/*绑定抽屉状态对象*/=drawerState, gesturesEnabled/*手势功能启用*/=true,
                 drawerContent/*抽屉内容*/={
-
-                    ModalDrawerSheet/*模态抽屉模板(自带与状态栏、导航栏的边距，不要在有顶部状态栏边距时放入顶部封面背景图)，若无此组件会导致点抽屉任意区域都关抽屉*/(Modifier.fillMaxSize(),
-                                                                                                                                                                  windowInsets=WindowInsets(top=0,left=0,right=0,bottom=bottomBarInsets),/*关掉与顶部状态栏的边距*/
-                                                                                                                                                                  drawerContainerColor=Color.Transparent/*抽屉模板颜色透明*/){
+                    ModalDrawerSheet/*模态抽屉模板(自带与状态栏、导航栏的边距，不要在有顶部状态栏边距时放入顶部封面背景图)，若无此组件会导致点抽屉任意区域都关抽屉*/(
+                        Modifier.fillMaxSize(),
+                        windowInsets=WindowInsets(top=0,left=0,right=0,bottom=bottomBarInsets),/*关掉与顶部状态栏的边距*/
+                        drawerContainerColor=Color.Transparent/*抽屉模板颜色透明*/){
                         Box/*堆叠布局*/(Modifier.fillMaxSize() ){
                             Image/*用户顶部封面图*/(topCoverBackground,contentDescription="",
                                                     Modifier.fillMaxWidth()/*占据全部容器宽度*/.align(Alignment.TopCenter)/*在Box中 垂直居顶 水平开头*/
@@ -487,8 +458,8 @@ class MainActivity1:Screen{
                                                 launchSingleTop=true//单顶模式(SingleTop)重要配置：如果目标页面已在回退栈的顶部，就不创建新实例，而是重用现有实例
                                                 restoreState=true//当导航目标已访问过且其状态被保存，则自动恢复该页面状态
                                             }
-                                        }
-                                                     )
+                                        },
+                                        )
                                 }
                             }
 
@@ -497,12 +468,11 @@ class MainActivity1:Screen{
                         floatingActionButton/*浮动按钮*/={
                             FloatingActionButton(onClick={/*presses++*/
 
-                            }){//包含组件
+                            } ){/*包含组件*/
                                 Icon(Icons.Default.Add, contentDescription="添加图标")/*图标*/
                             }
-                        }
-
-                                      ){ innerPadding/*用来适应顶部栏和底部栏的边距(没有水平边距)，防止界面中间内容被顶部栏和底部栏遮挡*/ ->
+                        },
+                        ){ innerPadding/*用来适应顶部栏和底部栏的边距(没有水平边距)，防止界面中间内容被顶部栏和底部栏遮挡*/ ->
                         /*脚手架中间内容*/
 
                         Box(Modifier.fillMaxSize() ){
@@ -510,7 +480,7 @@ class MainActivity1:Screen{
                                                modifier=Modifier.padding(innerPadding).background(backgroundColor)
                                           ){
                                 /*放置导航图(内嵌界面加载)*/
-                                Nav(navController!!, listState, contactMessageItems)
+                                Nav(navController!!)
 
                             }
 
@@ -686,14 +656,14 @@ class MainActivity1:Screen{
 
 
     @Composable
-    fun Nav(navController:NavHostController, listState:LazyListState, contactMessageItems:List<AccountFriendLocalData>, ){
+    fun Nav(navController:NavHostController, ){
         var anchorCoordinates by remember{ mutableStateOf<LayoutCoordinates?>(null) }/*存储屏幕坐标瞄点位置的状态*/
-        var anchorSize by remember { mutableStateOf(IntSize.Zero) }/*存储锚点尺寸*/
+        var anchorSize by remember{ mutableStateOf(IntSize.Zero) }/*存储锚点尺寸*/
         /*当锚点坐标变化时，计算弹窗偏移量*/
         val popupOffset=remember(anchorCoordinates){
             if(anchorCoordinates!=null){
                 val position=anchorCoordinates!!.positionInWindow()
-                IntOffset(position.x.toInt(), position.y.toInt())
+                IntOffset(position.x.toInt(), position.y.toInt() )
             }else{
                 IntOffset.Zero
             }
@@ -703,9 +673,32 @@ class MainActivity1:Screen{
         /*改了导航界面路由名称，不要忘了改初始导航页界面路由名称*/
         NavHost/*导航图主体组件*/(navController=navController,/*绑定导航控制器*/ startDestination="message"/*初始导航界面*/){
             composable("message"){/*消息界面*/
-                Box(Modifier.fillMaxSize()){
-                    LazyColumn/*竖直列表*/(Modifier.fillMaxSize(1f), state=listState){
-                        items(contactMessageItems){ contactMessageItem/*赋值给新建item变量*/ ->/*此Lambda表达式代表接下来使用本次变量*/
+                Box(Modifier.fillMaxSize() ){
+                    val listState=rememberLazyListState()/*LazyList有序列表状态*/
+                    /*假设收到的最新每一条消息集，联系人消息集*/
+                    val contactMessageItems=listOf(
+                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+                        AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
+                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
+                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
+                        )
+
+                    LazyColumn/*垂直有序列表*/(Modifier.fillMaxSize(1f), state=listState){
+                        items/*列表多项*/(contactMessageItems){ contactMessageItem/*赋值给新建item变量*/ ->/*此Lambda表达式代表接下来使用本次变量*/
                             Column(Modifier.combinedClickable(/*事件，列表项事件，不能获取触摸指针位置*/
                                                               onClick={/*单击事件*/
                                                                   if(!showPopup1){
@@ -721,7 +714,7 @@ class MainActivity1:Screen{
                                        .onGloballyPositioned{ coordinates ->
                                            anchorCoordinates=coordinates/*获取列表项在屏幕上的坐标*/
                                        }
-                                  ){
+                                   ){
                                 Row/*水平布局*/(Modifier.fillMaxWidth()/*填充容器全部宽度，否则如果在Button按钮容器中会默认被放置中间*/
                                                 .padding(7.dp)/*内边距*/
 //                                                .onGloballyPositioned{ layoutCoordinates ->
@@ -738,14 +731,14 @@ class MainActivity1:Screen{
                                     Column/*竖直布局*/(Modifier.padding(start=10.dp)/*竖直布局外边距(因为是在Row水平布局中，所以是左边距)*/){
                                         /*此布局内是昵称和最新消息 控件*/
                                         Text/*昵称文本*/(contactMessageItem.name,color=MaterialTheme.colorScheme.onSurface/*昵称黑白色，导航图和列表里的界面必须用MaterialTheme，否则出现不会实时跟随系统深浅主题变色的Bug*/,
-                                                         fontSize = 10.sp, lineHeight=15.sp)
+                                                         fontSize=10.sp, lineHeight=15.sp)
                                         Text/*最新消息文本*/(contactMessageItem.newMessage,color=Color.Gray/*内容灰色*/,
-                                                             fontSize = 8.sp, lineHeight=10.sp)
+                                                             fontSize=8.sp, lineHeight=10.sp)
                                     }
 
                                 }
 
-//                                Divider(Modifier.padding(start = 80.dp))//列表项分割线，已废弃，更名为HorizontalDivider
+//                                Divider(Modifier.padding(start=80.dp) )/*列表项分割线，已废弃，更名为HorizontalDivider*/
                                 HorizontalDivider(Modifier.padding(start=80.dp), color=Color.LightGray)/*水平分割线*/
                             }
 

@@ -27,7 +27,11 @@ object HTTPAccount_Client{
         return/*将withContext代码块 最后执行结果(必须和方法返回值类型相同) 作为当前方法返回值*/ withContext(Dispatchers.IO){/*在IO协程线程执行网络请求*/
             val jsonType1="application/json; charset=UTF-8"/*Json 内容类型信息，UTF-8编码*/
             val multipartFormdata="multipart/form-data; charset=UTF-8"/*多部分/表单 内容类型信息*/
-            val contentType=if(type=="json") jsonType1 else multipartFormdata
+            val contentType=when(type){/*根据请求内容类型名称作决定*/
+                "json"->jsonType1
+                "multipart/form-data"->multipartFormdata
+                else->Log.e("Http-Post请求","请求内容类型名称错误")
+            }
 
             try{
                 val response:HttpResponse=client.post("http://192.168.1.47:8080${uri}"){
@@ -92,18 +96,19 @@ object HTTPAccount_Client{
             "username" to username,
             "mobilePhoneNum" to mobilePhoneNum,
             ) )
-        if (avatarPath.isNotEmpty() ){/*如果头像路径不为空，选择了头像*/
-            val avatarBytes = FileKit.readBytes(avatarPath)/* 使用跨平台文件库 FileKit 读取字节，避免 java.io.File */
-            val requestBody=formData{/* 构建 multipart/form-data 请求体 */
-                append("avatarImage"/*表单主体名*/, avatarBytes, Headers.build{
-                    append(HttpHeaders.ContentType, "image/*")
-                    append(HttpHeaders.ContentDisposition, "filename=\"avatar.png\"") /* 跨平台可写死默认名，或从路径提取 */
-                }) /*添加部分表单 图片文件字段*/
-                append("key-value", jsonStr)/*添加部分表单 键值对数据(表单键值对 或 Json键值对)*/
+        if(avatarPath.isNotEmpty() ){/*若头像路径字符串不为空(长度>0)，选择了头像*/
+            val avatarBytes=FileKit.readBytes(avatarPath)/*用跨平台文件库FileKit读取字节，避免java.io.File*/
+            val requestBody=formData{/*构建 multipart/form-data(多部分/表单) 请求体*/
+                append("avatarImage"/*表单主体名*/, avatarBytes,
+                       Headers.build{ /*图片文件字段 头构建*/
+                           append(HttpHeaders.ContentType, "image/*")
+                           append(HttpHeaders.ContentDisposition, "filename=\"avatar.png\"") /* 跨平台可写死默认名，或从路径提取 */
+                       }, )/*多部分表单中追加 图片文件字段*/
+                append("key-value", jsonStr)/*多部分表单中追加 键值对数据(表单键值对 或 Json键值对)字段*/
             }
-            return post("/account_info/set", requestBody, "multipart")/*发送 multipart/form-data (多部分/表单) 类型内容*/
+            return post("/account_info/set", requestBody, "multipart/form-data")/*发送 multipart/form-data(多部分/表单) 类型内容*/
         }else{/*未选择头像*/
-            return post("/account_info/set", jsonStr)
+            return post("/account_info/set", jsonStr)/*发送 post方法默认JSON内容类型信息*/
         }
     }
 

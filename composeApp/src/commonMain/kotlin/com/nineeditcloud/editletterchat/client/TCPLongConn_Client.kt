@@ -33,7 +33,6 @@ fun tcpLongConnClient(account:String, token:String,
                     若场景是 构建完整消息帧 → 一次性发出，用socket.write(frame)完全足够 代码最少，两者 性能几乎无区别 接收端处理上完全一样 毫无差异，
                     Ktor3.x中无socket.write(字节串数组对象)方法*/
 
-
                     val authMsg=OnlineAccountAuthRequest(account,token,deviceType() ).toData()/*自定义键值对 认证消息*/
                     output.writeStringUtf8(authMsg)/*发送认证消息*/
                     val authResponse=input.readUTF8Line()/*读取字符串认证响应*/ ?:throw Exception("认证响应为空")/*若读取响应为空，抛出异常触发自动重连*/
@@ -78,7 +77,6 @@ fun tcpLongConnClient(account:String, token:String,
 //            if(e is CancellationException) throw e
             if(e is IllegalArgumentException){
                 Log.e("Ktor-TCP长连接", e.message.toString(), e)
-
             }else Log.e("Ktor-TCP长连接", "连接异常", e)
             if(coroutineContext.isActive) delay(5_000)/*连接异常、读写异常等，等5秒自动重连(防止连续异常时 重连太频繁造成服务端压力)*/
         }
