@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.ConstructedBy
 import androidx.room.Dao
 import androidx.room.Database
-import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -27,13 +26,13 @@ import kotlinx.coroutines.flow.Flow
  */
 
 /*账号 数据库类*/
-@Database(entities=[UserAccountLocalData::class,AccountFriendLocalData::class, AccountFriendMessage::class]/*列出此数据库包含的所有Entity实例*/,
+@Database(entities=[UserAccountLocalData::class,AccountFriendLocalData::class, AccountMessage::class]/*列出此数据库包含的所有Entity实例*/,
           version=1/*数据库版本号，升级时需增加*/, exportSchema=false/*导出数据库架构信息，可选*/)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase/*账号数据库类*/:RoomDatabase(){
     abstract fun userAccountDao():UserAccountDao        /*提供DAO实例(数据访问对象)，对于用户账号数据表的 数据访问对象*/
     abstract fun friendDao():FriendDao                  /*对于好友数据表的 数据访问对象(Dao实例)*/
-    abstract fun messageDao():AccountFriendMessageDao   /*对于消息数据表的 数据访问对象(Dao实例)*/
+    abstract fun messageDao():AccountMessageDao   /*对于消息数据表的 数据访问对象(Dao实例)*/
 }
 
 /*用来Room编译器内部生成 `actual` implementations*/
@@ -71,10 +70,10 @@ data class UserAccountLocalData(
 @Dao/*对于用户账号数据表的 数据访问(DAO实例)*/
 interface UserAccountDao{
     @Insert(onConflict=OnConflictStrategy.REPLACE)/*插入单个用户账号*/
-    suspend fun insertAccount(userAccount:UserAccountLocalData):Long/*返回插入的行ID(Long类型)*/
+    suspend fun insertAccount(userAccountTableData:UserAccountLocalData):Long/*返回插入的行ID(Long类型)*/
 
     @Update/*更新用户账号信息*/
-    suspend fun updateAccountInfo(userAccount:UserAccountLocalData)
+    suspend fun updateAccountInfo(userAccountTableData:UserAccountLocalData)
 
     @Query("DELETE FROM user_accounts_local WHERE id=:accountId")/*根据ID删除 本地保存的 用户账号，注意SQL语句中表名别写错(否则找不到表实例)*/
     suspend fun deleteAccountById(accountId:String):Int/*返回 被删除数据的 行索引*/
@@ -90,8 +89,8 @@ interface UserAccountDao{
     @Query("SELECT COUNT(*) > 0 FROM user_accounts_local WHERE current_use==1")/*查询是否存在正在使用的账号(current_use字段值为true的数据量 >0)*/
     suspend fun getHisCurrentUseAccount():Boolean
 
-    @Query("SELECT id from user_accounts_local where current_use==1")/*查询正在用的账号，若不存在current_use字段值为true的数据时 返回null*/
-    suspend fun getCurrentUseAccountIdByCurrentUse():String?/*返回值类型String?，因为不存在current_use字段值为true的数据时 要返回null*/
+    @Query("SELECT * from user_accounts_local where current_use==1")/*查询正在用的账号数据，若不存在current_use字段值为true的数据时 返回null*/
+    suspend fun getCurrentUseAccountIdByCurrentUse():UserAccountLocalData?/*返回值类型String?，因为不存在current_use字段值为true的数据时 要返回null*/
 
     /*除查询账号外的 其它账号current_use字段都改成false，将指定账号外的其它账号改为未在使用，如果没有复合条件的数据也不会报错，只是该更新操作会影响0行*/
     @Query("UPDATE user_accounts_local SET current_use = 0 WHERE id!=:currentUseAccountId")/* “:”符号在此处表示使用变量传参 */
@@ -123,13 +122,13 @@ data class AccountFriendLocalData(
 @Dao/*对于好友数据表的 数据访问(DAO实例)*/
 interface FriendDao{
     @Insert(onConflict=OnConflictStrategy.REPLACE)/*插入单个好友数据*/
-    suspend fun insertFriend(friendID:AccountFriendLocalData):Long/*返回插入的行ID(Long类型)*/
+    suspend fun insertFriend(friendTableData:AccountFriendLocalData):Long/*返回插入的行ID(Long类型)*/
 
     @Update/*更新好友信息*/
-    suspend fun updateFriendInfo(userAccount:UserAccountLocalData)
+    suspend fun updateFriendInfo(friendTableData:AccountFriendLocalData)
 
-    @Query("DELETE FROM friend WHERE id=:accountId")/*根据ID删除 本地保存的 好友，注意SQL语句中表名别写错(否则找不到表实例)*/
-    suspend fun deleteFriendById(accountId:String):Int/*返回 被删除数据的 行索引*/
+    @Query("DELETE FROM friend WHERE id=:friendId")/*根据ID删除 本地保存的 好友，注意SQL语句中表名别写错(否则找不到表实例)*/
+    suspend fun deleteFriendById(friendId:String):Int/*返回 被删除数据的 行索引*/
 
     @Query("SELECT * FROM friend")/*查询 好友表(friend)中 所有好友数据*/
     fun getAllFriend():List<AccountFriendLocalData>/*List<数据类对象>是listOf集合 元素是数据类对象*/
@@ -138,18 +137,29 @@ interface FriendDao{
     fun getAllFriend_Flow():Flow<List<AccountFriendLocalData> >/*返回值用Flow类型 数据变化时自动发射新数据，若表无数据则发射空表(emptyList() )，List<数据类对象>是listOf集合 元素是数据类对象*/
 }
 
-@Entity(tableName="message")
+@Entity(tableName="msg")
 /*账号好友消息 表结构实体类*/
-data class AccountFriendMessage(
+data class AccountMessage(
     @PrimaryKey/*关键字段(每个表结构必须有)*/
-    val id:String,/*发消息的账号*/
-    var message:String,/*消息内容*/
-    @ColumnInfo(name="message_session")/*字段名*/
-    val messageSession:String,/*消息会话*/
+    @ColumnInfo("msg_id")/*字段名*/
+    val msgID:String,/*消息ID*/
+    var msg:String,/*消息内容*/
+    @ColumnInfo("sender_id") val senderID:String,/*发送者账号ID*/
+    @ColumnInfo("message_session") val messageSession:String,/*消息会话*/
 )
 @Dao/*对于消息数据表的 数据访问(DAO实例)*/
-interface AccountFriendMessageDao{
+interface AccountMessageDao{
+    @Insert(onConflict=OnConflictStrategy.REPLACE)/*插入单条消息数据*/
+    suspend fun insertFriend(messageTableData:AccountMessage):Long/*返回插入的行ID(Long类型)*/
 
+    @Query("DELETE FROM msg WHERE msg_id=:msgID")/*根据ID删除(撤回) 当前会话本地保存的 消息，注意SQL语句中表名别写错(否则找不到表实例)*/
+    suspend fun deleteFriendById(msgID:String):Int/*返回 被删除数据的 行索引*/
+
+    @Query("SELECT * FROM msg")/*查询 消息表(msg)中 所有消息数据*/
+    fun getAllFriend():List<AccountMessage>/*List<数据类对象>是listOf集合 元素是数据类对象*/
+
+    @Query("SELECT * FROM msg")/*查询 消息表(msg)中 所有消息数据*/
+    fun getAllFriend_Flow():Flow<List<AccountMessage> >/*返回值用Flow类型 数据变化时自动发射新数据，若表无数据则发射空表(emptyList() )，List<数据类对象>是listOf集合 元素是数据类对象*/
 }
 
 

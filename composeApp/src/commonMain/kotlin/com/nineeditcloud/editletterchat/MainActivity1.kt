@@ -100,8 +100,10 @@ import androidx.navigation.NavHostController
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.nineeditcloud.editletterchat.client.tcpLongConnClient
 import com.nineeditcloud.editletterchat.common_tools.filesPath
 import com.nineeditcloud.editletterchat.database.AccountFriendLocalData
+import com.nineeditcloud.editletterchat.database.UserAccountLocalData
 import com.nineeditcloud.editletterchat.database.getDatabase
 import compose.icons.Octicons
 import compose.icons.octicons.DeviceCamera16
@@ -128,7 +130,7 @@ import org.jetbrains.compose.resources.painterResource
 
 /*首页 导航图 界面*/
 
-var account:String?=null/*因为若表中不存在正在使用的账号时要返回null，所以类型为String?*/
+var accountData:UserAccountLocalData?=null/*因为若表中不存在正在使用的账号时要返回null，所以类型为String?*/
 var selectedId=""
 var selectedName=""
 
@@ -143,7 +145,7 @@ var currentRoute:String?=null/*当前导航页获取结果 初始值，equals(�
 var exitApp:( ()->Unit)={}/*全局默认空实现，避免未注入时崩溃*/
 
 val userAccountDBTableDao=getDatabase("userAccount_localData")/*获取 用户账号本地数据 数据库实例*/.userAccountDao()/*获取数据库中的 已登录账号本地数据 表Dao*/
-val currentAccount_FriendDBTableDao=getDatabase("${account!!}friend")/*获取 当前账号(不为空则调用)好友本地数据 数据库实例*/.friendDao()/*获取数据库中的 好友表Dao*/
+val currentAccount_FriendDBTableDao=getDatabase("${accountData!!.id}friend")/*获取 当前账号(不为空则调用)好友本地数据 数据库实例*/.friendDao()/*获取数据库中的 好友表Dao*/
 
 @OptIn(ExperimentalComposeUiApi::class)
 class MainActivity1:Screen{
@@ -152,7 +154,7 @@ class MainActivity1:Screen{
     override fun Content(){
         val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
         lifecycleOwner.lifecycleScope.launch{/*协程作用域*/
-            account=userAccountDBTableDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号，不存在时返回null*/
+            accountData=userAccountDBTableDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号数据，不存在时返回null*/
         }
 
         val drawerState=remember{ DrawerState(DrawerValue.Closed) }/*抽屉状态对象*/
@@ -724,12 +726,19 @@ class MainActivity1:Screen{
                         allFriends.forEach{/*遍历List集合元素，默认每次赋值给it*/
                             contactMessageItems.add(it)/*列表项集合添加元素*/
                             listAlreadyExistsFriendItem.add(it.id)/*在 列表已存在好友项记录集合中 添加对应好友ID*/
-
                         }
+                        if(accountData!=null){
+                            tcpLongConnClient(accountData!!.id, accountData!!.token){
+                                if(it["type"]==""){
+
+                                }
+                            }
+                        }
+
                     }
 
 
-
+                    /*有时候 同层级或子层级 代码块中无法调用已存在参数 可能是前边某处代码多了个}，同样也不能多{ 否则后边函数调用处都报错*/
                     LazyColumn/*垂直有序列表*/(Modifier.fillMaxSize(1f), state=listState){
                         items/*遍历列表多项*/(contactMessageItems){ contactMessageItem->/*Lambda表达式，赋值每次遍历值的变量名(若不写则默认赋值给it)*/
                             Column(Modifier.combinedClickable(/*事件，列表项事件，不能获取触摸指针位置*/

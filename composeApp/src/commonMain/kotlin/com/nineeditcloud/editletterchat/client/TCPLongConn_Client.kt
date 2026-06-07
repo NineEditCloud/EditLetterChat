@@ -1,7 +1,6 @@
 package com.nineeditcloud.editletterchat.client
 import com.nineeditcloud.editletterchat.common_tools.Log
 import com.nineeditcloud.editletterchat.common_tools.MessageReader
-import com.nineeditcloud.editletterchat.common_tools.MessageReader.Entry
 import com.nineeditcloud.editletterchat.common_tools.deviceType
 import com.nineeditcloud.editletterchat.common_tools.readBigEndianInt
 import com.nineeditcloud.editletterchat.common_tools.toData
@@ -17,8 +16,8 @@ import kotlinx.coroutines.CancellationException
  * @param token 认证令牌
  * @param 某OnMessage 收到消息时的回调(运行在协程所在线程，非主线程)*/
 fun tcpLongConnClient(account:String, token:String,
-                      onHashMapMessage/*收到哈希表字符串键值对消息回调*/:(HashMap<String,String>)->Unit,
-                      onBytesMessage/*收到字节串键值对消息回调*/:(List<Entry>)->Unit )=runBlocking{
+                      onHashMapMessage/*收到哈希表字符串键值对消息回调*/:(HashMap<String,String>)->Unit={},
+                      onBytesMessage/*收到字节串键值对消息回调*/:(HashMap<String,ByteArray>)->Unit={})=runBlocking{
     val host="192.168.1.47";val port=9000
     while(coroutineContext.isActive){
         try{
@@ -66,7 +65,7 @@ fun tcpLongConnClient(account:String, token:String,
                         val frameLen=headerBytes.readBigEndianInt()/*读大端字节序*/
                         if(frameLen<=0) continue /*无效帧*/
                         val body=input.readByteArray(frameLen)/*以字节流读取(挂起直到读满frameLen字节) 服务端反馈的消息体*/ ?:break/*若接收结果为空 说明服务端断开，跳出接收循环*/
-                        val entries=MessageReader(body).readAll()/*解析*/
+                        val entries=MessageReader(body).readAll()/*解析*/.toHashMap()/*转HashMap键值对*/
                         onBytesMessage(entries)
                     }
                 }

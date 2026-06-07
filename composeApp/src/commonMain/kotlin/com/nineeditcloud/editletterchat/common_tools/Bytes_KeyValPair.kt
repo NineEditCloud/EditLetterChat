@@ -91,18 +91,19 @@ class MessageBuilder{
     }
 }
 
+data class Entry(val key:String, val type:Byte, val value:ByteArray){
+    val textValue:String get()=value.decodeToString()
+}
 /*========== 消息解析器 ==========*/
 class MessageReader(private val data:ByteArray){
-    private var pos=0
+    private var pos=0/*消息已读取进度*/
 
-    data class Entry(val key:String, val type:Byte, val value:ByteArray){
-        val textValue:String get()=value.decodeToString()
-    }
+
 
     fun readAll():List<Entry>{
         val entries=mutableListOf<Entry>()
         while(pos < data.size){
-            entries.add(readNext())
+            entries.add(readNext() )
         }
         return entries
     }
@@ -114,15 +115,24 @@ class MessageReader(private val data:ByteArray){
         val valueLen=data.readBigEndianInt(pos); pos += 4/*读值长度*/
         val value=data.copyOfRange(pos, pos + valueLen); pos += valueLen/*读值*/
 
-        if (type == 0x02.toByte() ){/*若是二进制，读并校验 CRC32*/
+        if(type == 0x02.toByte() ){/*若是二进制，读并校验 CRC32*/
             val receivedCrc=data.readBigEndianInt(pos); pos += 4
             val computedCrc=CRC32.compute(value)
-            if (receivedCrc != computedCrc) {
+            if(receivedCrc != computedCrc){
                 throw IllegalStateException("图片数据校验失败！key=$key")
             }
         }
         return Entry(key, type, value)
     }
+
+
+}
+fun List<Entry>.toHashMap/*List集合扩展函数 转HashMap键值对集合*/():HashMap<String,ByteArray>{
+    val msgMap=hashMapOf<String/*键*/,ByteArray/*值*/>()/*hashMapOf集合对象中存在一个HashMap，创建集合操作对象时声明val常量 依旧能更改其对应HashMap的元素*/
+    this.forEach{e->
+        msgMap[e.key]=e.value/*在HashMap集合中 对应字段 赋值数据*/
+    }
+    return msgMap
 }
 
 /*========== 帧切割辅助(从TCP流中切出完整帧) ==========*/
