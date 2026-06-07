@@ -24,13 +24,13 @@ import kotlinx.coroutines.flow.Flow
  * org.jetbrains.kotlinx:kotlinx-coroutines-core(内置接口核心和苹果协程)、kotlinx-coroutines-android(安卓)、kotlinx-coroutines-swing(JVM桌面)
  * 同步依赖后清除AndroidStudio旧缓存，重启，再次尝试即可成功
  *
- * 改了数据库结构后，会发生错误报错，JVM桌面端要自行删除旧的数据库，打包成Win应用安装运行的可卸载重装 直接测试运行的要手动在数据库路径删文件
- * Room-JVM桌面端数据库文件默认路径：C:\Users\Administrator\AppData\Local\Temp\
+ * 改了数据库的表结构后，会发生错误报错，JVM桌面端要自行删除旧的数据库，打包成Win应用安装运行的可卸载重装 直接测试运行的要手动在数据库路径删文件
+ * Room-JVM桌面端数据库文件默认路径是程序执行路径
  */
 
 /*账号 数据库类*/
-@Database(entities=[UserAccountLocalData::class,AccountFriendLocalData::class, AccountMessage::class]/*列出此数据库包含的所有Entity实例*/,
-          version=1/*数据库版本号，升级时需增加*/, exportSchema=false/*导出数据库架构信息，可选*/)
+@Database(entities=[UserAccountLocalData::class,AccountFriendLocalData::class, AccountMessage::class]/*列出此数据库包含的所有表Entity实例*/,
+          version=1/*数据库版本号，客户端库/表结构升级时需增加*/, exportSchema=false/*导出数据库架构信息，可选*/)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase/*账号数据库类*/:RoomDatabase(){
     abstract fun userAccountDao():UserAccountDao        /*提供DAO实例(数据访问对象)，对于用户账号数据表的 数据访问对象*/
