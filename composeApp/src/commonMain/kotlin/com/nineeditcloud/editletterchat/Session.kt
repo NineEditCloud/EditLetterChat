@@ -60,11 +60,11 @@ class Session :Screen{
 
         Column(Modifier.fillMaxSize().imePadding()/*自适应软键盘升起边距*/
                /*.background(sessionBackgroundColor)*/
-            //        .systemBarsPadding()/*系统栏边距，防止内容跑到手机的 顶部状态栏 和 底部导航栏 后面被挡住，如果手机底部导航栏高度不清晰，可不用此参数*/
+//                   .systemBarsPadding()/*系统栏边距，防止内容跑到手机的 顶部状态栏 和 底部导航栏 后面被挡住，如果手机底部导航栏高度不清晰，可不用此参数*/
               ){
-            Column(Modifier.fillMaxWidth().background(sessionBackgroundColor.copy(0.99f)/*带两分透明*/) ) {
+            Column(Modifier.fillMaxWidth() ){
                 Row/*水平布局*/(Modifier.statusBarsPadding()/*顶部状态栏边距，防止内容跑到 顶部状态栏 后边被挡住*/  .fillMaxWidth()/*填充全部宽度*/
-//                                .background(sessionBackgroundColor)/*如果容器布局已设置背景色，再设一层会加重颜色，此布局有自适应系统状态栏边距，再设置一层会导致状态栏后边部分与此布局颜色不同*/
+                                .background(sessionBackgroundColor.copy(0.99f)/*带点透明*/) /*如果容器布局已设置背景色，再设一层会加重颜色，此布局有自适应系统状态栏边距，再设置一层会导致状态栏后边部分与此布局颜色不同*/
                                 ,verticalAlignment=Alignment.CenterVertically/*子项垂直居中对齐*/){
                     IconButton/*仅用来包裹图标的按钮，放在按钮里可点击命中区域更大*/(onClick={/*返回图标按钮点击事件*/
                         navigator.pop()/*退出当前活动*/
@@ -76,8 +76,8 @@ class Session :Screen{
 
                         }, fontSize=10.sp, color=MaterialTheme.colorScheme.onSurface/*文字颜色根据主题自适应*/)
                     Spacer(Modifier.weight(1f)/*填充全部宽度将 图标按钮 推到右侧*/)/*弹性空间，Modifier本身无weight，weight属性是用于Row、Column布局的子元素上的*/
-                    IconButton(onClick = {/*消息界面右上角功能菜单按钮点击事件*/
-                    }){
+                    IconButton(onClick={/*消息界面右上角功能菜单按钮点击事件*/
+                    }, ){
                         Icon(imageVector=Icons.Default.MoreVert, contentDescription="功能菜单图标")/*功能菜单图标*/
                     }
                 }

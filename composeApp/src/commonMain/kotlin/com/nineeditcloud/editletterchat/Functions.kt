@@ -51,30 +51,33 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 
 class CreateGroupChat/*创建群聊界面*/: Screen{
     @Composable
-    override fun Content() {
+    override fun Content(){
         val density=LocalDensity.current
-        var show by remember { mutableStateOf(false) }
-        var clickPosition by remember { mutableStateOf(Offset.Zero) }
+        var show by remember{ mutableStateOf(false) }
+        var clickPosition by remember{ mutableStateOf(Offset.Zero) }/*每次赋值会重组刷新的位置信息*/
 
         Box(Modifier.fillMaxSize()
                 .pointerInput(Unit){
-                    detectTapGestures { offset ->
-                        clickPosition=offset/*获取相对于 Box 的点击位置*/
-                        show=true
+                    detectTapGestures(
+                        onLongPress={offset->/*长按获取位置*/
+                            clickPosition=offset/*获取相对于 Box 的点击位置*/
+                            show=true
+                        },
+                        ){/*综合触摸事件*/
                     }
                 }
            ){
-            Button(
-                onClick={ /* 可选：按钮点击也可以显示在按钮位置 */ }, Modifier.fillMaxWidth()
-                  ){
+            Button(onClick={/* 可选：按钮点击也可以显示在按钮位置 */
+
+            }, Modifier.fillMaxWidth() ){
                 Text("Click anywhere to show menu at click position")
             }
 
             if(show){
-                Popup/*使用 Popup 而不是 DropdownMenu*/(alignment=Alignment.TopStart, offset=with(density){
-                    IntOffset(x=clickPosition.x.toInt(), y=clickPosition.y.toInt() )
-                }, onDismissRequest={ show=false }
-                                                       ){/*自定义菜单内容*/
+                Popup/*用Popup 而不是DropdownMenu*/(alignment=Alignment.TopStart,
+                   offset=with(density){ IntOffset(x=clickPosition.x.toInt(), y=clickPosition.y.toInt() ) },
+                   onDismissRequest={ show=false }
+                ){/*自定义菜单内容*/
                     Column(Modifier.width(200.dp).background(Color.White, RoundedCornerShape(4.dp) )
                                .shadow(4.dp)
                                .pointerInput(Unit){

@@ -50,6 +50,7 @@ object HTTPAccount_Client{
                         Result.Success(resp.accountId, resp.token)/*调用结果密封类中的 成功类型生效(返回值为Result密封类，自动返回)，并传递 账号Id、Token令牌 参数*/
                         /*注：Result密封类中的 Success数据类 或 Error数据类 都会返回它的整个 Result密封类，post方法返回值为Result密封类*/
                     }else{/*注册失败*/
+                        Log.e("Ktor","注册或登录、更改信息 消息认证失败")
                         Result.Error(resp.message)/*调用结果密封类中的 错误类型生效，并传递 消息 参数*/
                     }
                 }else{/*网络请求失败，状态码400说明两端对接有问题*/

@@ -74,6 +74,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
@@ -94,6 +95,7 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
@@ -101,6 +103,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.nineeditcloud.editletterchat.client.tcpLongConnClient
+import com.nineeditcloud.editletterchat.common_tools.Log
 import com.nineeditcloud.editletterchat.common_tools.filesPath
 import com.nineeditcloud.editletterchat.database.AccountFriendLocalData
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
@@ -124,13 +127,13 @@ import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 
 /*首页 导航图 界面*/
 
-var accountData:UserAccountLocalData?=null/*因为若表中不存在正在使用的账号时要返回null，所以类型为String?*/
+val userAccountDBTableDao=getDatabase("userAccount_localData")/*获取 用户账号本地数据 数据库实例*/.userAccountDao()/*获取数据库中的 已登录账号本地数据 表Dao*/
+var accountData:UserAccountLocalData?=null/*账号数据 默认值*/
 var selectedId=""
 var selectedName=""
 
@@ -138,14 +141,12 @@ var imagePath:String=""
 var backgroundColor:Color=Color.White/*全局背景色初始化值*/
 
 var navController:NavHostController?=null
-var showPopup1=false/*列表弹窗菜单状态 初始值*/
-
 var currentRoute:String?=null/*当前导航页获取结果 初始值，equals(比较)扩展函数支持String?类型*/
 
-var exitApp:( ()->Unit)={}/*全局默认空实现，避免未注入时崩溃*/
+var showPopup=false/*列表弹窗菜单状态 初始值*/
+var popupOffset:Offset=Offset.Zero/*Popup屏幕坐标 初始值*/
 
-val userAccountDBTableDao=getDatabase("userAccount_localData")/*获取 用户账号本地数据 数据库实例*/.userAccountDao()/*获取数据库中的 已登录账号本地数据 表Dao*/
-val currentAccount_FriendDBTableDao=getDatabase("${accountData!!.id}friend")/*获取 当前账号(不为空则调用)好友本地数据 数据库实例*/.friendDao()/*获取数据库中的 好友表Dao*/
+var exitApp:( ()->Unit)={}/*全局默认空实现，避免未注入时崩溃*/
 
 @OptIn(ExperimentalComposeUiApi::class)
 class MainActivity1:Screen{
@@ -156,11 +157,12 @@ class MainActivity1:Screen{
         lifecycleOwner.lifecycleScope.launch{/*协程作用域*/
             accountData=userAccountDBTableDao.getCurrentUseAccountIdByCurrentUse()/*获取当前使用账号数据，不存在时返回null*/
         }
+        Log.msg("ELC账号数据",accountData.toString() )/*输出LogCat消息日志*/
 
-        val drawerState=remember{ DrawerState(DrawerValue.Closed) }/*抽屉状态对象*/
+        val drawerState/*抽屉状态对象 每次改变自动重组刷新发射*/=remember{ DrawerState(DrawerValue.Closed) }
         val scope=rememberCoroutineScope()/*协程作用域(抽屉控制器操作执行工具)*/
 
-        navController=rememberNavController()/*导航控制器对象(导航图和导航栏共用同一个导航控制器，实现控制导航图)*/
+        navController=rememberNavController()/*NavHost导航图控制器对象(导航图和导航栏共用同一个导航控制器，实现控制导航图)*/
 //        var presses by remember{ mutableIntStateOf(0) }
 
         val navItems=listOf(/*导航项信息列表，底部导航栏内容(放进主题块中 或主题块调用的部分 否则选中状态不变色)*/
@@ -202,30 +204,23 @@ class MainActivity1:Screen{
             }
         }
 
+        /*监听是否为长按状态，由于combinedClickable闪退Bug，所以写一个 按下/抬起监听 让超文本按钮onClick判断*/
 //        var lastDownTime by remember { mutableLongStateOf(0L) }
-        /*监听长按对象，由于combinedClickable闪退Bug，所以写一个 按下抬起 监听让 超文本按钮onClick判断*/
 
-//        var provider=if(isSystemInDarkTheme() ) Color.White else Color.Black/*根据主题选择文本颜色，否则系统不自动刷新，因为是固定的两种颜色，所以写val常量更省内存资源，请把变量放在抽屉、导航图和列表外，否则开关一次抽屉就可能出Bug，在深色模式开关一次抽屉再浅色也会出Bug*/
+        var expanded/*顶部菜单列表状态*/ by remember{ mutableStateOf(false)/*默认关闭状态*/ }
+        val drawerDensity=LocalDensity.current/*抽屉Density*/
+        val systemBars=WindowInsets.systemBars/*抽屉需要的*/
+        val bottomBarInsets=systemBars.getBottom(drawerDensity)/*抽屉需要的*/
 
-        var expanded by remember{ mutableStateOf(false)/*默认为关闭状态*/ }/*弹出式菜单列表是否打开*/
-
-//        var listItemWindowExpanded by remember { mutableStateOf(false)/*默认为关闭状态*/ }/*弹出式菜单列表是否打开*/
-//        var buttonBounds by remember { mutableStateOf<Rect?>(null) }/*触发按钮的坐标信息，用于精准定位，适合列表项长按弹窗视图功能菜单*/
-
-
-        backgroundColor=if(!isSystemInDarkTheme())Color(0xFFEEF2FD) else Color(0xFF1C1E1F)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
+        backgroundColor=if(!isSystemInDarkTheme() ) Color(0xFFEEF2FD) else Color(0xFF1C1E1F)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
         val drawerBackgroundColor=if(!isSystemInDarkTheme()) Color.White else Color(0xFF1C1E1F) /*抽屉背景色*/
         val topCoverBackground=painterResource(Res.drawable.cover07)
 
-
-        var showPopup by remember{ mutableStateOf(false) }
-        showPopup1=showPopup
-//        var popupOffset by remember{ mutableStateOf(Offset.Zero) }
-
-
+        var showPopup1 by remember{ mutableStateOf(false) }/*列表弹窗状态*/
+        showPopup=showPopup1
+        var popupOffset1 by remember{ mutableStateOf(Offset.Zero) }/*列表长按/弹窗组件 位置，每次赋值会重组发射新位置信息*/
+        popupOffset=popupOffset1
         val density=LocalDensity.current
-        val systemBars=WindowInsets.systemBars
-        val bottomBarInsets=systemBars.getBottom(density)
 
         Box(Modifier.fillMaxSize().background(backgroundColor)/*.semantics(mergeDescendants=true){}*//*合并子组件语义*/
            ){
@@ -238,11 +233,11 @@ class MainActivity1:Screen{
                         drawerContainerColor=Color.Transparent/*抽屉模板颜色透明*/){
                         Box/*堆叠布局*/(Modifier.fillMaxSize() ){
                             Image/*用户顶部封面图*/(topCoverBackground,contentDescription="",
-                                                    Modifier.fillMaxWidth()/*占据全部容器宽度*/.align(Alignment.TopCenter)/*在Box中 垂直居顶 水平开头*/
-                                                    ,contentScale=ContentScale.FillWidth/*拉伸至组件宽度(高度按拉伸比例自适应)，自动调整图片组件高度*/
-                                                   )
-                            //                    CompositionLocalProvider(LocalConfiguration provides fixedConfiguration){/*使用固定字体缩放大小的组件，不受系统字体大小影响*/
-                            //                    }
+                                Modifier.fillMaxWidth()/*占据全部容器宽度*/.align(Alignment.TopCenter)/*在Box中 垂直居顶 水平开头*/,
+                                contentScale=ContentScale.FillWidth/*拉伸至组件宽度(高度按拉伸比例自适应)，自动调整图片组件高度*/
+                            )
+//                            CompositionLocalProvider(LocalConfiguration provides fixedConfiguration){/*使用固定字体缩放大小的组件，不受系统字体大小影响*/
+//                            }
 
                             Column(Modifier.fillMaxSize()) {
                                 Box/*用户卡片部分堆叠布局*/(Modifier.fillMaxWidth().padding(top=180.dp)/*顶部边距*/){
@@ -292,16 +287,16 @@ class MainActivity1:Screen{
                                             scope.launch/*启动协程作用域(抽屉控制器操作执行工具)*/{ drawerState.close()/*关闭抽屉*/ }
                                         },
                                         icon={ Icon(Icons.Default.Lock, contentDescription="钱包图标") },
-                                        shape=RectangleShape/*设置直角*/
-                                                                  )
+                                        shape=RectangleShape/*设置直角*/,
+                                        )
                                     NavigationDrawerItem/*导航项*/(
                                         label={Text("收藏", color=MaterialTheme.colorScheme.onSurface) }, selected=false,
                                         onClick={
                                             scope.launch/*启动协程作用域(抽屉控制器操作执行工具)*/{ drawerState.close()/*关闭抽屉*/ }
                                         },
                                         icon = { Icon(Icons.Default.Star, contentDescription="收藏图标") },
-                                        shape = RectangleShape/*设置直角*/
-                                                                  )
+                                        shape = RectangleShape/*设置直角*/,
+                                        )
                                     NavigationDrawerItem/*导航项*/(
                                         label={ Text("文件", color=MaterialTheme.colorScheme.onSurface) }, selected = false,
                                         onClick={
@@ -309,8 +304,8 @@ class MainActivity1:Screen{
                                         },
                                         icon={ Icon(Octicons.File16, contentDescription="文件图标",
                                                     Modifier.size(25.dp)) },
-                                        shape=RectangleShape/*设置直角*/
-                                                                  )
+                                        shape=RectangleShape/*设置直角*/,
+                                        )
                                     NavigationDrawerItem/*导航项*/(
                                         label={ Text("相册",color=MaterialTheme.colorScheme.onSurface) },
                                         selected=false,
@@ -319,8 +314,8 @@ class MainActivity1:Screen{
                                         },
                                         icon={ Icon(Octicons.Image16, contentDescription="相册图标",
                                                     Modifier.size(25.dp)) },
-                                        shape=RectangleShape/*设置直角*/
-                                                                  )
+                                        shape=RectangleShape/*设置直角*/,
+                                        )
                                     NavigationDrawerItem/*导航项*/(
                                         label={ Text("笔记", color=MaterialTheme.colorScheme.onSurface) },
                                         selected=false,
@@ -328,21 +323,21 @@ class MainActivity1:Screen{
                                             scope.launch/*启动协程作用域(抽屉控制器操作执行工具)*/ { drawerState.close()/*关闭抽屉*/ }
                                         },
                                         icon={ Icon(Icons.Default.Edit, contentDescription="笔记图标",Modifier.size(25.dp)) },
-                                        shape=RectangleShape/*设置直角*/
-                                                                  )
+                                        shape=RectangleShape/*设置直角*/,
+                                        )
 
                                     Spacer(Modifier.weight(1f)/*填充全部高度将Row推到底部*/)/*弹性空间*/
                                     Row{
                                         Column(horizontalAlignment = Alignment.CenterHorizontally/*子项水平居中*/, modifier = Modifier.padding(horizontal = 20.dp)) {
-                                            Icon(Icons.Default.Settings, contentDescription = "设置图标")
+                                            Icon(Icons.Default.Settings, contentDescription="设置图标")
                                             Text("设置", fontSize = 11.sp, lineHeight = 1.sp,color=MaterialTheme.colorScheme.onSurface)
                                         }
                                         Column(horizontalAlignment = Alignment.CenterHorizontally/*子项水平居中*/, modifier = Modifier.padding(horizontal = 20.dp)) {
-                                            Icon(Icons.Default.Home, contentDescription = "主题图标")
+                                            Icon(Icons.Default.Home, contentDescription="主题图标")
                                             Text("个性主题", fontSize = 11.sp, lineHeight = 1.sp,color= MaterialTheme.colorScheme.onSurface)
                                         }
                                         Column(horizontalAlignment = Alignment.CenterHorizontally/*子项水平居中*/, modifier = Modifier.padding(horizontal = 20.dp)) {
-                                            Icon(Icons.Default.LocationOn, contentDescription = "地区天气")
+                                            Icon(Icons.Default.LocationOn, contentDescription="地区天气")
                                             Text("地区天气", fontSize = 11.sp, lineHeight = 1.sp,color= MaterialTheme.colorScheme.onSurface)
                                         }
                                     }
@@ -368,27 +363,28 @@ class MainActivity1:Screen{
                                         onClick={
                                             scope.launch { drawerState.open()/*启动左侧抽屉*/ }
                                         },
-                                        ){
+                                    ){
                                         Icon(imageVector/*顶部左侧导航按钮图标*/=Icons.Default.Person, contentDescription="用户头像，打开名片抽屉",
                                              Modifier.size(40.dp) )
                                     }
                                 },
                                 title/*顶部应用栏的标题控件集*/={
-                                    //                        AnimatedVisibility(visible = currentRoute.equals("message")) {/*按条件定义是否可见*/
-                                    //                            Text("用户昵称")
-                                    //                        }
+//                                    AnimatedVisibility(visible=currentRoute.equals("message") ){/*按条件定义是否可见*/
+//                                        Text("用户昵称")
+//                                    }
 
                                     Row(Modifier.fillMaxWidth(), verticalAlignment=Alignment.CenterVertically/*子项垂直居中对齐*/){
                                         if(currentRoute.equals("message") ){/*如果导航图是在导航消息界面*/
                                             Column/*竖直布局*/(
                                                 Modifier.combinedClickable(
-                                                    onClick = {/*单击事件*/
+                                                    onClick={/*单击事件*/
 
                                                     },
-                                                    onLongClick = {/*长按事件*/
+                                                    onLongClick={/*长按事件*/
 
-                                                    }),
-                                                              ){
+                                                    },
+                                                ),
+                                            ){
                                                 Text("用户昵称", fontSize=10.sp/*字体大小*/, lineHeight=1.sp/*控件行间隔高度*/)
                                                 Row/*水平布局*/(verticalAlignment=Alignment.CenterVertically/*子控件垂直居中对齐*/){
                                                     Icon(imageVector=Icons.Default.AddCircle, contentDescription="状态图标", Modifier.size(12.dp))
@@ -401,8 +397,8 @@ class MainActivity1:Screen{
                                             Text(text=
                                                      if(currentRoute.equals("contact")) "联系人"/*如果导航图在导航联系人界面*/
                                                      else /*if (currentRoute.equals("dynamic"))*/ "动态"/*如果导航图在动态界面*/,
-                                                 fontSize=15.sp/*字体大小*/, lineHeight=1.sp/*文本行间隔高度*/
-                                                )
+                                                 fontSize=15.sp/*字体大小*/, lineHeight=1.sp/*文本行间隔高度*/,
+                                                 )
                                         }
 
                                         Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.End/*子项居右*/) {
@@ -411,20 +407,19 @@ class MainActivity1:Screen{
                                             }.padding(horizontal=5.dp).size(30.dp)  )
                                             Icon(Icons.Default.Menu, contentDescription="功能菜单图标", Modifier.clickable{/*功能菜单点击事件*/
                                                 expanded=!expanded/*打开或关闭功能菜单列表*/
-                                                //                                    if(!expanded)expanded=true else expanded=false
-                                            }.padding(horizontal=5.dp).size(30.dp)  )
+//                                                if(!expanded) expanded=true else expanded=false
+                                            }.padding(horizontal=5.dp).size(30.dp), )
                                         }
 
 
                                     }
 
                                 },
-
                                 )
                         },
                         bottomBar/*底部栏*/={
                             NavigationBar(Modifier.height(111.dp), containerColor=backgroundColor/*底部导航栏背景色*/ ){/*导航栏*/
-                                navItems.forEach/*遍历items*/ { navItem/*每次赋值给新建navItem变量*/ ->
+                                navItems.forEach/*遍历items*/{ navItem/*每次赋值给新建navItem变量*/ ->
                                     NavigationBarItem(
                                         icon/*图标集*/={
 
@@ -432,8 +427,8 @@ class MainActivity1:Screen{
 
                                         label/*标签集*/={
                                             BadgedBox/*徽章布局 给图标旁加徽章*/(
-                                                badge={//徽章集
-                                                    if (navItem.badgeCount > 0) {/*判断徽章消息数如果大于0则执行*/
+                                                badge={/*徽章集*/
+                                                    if (navItem.badgeCount > 0){/*判断徽章消息数如果大于0则执行*/
                                                         Badge/*徽章*/(containerColor=Color.Red/*徽章背景颜色*/, contentColor=Color.White/*徽章内控件颜色*/){
                                                             Text(
                                                                 text=if (navItem.badgeCount > 99) "99+"/*徽章消息数显示上限*/
@@ -442,8 +437,8 @@ class MainActivity1:Screen{
                                                                 )
                                                         }
                                                     }
-                                                }
-                                                                                ){/*徽章布局内的其它组件*/
+                                                },
+                                                ){/*徽章布局内的其它组件*/
                                                 Column(horizontalAlignment=Alignment.CenterHorizontally/*子内容水平居中对齐*/){
                                                     Icon/*图标*/(imageVector=navItem.icon,contentDescription=navItem.title,
                                                                  Modifier.size(23.dp)/*图标大小*/)
@@ -474,7 +469,7 @@ class MainActivity1:Screen{
                         floatingActionButton/*浮动按钮*/={
                             FloatingActionButton(onClick={/*presses++*/
 
-                            } ){/*包含组件*/
+                            }, ){/*包含组件*/
                                 Icon(Icons.Default.Add, contentDescription="添加图标")/*图标*/
                             }
                         },
@@ -506,38 +501,39 @@ class MainActivity1:Screen{
                                     scope.launch/*启动协程作用域(抽屉控制器操作执行工具)*/ { drawerState.close()/*关闭抽屉*/ }
                             }
 
-                            if(expanded){/*如果弹窗视图状态为打开*/
+                            if(expanded){/*若顶部菜单弹窗视图状态为打开*/
                                 /*和Popup和DropdownMenu的好处在于根据 点击输入位置弹出，适合会动的布局或控件 定位弹窗视图，将其放进脚手架中间部分适合*/
                                 Popup/*Popup自定义弹窗视图(DropdownMenu底层实现)，当需求超出DropdownMenu标准范畴，可自定义*/(
-                                    alignment=Alignment.TopEnd, offset=IntOffset(0,56)/*调整弹出菜单位置*/,
-                                    onDismissRequest={expanded=false},/*点击外部区域则关闭菜单*/   ){
+                                    alignment=Alignment.TopEnd/*居顶靠右*/, offset=IntOffset(0,56)/*调整弹出菜单位置*/,
+                                    onDismissRequest={expanded=false}/*点击外部区域则关闭菜单*/, ){
                                     /*自定义菜单项内容*/
                                     /*注：弹窗视图不能用脚手架中间的边距(由于视图弹出时不在脚手架内)，否则会向下错位*/
                                     Row/*自定义布局以实现位置和外边距*/(Modifier.fillMaxSize()
-                                                                            .pointerInput(Unit){/*指针输入(默认无按下涟漪)*/
-                                                                                detectTapGestures/*检测点击手势，包括按下、点击、长按、双击等*/(
-                                                                                    onPress/*按下事件*/={
-                                                                                        expanded=false/*关闭弹窗视图*/
-                                                                                    }
-                                                                                                                                           )
-                                                                            }
-                                                                            .background(Color.Black.copy(0.4f) )/*背景黑色 透明(显示0.3 30%)*/,
-                                                                        horizontalArrangement=Arrangement.End/*子项靠右*/){
+                                        .pointerInput(Unit){/*指针输入(默认无按下涟漪)*/
+                                            detectTapGestures/*检测点击手势，包括按下、点击、长按、双击等*/(
+                                                onPress/*按下事件*/={
+                                                    expanded=false/*关闭弹窗视图*/
+                                                    },
+                                            ){/*综合触摸事件*/
+                                            }
+                                        }
+                                        .background(Color.Black.copy(0.4f) )/*背景黑色 透明(显示0.3 30%)*/,
+                                        horizontalArrangement=Arrangement.End/*子项靠右*/){
                                         Column/*为不影响菜单外整页显示阴影大小，中间加个布局用来写内边距，(由于Compose的内边距会把当前布局的背景向内推)*/(Modifier
-                                                                                                               .padding(top=50.dp,end=10.dp)/*顶部和右侧内边距，防止遮挡顶部应用栏，以及右侧内边距*/
-                                                                                                               .fillMaxWidth(0.4f) ){
+                                            .padding(top=50.dp,end=10.dp)/*顶部和右侧内边距，防止遮挡顶部应用栏，以及右侧内边距*/
+                                            .fillMaxWidth(0.4f) ){
                                             Column(Modifier /*.align(Alignment.TopEnd)*/ /*居顶靠右*/    .width(180.dp)
-                                                       .background(backgroundColor,RoundedCornerShape(13.dp))
+                                                       .background(backgroundColor,RoundedCornerShape(13.dp) )
                                                        .clip(RoundedCornerShape(13.dp))/*裁剪内容为圆角，以待子项最上一行和最下一行点击涟漪为圆角(必须在点击事件前裁剪)*/
-                                                       .fillMaxWidth(0.4f)
-                                                  ){
+                                                       .fillMaxWidth(0.4f),
+                                                   ){
                                                 Row(Modifier.fillMaxWidth().height(50.dp)
 //                                                        .clip(RoundedCornerShape(topStart = 13.dp, topEnd = 13.dp))/*裁剪顶部为圆角，以待点击圆角涟漪(必须在点击事件前裁剪)*/
                                                         .clickable{/*创建群聊选项点击事件*/
                                                             navigator.push(CreateGroupChat())/*跳转 创建群聊界面*/
                                                         }/*.background(Color.White,RoundedCornerShape(topStart = 13.dp, topEnd = 13.dp))*//*背景白色，顶部圆角*/,
-                                                    verticalAlignment = Alignment.CenterVertically/*子项垂直居中对齐*/,) {
-                                                    Icon(painterResource(Res.drawable.name_edit), contentDescription = "创建群聊图标",
+                                                    verticalAlignment=Alignment.CenterVertically/*子项垂直居中对齐*/, ){
+                                                    Icon(painterResource(Res.drawable.name_edit), contentDescription="创建群聊图标",
                                                          Modifier.padding(horizontal = 10.dp))
                                                     Text("创建群聊", /*lineHeight = 1.sp,*/ fontSize = 10.sp,color= MaterialTheme.colorScheme.onSurface)
                                                 }
@@ -545,7 +541,7 @@ class MainActivity1:Screen{
                                                 Row(Modifier.fillMaxWidth().height(50.dp).clickable{/*添加好友选项点击事件*/
                                                     navigator.push(Add_FriendAndGroupChat())/*跳转 添加好友和群聊界面(添加联系)*/
                                                 }, verticalAlignment = Alignment.CenterVertically/*子项垂直居中对齐*/) {
-                                                    Icon(painterResource(Res.drawable.new_user), contentDescription = "添加 好友/群 图标",
+                                                    Icon(painterResource(Res.drawable.new_user), contentDescription="添加 好友/群 图标",
                                                          Modifier.padding(horizontal = 10.dp))
                                                     Text("加好友/群", /*lineHeight = 1.sp,*/ fontSize=10.sp, color=MaterialTheme.colorScheme.onSurface)
                                                 }
@@ -589,39 +585,35 @@ class MainActivity1:Screen{
                         }
                     }
 
-                    //                if(showPopup){
-                    ////                    val offset=with(density){
-                    ////                        IntOffset(popupOffset.x.toInt(), popupOffset.y.toInt() )/*屏幕坐标*/
-                    ////                    }
-                    //
-                    //
-                    //                    Popup(alignment=Alignment.TopStart/*弹窗内容位置*/, offset/*指定位置显示*/=popupOffset,
-                    //                        onDismissRequest/*点外部关弹窗*/={ showPopup=false },
-                    //                        properties=PopupProperties(focusable=true, dismissOnBackPress=true, dismissOnClickOutside=true ),
-                    //                    ){
-                    //                        Row(Modifier/*.padding(end=10.dp)*/, /*horizontalArrangement=Arrangement.End*//*子项水平靠右*/){
-                    //                            val listItemWindowBackground=if(!isSystemInDarkTheme()) Color.White else Color.Black
-                    //                            val windowItemBackground=if(!isSystemInDarkTheme()) Color.Black else Color.White
-                    //                            Row(Modifier.background(listItemWindowBackground, RoundedCornerShape(8.dp))
-                    //                                .clip(RoundedCornerShape(8.dp))/*裁剪内容为圆角(为使点击涟漪不超出此布局圆角范围)*/
-                    //                            ) {
-                    //                                Text("标为未读", modifier=Modifier.background(windowItemBackground).clickable{
-                    //
-                    //                                }.padding(end = 5.dp), color=listItemWindowBackground,fontSize = 6.sp, lineHeight = 12.sp)
-                    //                                Text("设为置顶", Modifier.background(windowItemBackground).clickable{
-                    //
-                    //                                }.padding(end = 5.dp), color=listItemWindowBackground,fontSize = 6.sp, lineHeight = 12.sp)
-                    //                                Text("移除此项", Modifier.background(windowItemBackground).clickable{
-                    //
-                    //                                }.padding(end = 5.dp), color=listItemWindowBackground,fontSize = 6.sp, lineHeight = 12.sp)
-                    //                                Text("删除消息", Modifier.background(windowItemBackground).clickable{
-                    //
-                    //                                }, color=listItemWindowBackground,fontSize=6.sp, lineHeight=12.sp)
-                    //                            }
-                    //
-                    //                        }
-                    //                    }
-                    //                }
+                    if(showPopup){/*若列表项弹窗状态为打开*/
+                        Popup(alignment=Alignment.TopStart/*弹窗内容位置*/,
+                              offset=with(density){ IntOffset(x=popupOffset.x.toInt(), y=popupOffset.y.toInt() ) },
+                              onDismissRequest/*点外部关弹窗*/={ showPopup=false },
+                              properties=PopupProperties(focusable=true, dismissOnBackPress=true, dismissOnClickOutside=true),
+                        ){
+                            Row(Modifier/*.padding(end=10.dp)*/, /*horizontalArrangement=Arrangement.End*//*子项水平靠右*/){
+                                val listItemWindowBackground=if(!isSystemInDarkTheme() ) Color.White else Color.Black
+                                val windowItemBackground=if(!isSystemInDarkTheme() ) Color.Black else Color.White
+                                Row(Modifier.background(listItemWindowBackground,RoundedCornerShape(8.dp) )
+                                    .clip(RoundedCornerShape(8.dp) )/*裁剪内容为圆角(为使点击涟漪不超出此布局圆角范围)*/
+                                ){
+                                    Text("标为未读", modifier=Modifier.background(windowItemBackground).clickable{
+
+                                    }.padding(end = 5.dp), color=listItemWindowBackground,fontSize = 6.sp, lineHeight = 12.sp)
+                                    Text("设为置顶", Modifier.background(windowItemBackground).clickable{
+
+                                    }.padding(end = 5.dp), color=listItemWindowBackground,fontSize = 6.sp, lineHeight = 12.sp)
+                                    Text("移除此项", Modifier.background(windowItemBackground).clickable{
+
+                                    }.padding(end = 5.dp), color=listItemWindowBackground,fontSize = 6.sp, lineHeight = 12.sp)
+                                    Text("删除消息", Modifier.background(windowItemBackground).clickable{
+
+                                    }, color=listItemWindowBackground,fontSize=6.sp, lineHeight=12.sp)
+                                }
+
+                            }
+                        }
+                    }
 
                 }
 
@@ -663,106 +655,100 @@ class MainActivity1:Screen{
 
     @Composable
     fun Nav(navController:NavHostController, ){
-        var anchorCoordinates by remember{ mutableStateOf<LayoutCoordinates?>(null) }/*存储屏幕坐标瞄点位置的状态*/
-        var anchorSize by remember{ mutableStateOf(IntSize.Zero) }/*存储锚点尺寸*/
-        /*当锚点坐标变化时，计算弹窗偏移量*/
-        val popupOffset=remember(anchorCoordinates){
-            if(anchorCoordinates!=null){
-                val position=anchorCoordinates!!.positionInWindow()
-                IntOffset(position.x.toInt(), position.y.toInt() )
-            }else{
-                IntOffset.Zero
-            }
-        }
 
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigator跨平台Screen界面导航 绑定当前界面的导航控制器*/
         /*改了导航界面路由名称，不要忘了改初始导航页界面路由名称*/
-        NavHost/*导航图主体组件*/(navController=navController,/*绑定导航控制器*/ startDestination="message"/*初始导航界面*/){
+        NavHost/*导航图主体组件*/(navController=navController,/*绑定导航控制器*/ startDestination="message"/*初始导航界面*/,
+                                  Modifier.fillMaxSize() ){
             composable("message"){/*消息界面*/
-                Box(Modifier.fillMaxSize() ){
+                Box(Modifier.fillMaxSize(), ){
                     val listState=rememberLazyListState()/*LazyList有序列表状态*/
                     val listAlreadyExistsFriendItem=mutableSetOf<String>()/*列表已存在好友项 记录集合*/
                     val contactMessageItems=remember{ mutableStateListOf<AccountFriendLocalData>() }/*在任何地方调用add/remove/addAll 都会自动触发LazyColumn列表重组的 列表项集合*/
 
-                    val allFriendsFlow by currentAccount_FriendDBTableDao.getAllFriend_Flow()/*获取当前账号好友数据库表中所有数据 Flow(数据变化自动发射新数据)*/.collectAsState(initial=emptyList()/*初始值*/ )
+                    if(accountData!=null){/*若当前账号数据不为默认数据*/
+                        val currentAccount_FriendDBTableDao=getDatabase("${accountData!!.id}friend")/*获取 当前账号(不为空则调用)好友本地数据 数据库实例*/.friendDao()/*获取数据库中的 好友表Dao*/
+//                        val allFriendsFlow by currentAccount_FriendDBTableDao.getAllFriend_Flow()/*获取当前账号好友数据库表中所有数据 Flow(数据变化自动发射新数据)*/.collectAsState(initial=emptyList()/*初始值*/ )
 
-                    /*contactMessageItems列表项集合 和 Room返回的表数据集合 元素必须用同一个对象类型*/
-
-                    LaunchedEffect(Unit){/*LaunchedEffect监听参数变化自动重载 协程作用域*/
-
-//                        contactMessageItems.addAll(/*初始化列表项集合*/
-//                            listOf(/*假设收到的最新每一条消息集，联系人消息集*/
-//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-//                                   AccountFriendLocalData("11110000000", "小明", "你好", account+"and11110000000"),
-//                                   AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", account+"and11110000001"),
-//                                   AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", account+"and11110000002"),
-//                                   ),
-//                            )
-//                        currentAccount_FriendDBTableDao.getAllFriend_Flow()/*获取当前账号好友数据库表中所有数据*/.collect{ allFriendsListFlow->/*收集Room返回的Flow，每次将List集合赋值给friendList变量名(若不写则默认赋值给it)*/
-//                            contactMessageItems.clear()/*直接替换整个列表(避免手动去重)，由于是初始化(将本地已知数据加入) 所以不必*/
-//                            contactMessageItems.addAll(allFriendsListFlow)/*添加集合全部内容，自动刷新列表*/
-//                        }
-//                        contactMessageItems.addAll(allFriends)/*在列表项集合中 添加 全部元素(全部好友数据集合)，不方便记录列表已存在好友项*/
-
-
-                    }
-                    val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
-                    lifecycleOwner.lifecycleScope.launch{
-                        val allFriends=currentAccount_FriendDBTableDao.getAllFriend()/*获取当前账号好友数据库表中所有数据*/
-                        allFriends.forEach{/*遍历List集合元素，默认每次赋值给it*/
-                            contactMessageItems.add(it)/*列表项集合添加元素*/
-                            listAlreadyExistsFriendItem.add(it.id)/*在 列表已存在好友项记录集合中 添加对应好友ID*/
-                        }
-                        if(accountData!=null){
+                        val scope=rememberCoroutineScope()
+                        val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
+                        lifecycleOwner.lifecycleScope.launch(Dispatchers.IO/*数据库、通信必须在输入输出流线程执行 否则切换导航界面时会崩溃*/){
+                            Log.msg("Room数据库","已获取数据库：${accountData!!.id}friend")/*输出LogCat消息日志*/
+                            val allFriends=currentAccount_FriendDBTableDao.getAllFriend()/*获取当前账号好友数据库表中所有数据*/
+                            /*contactMessageItems列表项集合 和 Room返回的表数据集合 元素必须用同一个对象类型*/
+                            allFriends.forEach{/*遍历List集合元素，默认每次赋值给it*/
+                                contactMessageItems.add(it)/*列表项集合添加元素*/
+                                listAlreadyExistsFriendItem.add(it.id)/*在 列表已存在好友项记录集合中 添加对应好友ID*/
+                            }
                             tcpLongConnClient(accountData!!.id, accountData!!.token){
-                                if(it["type"]==""){
-
-                                }
+//                                if(it["type"]==""){
+//                                }
                             }
                         }
+                        LaunchedEffect(Unit){/*LaunchedEffect监听参数变化自动重载 协程作用域*/
+                            contactMessageItems.addAll(/*初始化列表项集合*/
+                                listOf(/*假设收到的最新每一条消息集，联系人消息集*/
+                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       ),
+                                )
+//                            currentAccount_FriendDBTableDao.getAllFriend_Flow()/*获取当前账号好友数据库表中所有数据*/.collect{ allFriendsListFlow->/*收集Room返回的Flow，每次将List集合赋值给friendList变量名(若不写则默认赋值给it)*/
+//                                contactMessageItems.clear()/*直接替换整个列表(避免手动去重)，由于是初始化(将本地已知数据加入) 所以不必*/
+//                                contactMessageItems.addAll(allFriendsListFlow)/*添加集合全部内容，自动刷新列表*/
+//                            }
+//                            contactMessageItems.addAll(allFriends)/*在列表项集合中 添加 全部元素(全部好友数据集合)，不方便记录列表已存在好友项*/
+
+                        }
+
+
 
                     }
+
 
 
                     /*有时候 同层级或子层级 代码块中无法调用已存在参数 可能是前边某处代码多了个}，同样也不能多{ 否则后边函数调用处都报错*/
-                    LazyColumn/*垂直有序列表*/(Modifier.fillMaxSize(1f), state=listState){
+                    LazyColumn/*垂直有序列表*/(Modifier.fillMaxSize(1f)
+                                             .pointerInput(Unit){
+                                                 detectTapGestures/*点击动作监听*/(
+                                                     onLongPress/*长按*/={offset->/*获取位置赋值给offset*/
+                                                         popupOffset=offset/*将列表点击位置 赋值给列表Popup弹窗位置*/
+                                                         showPopup=true/*打开列表弹窗*/
+                                                     },
+                                                 ){/*综合触摸事件*/
+                                                 }
+                                             }
+                                               , state=listState){
                         items/*遍历列表多项*/(contactMessageItems){ contactMessageItem->/*Lambda表达式，赋值每次遍历值的变量名(若不写则默认赋值给it)*/
                             Column(Modifier.combinedClickable(/*事件，列表项事件，不能获取触摸指针位置*/
                                                               onClick={/*单击事件*/
-                                                                  if(!showPopup1){
+                                                                  if(!showPopup){
                                                                       selectedId=contactMessageItem.id
                                                                       selectedName=contactMessageItem.name
                                                                       navigator.push(Session() )/*跳转 消息会话界面*/
                                                                   }
                                                               },
-                                                              onLongClick={/*长按事件*/
-//                                                                  showPopup1=true
-                                                              },
                                                               )
-                                       .onGloballyPositioned{ coordinates ->
-                                           anchorCoordinates=coordinates/*获取列表项在屏幕上的坐标*/
-                                       }
+
+
                                    ){
                                 Row/*水平布局*/(Modifier.fillMaxWidth()/*填充容器全部宽度，否则如果在Button按钮容器中会默认被放置中间*/
-                                                .padding(7.dp)/*内边距*/
-//                                                .onGloballyPositioned{ layoutCoordinates ->
-//                                                    buttonBounds=layoutCoordinates.boundsInWindow()/*获取按钮在屏幕上的位置和大小，用于菜单位置计算*/
-//                                                }
-                                               ){
+                                                .padding(7.dp)/*内边距*/, ){
                                     Image(painter=painterResource(Res.drawable.new_user)
 //                                            rememberAsyncImagePainter(model=File("${contactMessageItem.id}.jpg"))/*Image图片资源，加载账号Id对应的头像路径*/
                                           ,contentDescription="头像圆角图片",/*Image描述(必填此项，否则报错)*/
@@ -794,13 +780,13 @@ class MainActivity1:Screen{
 
             }
             composable("contact"){//联系人界面
-                Column(Modifier.fillMaxSize()){
+                Column(Modifier.fillMaxSize() ){
                     Text("联系人页界面")
                 }
 
             }
             composable("dynamic"){//动态界面
-                Column(Modifier.fillMaxSize()){
+                Column(Modifier.fillMaxSize() ){
                     Text("动态页界面")
                 }
 

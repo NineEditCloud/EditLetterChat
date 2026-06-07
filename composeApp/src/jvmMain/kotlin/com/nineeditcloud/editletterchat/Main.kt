@@ -35,6 +35,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import cafe.adriel.voyager.navigator.Navigator
 import com.nineeditcloud.editletterchat.common_tools.KMPTheme
 import editletterchat.composeapp.generated.resources.Res
 import editletterchat.composeapp.generated.resources.icon00
@@ -49,22 +50,24 @@ fun main(){
     FileKit.init(appId="EditLetterChat")/*FileKit跨平台 应用私有路径获取&文件操作 框架 初始化，应用入口点调用 为桌面应用指定唯一ID，构建系统路径*/
     application{
         KMPTheme{
-            val icon=painterResource(Res.drawable.icon00)/*注意drawable目录资源不能有相同名称文件(即使扩展名不同也不行)，否则Res.drawable选择有重复名文件时执行异常*/
-//            val verticalNarrowWindowState/*竖直窄窗状态*/=rememberWindowState(width=350.dp/*宽度，Dp.Unspecified由内容决定*/, height=680.dp/*高度，Dp.Unspecified由内容决定*/,
-//                placement=WindowPlacement.Floating/*设置初始位置为浮动*/,
-//                position=WindowPosition((800-350).dp/*水平坐标*/, 0.dp/*垂直坐标*/)/*窗口位置(桌面屏幕常规尺寸为1280*720的倍数 或按最小尺寸800*600)*/, )
-//            Window(icon=icon, title="辑信", onCloseRequest/*关闭请求功能*/=::exitApplication/*exitApplication是ApplicationScope的扩展函数*/,
-//            state=verticalNarrowWindowState, resizable=false/*边缘是否可 缩放/调整大小*/, ){
-//                Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
-//            }
+            val icon/*获取图标资源文件*/=painterResource(Res.drawable.icon00)/*注意drawable目录资源不能有相同名称文件(即使扩展名不同也不行)，否则Res.drawable选择有重复名文件时执行异常*/
+            val verticalNarrowWindowState/*竖直窄窗状态*/=rememberWindowState(width=350.dp/*宽度，Dp.Unspecified由内容决定*/, height=680.dp/*高度，Dp.Unspecified由内容决定*/,
+                placement=WindowPlacement.Floating/*设置初始位置为浮动*/,
+                position=WindowPosition((800-350).dp/*水平坐标*/, 0.dp/*垂直坐标*/)/*窗口位置(桌面屏幕常规尺寸为1280*720的倍数 或按最小尺寸800*600)*/, )
+
+
+            Window(icon=icon, title="辑信", onCloseRequest/*关闭请求功能*/=::exitApplication/*exitApplication是ApplicationScope的扩展函数*/,
+            state=verticalNarrowWindowState, resizable=false/*边缘是否可 缩放/调整大小*/, ){
+                Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
+            }
             val horizontalWindowState/*水平窗状态*/=rememberWindowState(width=911.dp/*宽度，Dp.Unspecified由内容决定*/, height=641.dp/*高度，Dp.Unspecified由内容决定*/,
                 placement=WindowPlacement.Floating/*设置初始缩放为浮动*/,
                 position=WindowPosition(180.dp/*水平坐标*/, 20.dp/*垂直坐标*/)/*窗口位置(桌面屏幕常规尺寸为1280*720的倍数 或按最小尺寸800*600)*/, )
-            Window(icon=icon, onCloseRequest/*关闭请求功能*/=::exitApplication/*exitApplication是ApplicationScope的扩展函数*/, state=horizontalWindowState,
-                   undecorated=true/*去掉默认原生标题栏*/, transparent=false/*保留窗口背景(可设true做异形窗口)*/, resizable=false/*边缘是否可 缩放/调整大小*/, ){
+//            Window(icon=icon, onCloseRequest/*关闭请求功能*/=::exitApplication/*exitApplication是ApplicationScope的扩展函数*/, state=horizontalWindowState,
+//                   undecorated=true/*去掉默认原生标题栏*/, transparent=false/*保留窗口背景(可设true做异形窗口)*/, resizable=false/*边缘是否可 缩放/调整大小*/, ){
 //                Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
-                App("辑信", horizontalWindowState, ::exitApplication/*::后边代表传递的方法 或Lambda包装onCloseApp={ exitApplication() }*/)
-            }
+//                App("辑信", horizontalWindowState, ::exitApplication/*::后边代表传递的方法 或Lambda包装onCloseApp={ exitApplication() }*/)
+//            }
         }
 
     }

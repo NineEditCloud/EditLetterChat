@@ -23,6 +23,9 @@ import kotlinx.coroutines.flow.Flow
  * Room框架内部依赖各平台Koltin协程库：
  * org.jetbrains.kotlinx:kotlinx-coroutines-core(内置接口核心和苹果协程)、kotlinx-coroutines-android(安卓)、kotlinx-coroutines-swing(JVM桌面)
  * 同步依赖后清除AndroidStudio旧缓存，重启，再次尝试即可成功
+ *
+ * 改了数据库结构后，会发生错误报错，JVM桌面端要自行删除旧的数据库，打包成Win应用安装运行的可卸载重装 直接测试运行的要手动在数据库路径删文件
+ * Room-JVM桌面端数据库文件默认路径：C:\Users\Administrator\AppData\Local\Temp\
  */
 
 /*账号 数据库类*/
@@ -45,7 +48,7 @@ expect object AppDatabaseConstructor :RoomDatabaseConstructor<AppDatabase>{
 expect fun getDatabaseBuilder(dbName:String):RoomDatabase.Builder<AppDatabase>/*期望函数，用来给对应平台数据库构建器动态传递库名参数 并获取返回的构建器*/
 fun getDatabase/*获取数据库操作实例*/(dbName:String):AppDatabase{
     val builder=getDatabaseBuilder(dbName)/*获取对应平台数据库构建器*/
-    return builder.setDriver(BundledSQLiteDriver()) .setQueryCoroutineContext(Dispatchers.IO) .build()
+    return builder.setDriver(BundledSQLiteDriver() ).setQueryCoroutineContext(Dispatchers.IO) .build()
 }
 
 
@@ -57,11 +60,11 @@ fun getDatabase/*获取数据库操作实例*/(dbName:String):AppDatabase{
 @Entity(tableName="user_accounts_local"/*表名*/)/*用户账号本地数据 表结构实体类，并定义表名，此表不带头像路径，头像保存在账号对应的路径*/
 data class UserAccountLocalData(
     @PrimaryKey/*关键字段 注解，每个表结构必须有*/
-    var id: String,/*账号Id*/
+    var id: String="",/*账号Id*/
 
-    var name: String,/*昵称*/
-    var passwd: String,/*密码*/
-    var token: String,/*令牌*/
+    var name: String="",/*昵称*/
+    var passwd: String="",/*密码*/
+    var token: String="",/*令牌*/
     var user_status: String="",/*用户状态*/
 
     @ColumnInfo("current_use")/*字段名*/
@@ -69,6 +72,7 @@ data class UserAccountLocalData(
 )
 @Dao/*对于用户账号数据表的 数据访问(DAO实例)*/
 interface UserAccountDao{
+    /*Room跨平台支持非安卓端的Dao实例中方法不能用suspend声明*/
     @Insert(onConflict=OnConflictStrategy.REPLACE)/*插入单个用户账号*/
     suspend fun insertAccount(userAccountTableData:UserAccountLocalData):Long/*返回插入的行ID(Long类型)*/
 
@@ -90,7 +94,7 @@ interface UserAccountDao{
     suspend fun getHisCurrentUseAccount():Boolean
 
     @Query("SELECT * from user_accounts_local where current_use==1")/*查询正在用的账号数据，若不存在current_use字段值为true的数据时 返回null*/
-    suspend fun getCurrentUseAccountIdByCurrentUse():UserAccountLocalData?/*返回值类型String?，因为不存在current_use字段值为true的数据时 要返回null*/
+    suspend fun getCurrentUseAccountIdByCurrentUse():UserAccountLocalData?/*返回值类型加? 不存在current_use字段值为true的数据时 返回默认值null 否则抛异常*/
 
     /*除查询账号外的 其它账号current_use字段都改成false，将指定账号外的其它账号改为未在使用，如果没有复合条件的数据也不会报错，只是该更新操作会影响0行*/
     @Query("UPDATE user_accounts_local SET current_use = 0 WHERE id!=:currentUseAccountId")/* “:”符号在此处表示使用变量传参 */
@@ -131,7 +135,7 @@ interface FriendDao{
     suspend fun deleteFriendById(friendId:String):Int/*返回 被删除数据的 行索引*/
 
     @Query("SELECT * FROM friend")/*查询 好友表(friend)中 所有好友数据*/
-    fun getAllFriend():List<AccountFriendLocalData>/*List<数据类对象>是listOf集合 元素是数据类对象*/
+    suspend fun getAllFriend():List<AccountFriendLocalData>/*List<数据类对象>是listOf集合 元素是数据类对象*/
 
     @Query("SELECT * FROM friend")/*查询 好友表(friend)中 所有好友数据*/
     fun getAllFriend_Flow():Flow<List<AccountFriendLocalData> >/*返回值用Flow类型 数据变化时自动发射新数据，若表无数据则发射空表(emptyList() )，List<数据类对象>是listOf集合 元素是数据类对象*/
@@ -156,7 +160,7 @@ interface AccountMessageDao{
     suspend fun deleteFriendById(msgID:String):Int/*返回 被删除数据的 行索引*/
 
     @Query("SELECT * FROM msg")/*查询 消息表(msg)中 所有消息数据*/
-    fun getAllFriend():List<AccountMessage>/*List<数据类对象>是listOf集合 元素是数据类对象*/
+    suspend fun getAllFriend():List<AccountMessage>/*List<数据类对象>是listOf集合 元素是数据类对象*/
 
     @Query("SELECT * FROM msg")/*查询 消息表(msg)中 所有消息数据*/
     fun getAllFriend_Flow():Flow<List<AccountMessage> >/*返回值用Flow类型 数据变化时自动发射新数据，若表无数据则发射空表(emptyList() )，List<数据类对象>是listOf集合 元素是数据类对象*/

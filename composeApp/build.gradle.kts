@@ -223,7 +223,7 @@ kotlin{
             implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")/*Ktor协商-serialization适配器-序列化JSON(需内容协商)*/
 
             implementation("androidx.room:room-runtime:${libs.versions.room.get()}")/*Room核心库，Room2.x会导致KSP反射Bug，3.x不兼容安卓5.0*/
-            implementation("androidx.sqlite:sqlite-bundled:2.5.2")/*跨平台SQLite数据库依赖，驱动类BundledSQLiteDriver，支持Android|IOS|JVM(Win/MacOS/Linux)，2.5.0兼容安卓5.0*/
+            implementation("androidx.sqlite:sqlite-bundled:2.5.2")/*跨平台SQLite数据库依赖，驱动类BundledSQLiteDriver，2.5.2支持Android5.0+|IOS|JVM(Win/MacOS/Linux)*/
 //            implementation("com.attafitamim.kabin:core:${libs.versions.kabin.get()}")/*Kabin核心库，机制防Room*/
 //            implementation("io.realm.kotlin:library-base:${libs.versions.realm.get()}")/*Realm 对象型数据存储框架*/
 
@@ -290,10 +290,12 @@ kotlin{
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:${libs.versions.kotlinx.get()}")/*Kotlin协程-JVM桌面 Room内部依赖需要，包含Dispatchers.Main*/
             implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")/*Ktor-纯Kotlin跨平台网路请求引擎(建议给各平台加各自的，不加的话HttpClient方法传CIO)，或apache、java*/
 
+            implementation("org.slf4j:slf4j-simple:2.0.7")/*JVM桌面端SLF4J日志库，Room桌面端内部日志依赖*/
 //            implementation("com.ctrip.sqllin:sqllin-dsl:${libs.versions.sqllin.get()}")/*SQLlin，跨平台且方便分库分表的DSL数据库框架，KSP用于编译时生成代码，dsl模块已包含必要注解，无需额外添加*/
 //            implementation("com.ctrip.sqllin:sqllin-driver:${libs.versions.sqllin.get()}")/*一套通用的多平台SQLite低阶API，DSL的底层依赖*/
 //            implementation("io.exoquery:exoquery-runner-jdbc:${libs.versions.exoqueryRun.get()}")/*JVM runner*/
-//            implementation("org.postgresql:postgresql:42.7.0")/*JDBC驱动*/
+//            implementation("org.xerial:sqlite-jdbc")/*Room JVM桌面端SQLite-JDBC驱动*/
+//            implementation("org.postgresql:postgresql:42.7.0")/*JVM桌面端PostgreSQL-JDBC驱动*/
         }
 
 //        nativeMain.dependencies/*Kotlin/Native中间层原生源代码集，目标平台IOS/MacOS/Linux共享*/{
@@ -326,8 +328,8 @@ dependencies/*可用于部分平台调用的共享依赖*/{
 
 //    implementation("org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}")/*Kotlin标准库*/
 //    implementation("org.jetbrains.kotlin:kotlin-reflect:${libs.versions.kotlin.get()}")/*Kotlin反射依赖，KSP必须！！！*/
-    implementation(kotlin("stdlib")) /*Kotlin标准库，用Kotlin插件添加对应版本*/
-    implementation(kotlin("reflect"))/*Kotlin反射库，用Kotlin插件添加对应版本*/
+    implementation(kotlin("stdlib") ) /*Kotlin标准库，用Kotlin插件添加对应版本*/
+    implementation(kotlin("reflect") )/*Kotlin反射库，用Kotlin插件添加对应版本*/
 
 
 
@@ -342,6 +344,8 @@ dependencies/*可用于部分平台调用的共享依赖*/{
             add(target, libs.androidx.room.compiler)/*为各平台添加Room处理器，缺少此依赖会导致异常：Caused by: java.lang.ClassNotFoundException: com.nineeditcloud.editletterchat.database.AppDatabase_Impl*/
 //            add(target, "com.ctrip.sqllin:sqllin-processor:${libs.versions.sqllin.get()}")/*除安卓外，配置KSP以处理使用SQLlin依赖中的注解*/
     }
+
+
     /*在AndroidX库的更新中，collection-ktx的功能已被合并进了collection主要库中，Room2.7.0内部仍然请求的是collection-ktx，所以需强制所有依赖底层用旧版collection-ktx库*/
 //    implementation("androidx.collection:collection:1.2.0")/*强制所有依赖底层用指定的 collection库版本，避免版本冲突，失败*/
 
@@ -357,6 +361,8 @@ dependencies/*可用于部分平台调用的共享依赖*/{
            "kspJs").forEach{
 //               add(it/*配置平台名*/, "com.tencent.kuikly-open:core-ksp:${libs.versions.kuiklyCompose.get()}")/*Kotlin块中 无Js配置或暂注释时 会找不到Js添加目标 不用Kuikly适应原生H5和小程序界面时请将这行也暂时注释*/
            }
+
+
 }
 configurations.all{/*全部配置*/
     resolutionStrategy.eachDependency{/*遍历依赖*/

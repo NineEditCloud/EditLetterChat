@@ -64,7 +64,7 @@ class StartupLoading:Screen{
         val userAccountDao=accountDatabase.userAccountDao()/*获取数据库中的 已登录账号本地数据 表实例*/
         val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
         lifecycleOwner.lifecycleScope.launch{/*协程*/
-            try {
+            try{
                 doesAnAccountExist=userAccountDao.getHisCurrentUseAccount()/*查询是否已存在正在使用的账号*/
             }catch(e:Exception){
                 Log.e("Room数据库异常", e.message!!, e)/*在LogCat/控制台 打印 具体异常类型和消息，使用 tag:System.out 过滤*/
