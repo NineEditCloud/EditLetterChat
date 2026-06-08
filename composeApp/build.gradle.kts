@@ -233,6 +233,8 @@ kotlin{
             implementation("io.github.vinceglb:filekit-core:${libs.versions.filekit.get()}")/*FileKit核心库(仅兼容Kotlin2.1+)，跨平台 文件操作 和 应用私有路径访问*/
             implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")
             implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")
+            /*filekit-dialogs专门用来调起系统原生的文件选择对话框(打开文件/保存文件/选择目录)，并返回用户选择的文件路径，
+            它屏蔽了各平台的实现差异：Android：通过ActivityResultContracts启动系统文件选择器，iOS：使用UIDocumentPickerViewController，桌面端(JVM)：借助AWT的 FileDialog或Swing 的 JFileChooser，Web(Wasm)：提供对应的浏览器文件选择API封装。没有这个模块，开发者就需要自己去写这些平台相关的调用逻辑*/
             implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*fileKit选取图片文件，内部依赖不兼容Kotlin旧版，建议用AsyncImage(model=selectedFile.path)*/
 
 //            implementation("org.jetbrains.kotlinx:kotlinx-io-core:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO(疑似依赖链接失效) 字节流/字符流、缓冲、协程读写*/
