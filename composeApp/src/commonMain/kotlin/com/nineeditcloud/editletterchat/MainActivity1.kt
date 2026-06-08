@@ -679,7 +679,13 @@ class MainActivity1:Screen{
                         items/*遍历列表多项*/(contactMessageItems, ){ contactMessageItem->/*Lambda表达式，赋值每次遍历值的变量名(若不写则默认赋值给it)*/
                             Column{
                                 PopupItem(contactMessageItem.name, contactMessageItem.newMessage,
-                                          onTap={ selectedFriend=contactMessageItem; navigator.push(Session() )/*跳转 消息会话界面*/ },
+                                          onTap={
+                                              if(showPopup)/*若弹窗为打开状态*/ showPopup=false/*关闭弹窗*/
+                                              else{
+                                                  selectedFriend=contactMessageItem; navigator.push(Session() )/*跳转 消息会话界面*/
+                                              }
+
+                                                },
                                           listOf("标为未读","取消置顶","移除选项"),
                                           listOf(
                                               {
@@ -691,7 +697,7 @@ class MainActivity1:Screen{
                                               },
                                               ),
                                          ){
-//                                    showPopup=it
+                                    showPopup=it
                                 }
                             }
 

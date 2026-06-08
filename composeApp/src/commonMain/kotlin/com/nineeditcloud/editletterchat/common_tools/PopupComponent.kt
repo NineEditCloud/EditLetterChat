@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -55,6 +54,7 @@ fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*
     modifier:Modifier=Modifier, onShowPopup:( (Boolean)->Unit)/*参数回调*/,
     ){
 
+    /*remember变量：监听到值变化时会自动重组 并向所有调用处发射新值*/
     var isContextMenuVisible by rememberSaveable{ mutableStateOf(false) }
     var showPopup by remember{ mutableStateOf(false) }
 //    var pressOffset by remember{ mutableStateOf(DpOffset.Zero) }
@@ -62,9 +62,10 @@ fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*
     var itemHeight by remember{ mutableStateOf(0.dp) }
     val interactionSource=remember{ MutableInteractionSource() }
     val density=LocalDensity.current
-    Card(elevation=0.dp, modifier=modifier.onSizeChanged{ itemHeight=with(density){ it.height.toDp() } },
+    Card(elevation=0.dp, modifier=modifier.onSizeChanged{ itemHeight=with(density){ it.height.toDp() } }
+        .background(Color.Transparent)/*背景色透明*/,
         ){
-        Box(modifier=Modifier.fillMaxWidth().padding(0.dp)
+        Box(modifier=Modifier.fillMaxWidth().padding(0.dp).background(Color.Transparent)/*背景透明*/
                 .indication(interactionSource,LocalIndication.current)
                 .pointerInput(true){/*触摸监听输入*/
                     detectTapGestures(/*点击动作识别*/
@@ -81,8 +82,7 @@ fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*
                             interactionSource.emit(PressInteraction.Release(press) )
                         },
                         onTap/*点击*/={
-                            if(showPopup)/*若弹窗为打开状态*/ showPopup=false/*关闭弹窗*/
-                            else onTap?.invoke()/*不为空则调用*/
+                            onTap?.invoke()/*不为空则调用*/
                         },
                         )
                 }
