@@ -76,6 +76,9 @@ cmd：rmdir /s /q %USERPROFILE%\.gradle\caches
 或手动删对应依赖路径
 -4.重新同步/构建
 gradlew build --refresh-dependencies
+
+若遇到依赖下载失败报错：composeApp:iosSimulatorArm64Main: Could not download skiko.klib (org.jetbrains.skiko:skiko-iossimulatorarm64:0.9.22.2)
+只需使用KMP依赖包国内源仓库即可解决，用国际源仓库挂VPN也下载失败，因为此版本IOS插件依赖疑似只有国内源https://plugins.gradle.org/m2/还有
 */
 
 /*---KMP跨平台最方便好用的数据库框架
