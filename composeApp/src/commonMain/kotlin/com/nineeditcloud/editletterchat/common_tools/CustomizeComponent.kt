@@ -203,7 +203,7 @@ fun FixedSizeText/*不受系统字体大小缩放的文本*/(text:String, fontSi
 
 /*顶部应用栏*/
 @Composable
-/*Painter是通用类型图片资源 会自动识别图片类型(二进制PngJpg等/XML矢量图/Material内置图标)，
+/*Painter是图片资源通用类型 会自动识别图片类型(二进制PngJpg等/XML矢量图/Material内置图标)，
 painterResource方法可识别 二进制图片/XML矢量图 本地Res资源
 rememberVectorPainter方法能把 矢量图/Material内置图标 转为Painter类型*/
 fun TopAppBar(leftIcon/*左侧图标*/:Painter=rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowLeft), leftIconClick:(()->Unit)?=null,
@@ -249,13 +249,13 @@ fun EasyToast/*简易Toast(放在堆叠布局最顶层)*/(message:String, ui/*�
     coroutineScope.launch{ stateCustomToast.show(message) }
 }
 
-/*通用图片类型 方法*/
+/*图片通用类型 方法*/
 @Composable
-fun generalImageType(imageVector:ImageVector):Painter{
+fun imageGeneralType(imageVector:ImageVector):Painter{
     return rememberVectorPainter(imageVector)
 }
 @Composable
-fun generalImageType(resource:DrawableResource):Painter{
+fun imageGeneralType(resource:DrawableResource):Painter{
     return painterResource(resource)
 }
 

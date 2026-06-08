@@ -24,13 +24,13 @@ val cachePath=FileKit.cacheDir /*获取应用私有临时缓存目录，若获�
 //}
 
 fun filesPath():PlatformFile?{
-    if(filesPath!=null && filesPath .absolutePath()/*是否为绝对路径*/ ?.isNotBlank()/*是否不为空*/!!) return filesPath
+    if(filesPath!=null && filesPath ?.absolutePath()/*是否为绝对路径*/ ?.isNotBlank()/*是否不为空*/!!) return filesPath
     else
         print("外部私有文件路径获取失败！！！")
         return null
 }
 fun cachePath():PlatformFile?{
-    if(cachePath!=null && filesPath .absolutePath() ?.isNotBlank()!!) return cachePath
+    if(cachePath!=null && filesPath ?.absolutePath() ?.isNotBlank()!!) return cachePath
     else
         print("外部私有临时缓存路径获取失败！！！")
         return null

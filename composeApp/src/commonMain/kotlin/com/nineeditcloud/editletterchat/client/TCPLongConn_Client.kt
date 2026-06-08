@@ -1,4 +1,5 @@
 package com.nineeditcloud.editletterchat.client
+
 import com.nineeditcloud.editletterchat.common_tools.Log
 import com.nineeditcloud.editletterchat.common_tools.MessageReader
 import com.nineeditcloud.editletterchat.common_tools.deviceType
