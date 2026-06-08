@@ -60,6 +60,7 @@ import io.github.tbib.compose_toast.AdvToast
 import io.github.tbib.compose_toast.rememberAdvToastStates
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 
 /*自定义组件*/
 
@@ -246,6 +247,16 @@ fun EasyToast/*简易Toast(放在堆叠布局最顶层)*/(message:String, ui/*�
         modifier=Modifier/*.padding(horizontal=50.dp)*/
             .background(Color.Cyan, shape=RoundedCornerShape(8.dp)), /*align=Arrangement.Top*/)
     coroutineScope.launch{ stateCustomToast.show(message) }
+}
+
+/*通用图片类型 方法*/
+@Composable
+fun generalImageType(imageVector:ImageVector):Painter{
+    return rememberVectorPainter(imageVector)
+}
+@Composable
+fun generalImageType(resource:DrawableResource):Painter{
+    return painterResource(resource)
 }
 
 

@@ -51,7 +51,7 @@ import editletterchat.composeapp.generated.resources.Res
 import editletterchat.composeapp.generated.resources.new_user
 import org.jetbrains.compose.resources.painterResource
 
-/*自定义组件-列表项弹窗视图组件 调用很方便*/
+/*自定义组件-列表项定位弹窗视图组件 调用很方便*/
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*/:(()->Unit)?=null,
@@ -149,6 +149,7 @@ fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题
     }
 }
 
+/*普通定位弹窗视图*/
 @Composable
 fun popup(){
     val density=LocalDensity.current
