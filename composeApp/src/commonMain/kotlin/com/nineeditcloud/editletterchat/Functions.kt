@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -41,7 +42,7 @@ class CreateGroupChat/*创建群聊界面*/:Screen{
     override fun Content(){
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
         Column(Modifier.fillMaxSize() ){
-            TopAppBar(painterResource(Res.drawable.retutn),{
+            TopAppBar(rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowLeft),{
                 navigator.pop()/*关闭当前界面*/
             }, "创建群聊", )
         }
@@ -55,7 +56,7 @@ class Add_FriendAndGroupChat/*添加好友和群聊界面(添加联系)*/:Screen
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
 
         Column(Modifier.fillMaxSize() ){
-            TopAppBar(painterResource(Res.drawable.retutn) , {
+            TopAppBar(rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowLeft), {
                 navigator.pop()/*关闭当前界面*/
             }, "添加联系", )
         }
@@ -66,7 +67,7 @@ class ScanQRCode/*扫码界面*/:Screen{
     override fun Content(){
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
         Column(Modifier.fillMaxSize() ){
-            TopAppBar(painterResource(Res.drawable.retutn),{
+            TopAppBar(rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowLeft),{
                 navigator.pop()/*关闭当前界面*/
             }, "扫一扫", )
         }
@@ -77,7 +78,7 @@ class PaymentAndReceipt/*收/付 款 界面*/:Screen{
     override fun Content(){
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
         Column(Modifier.fillMaxSize() ){
-            TopAppBar(painterResource(Res.drawable.retutn),{
+            TopAppBar(rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowLeft),{
                 navigator.pop()/*关闭当前界面*/
             }, "收/付款", )
         }

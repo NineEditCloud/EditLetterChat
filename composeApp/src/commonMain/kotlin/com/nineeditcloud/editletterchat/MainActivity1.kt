@@ -614,10 +614,9 @@ class MainActivity1:Screen{
         var popupOffset by remember{ mutableStateOf(Offset.Zero) }/*列表子项在容器布局中的坐标，每次赋值会重组发射新位置信息*/
         val density=LocalDensity.current/*列表项弹窗位置控制*/
         NavHost/*导航图主体组件*/(navController=navController,/*绑定导航控制器*/ startDestination="message"/*初始导航界面*/,
-                                  Modifier.fillMaxSize() ){/*改导航界面路由后，不要忘了改初始导航页界面路由名称*/
+            Modifier.fillMaxSize(), ){/*改导航界面路由后，不要忘了改初始导航页界面路由名称*/
             composable("message"){/*消息界面*/
-                Box(Modifier.fillMaxSize()
-                    , ){
+                Box(Modifier.fillMaxSize(), ){
                     val listState=rememberLazyListState()/*LazyList有序列表状态*/
                     val listAlreadyExistsFriendItem=mutableSetOf<String>()/*列表已存在好友项 记录集合*/
                     val contactMessageItems=remember{ mutableStateListOf<AccountFriendLocalData>() }/*在任何地方调用add/remove/addAll 都会自动触发LazyColumn列表重组的 列表项集合*/
@@ -677,7 +676,8 @@ class MainActivity1:Screen{
                     LazyColumn/*垂直有序列表*/(Modifier.fillMaxSize(1f), state=listState){
                         items/*遍历列表多项*/(contactMessageItems, ){ contactMessageItem->/*Lambda表达式，赋值每次遍历值的变量名(若不写则默认赋值给it)*/
                             Column{
-                                PopupItem(contactMessageItem.name, contactMessageItem.newMessage,
+                                PopupItem(painterResource(Res.drawable.new_user),
+                                          contactMessageItem.name, contactMessageItem.newMessage,
                                           onTap={
                                               if(!showPopup){/*若弹窗为关闭状态*/
                                                   selectedFriend=contactMessageItem; navigator.push(Session() )/*跳转 消息会话界面*/
@@ -704,7 +704,6 @@ class MainActivity1:Screen{
                     }
 
                 }
-
 
             }
             composable("contact"){//联系人界面

@@ -67,7 +67,7 @@ class Session :Screen{
 //                   .systemBarsPadding()/*系统栏边距，防止内容跑到手机的 顶部状态栏 和 底部导航栏 后面被挡住，如果手机底部导航栏高度不清晰，可不用此参数*/
               ){
             Column(Modifier.fillMaxWidth().background(sessionBackgroundColor.copy(0.99f)/*带点透明*/), ){
-                TopAppBar(painterResource(Res.drawable.retutn), {
+                TopAppBar(rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowLeft), {
                     navigator.pop()/*关闭当前界面*/
 //                    activity.onBackPressed()/*模拟按下返回键*/
 //                    OnBackPressedCallback()/*安卓13以上模拟按下返回键*/

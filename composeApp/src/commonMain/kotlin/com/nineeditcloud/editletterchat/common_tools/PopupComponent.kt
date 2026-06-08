@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -53,9 +54,9 @@ import org.jetbrains.compose.resources.painterResource
 /*自定义组件-列表项弹窗视图组件 调用很方便*/
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*/:( ()->Unit)?=null,
-    popupItemsTitle/*弹窗菜单列表项 标题*/:List<String>, popupItemsUnit /*弹窗菜单列表项 事件*/:List<()->Unit>,
-    modifier:Modifier=Modifier, onShowPopup:( (Boolean)->Unit)/*参数回调*/,
+fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*/:(()->Unit)?=null,
+              popupItemsTitle/*弹窗菜单列表项 标题*/:List<String>, popupItemsUnit /*弹窗菜单列表项 事件*/:List<()->Unit>,
+              modifier:Modifier=Modifier, onShowPopup:( (Boolean)->Unit)/*参数回调*/,
     ){
 
     /*remember变量：监听到值变化时会自动重组 并向所有调用处发射新值*/
@@ -89,17 +90,15 @@ fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*
                             onTap?.invoke()/*不为空则调用*/
                         },
                         )
-                }
-           ){
+                },
+            ){
             Row/*水平布局*/(Modifier.fillMaxWidth()/*填充容器全部宽，否则若在Button按钮容器中会默认被放置中间*/.padding(7.dp)/*内边距*/, ){
-                Image(painter=painterResource(Res.drawable.new_user)
-//                        rememberAsyncImagePainter(model=File("${contactMessageItem.id}.jpg") )/*Image图片资源，加载账号Id对应的头像路径*/
-                      ,contentDescription="头像圆角图片",/*Image描述(必填此项，否则报错)*/
+                Image(painter=icon, contentDescription="头像圆角图片"/*Image描述(必填此项，否则报错)*/,
+//                        rememberAsyncImagePainter(model=File("${contactMessageItem.id}.jpg") )/*Image图片资源，加载账号Id对应的头像路径*/ ,
                       Modifier.size(45.dp)/*设置图片尺寸*/.clip(RoundedCornerShape(5.dp) )/*设置圆角半径，12.dp为圆形*/
                           .background(Color.LightGray)/*可选：添加背景色，便于观察圆角效果*/,
-                      contentScale=ContentScale.Crop/*可选：缩放类型，如裁剪适应*/,
-                     )
-                Column/*竖直布局*/(Modifier.padding(start=10.dp)/*竖直布局外边距(因为是在Row水平布局中，所以是左边距)*/){
+                      contentScale=ContentScale.Crop/*可选：缩放类型，如裁剪适应*/, )
+                Column/*竖直布局*/(Modifier.padding(start=10.dp)/*竖直布局外边距(因为是在Row水平布局中，所以是左边距)*/, ){
                     /*此布局内是昵称和最新消息 控件*/
                     Text/*昵称文本*/(title, fontSize=10.sp, lineHeight=15.sp,
                         color=MaterialTheme.colorScheme.onSurface/*昵称黑/白色，导航图和列表里的界面必须用MaterialTheme，否则出现不会实时跟随系统深浅主题变色的Bug*/, )
