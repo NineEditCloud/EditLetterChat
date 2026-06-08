@@ -200,7 +200,6 @@ kotlin{
 //            api("dev.icerock.moko:resources-compose:${libs.versions.mokoResources.get()}")/*mokoResources综合资源 Compose支持，含painterResource用的图标资源*/
 
             implementation("com.darkrockstudios:mpfilepicker:3.1.0")/*基于ComposeMultiplatform框架的 跨平台 文件选择器组件*/
-//            implementation("rjfahad44:compose-context-menu")/*最简单方便的 列表项长按定位弹窗*/
 
 //            implementation("io.github.dokar3:sonner:0.3.1")/*Compose-Sonner，跨平台Toast底部弹窗提示(与布局有绑定关系)*/
             implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Compose_Toast跨平台底部弹窗提示，兼容安卓5.0，自定义UI依赖Box堆叠容器，含自适应原生弹窗功能不依赖布局定位*/
