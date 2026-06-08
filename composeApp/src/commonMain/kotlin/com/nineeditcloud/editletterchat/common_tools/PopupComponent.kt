@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +21,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -50,10 +52,11 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*/:( ()->Unit)?=null,
     popupItemsTitle/*弹窗菜单列表项 标题*/:List<String>, popupItemsUnit /*弹窗菜单列表项 事件*/:List<()->Unit>,
-    modifier:Modifier=Modifier, onShowPopup:( (Boolean)->Unit)/*参数回调*/
+    modifier:Modifier=Modifier, onShowPopup:( (Boolean)->Unit)/*参数回调*/,
     ){
 
     var isContextMenuVisible by rememberSaveable{ mutableStateOf(false) }
+    var showPopup by remember{ mutableStateOf(false) }
 //    var pressOffset by remember{ mutableStateOf(DpOffset.Zero) }
     var popupOffset by remember{ mutableStateOf(Offset.Zero) }/*列表子项在容器布局中的坐标，每次赋值会重组发射新位置信息*/
     var itemHeight by remember{ mutableStateOf(0.dp) }
@@ -67,16 +70,19 @@ fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*
                     detectTapGestures(/*点击动作识别*/
                         onLongPress/*长按*/={/*获取点击组件在容器组件中的位置坐标 默认赋值给it*/
 //                            pressOffset=DpOffset(it.x.toDp(), it.y.toDp() )
-                            popupOffset=it
-                            isContextMenuVisible=true
-                            onShowPopup(true)/*参数回调返回值*/
+                            popupOffset=it/*将长按位置坐标 赋值给弹窗位置*/
+                            showPopup=true/*打开弹窗*/
+                            onShowPopup(showPopup)/*参数回调返回值*/
                         },
-                        onPress/*点击*/={
+                        onPress/*按下*/={
                             val press=PressInteraction.Press(it)
                             interactionSource.emit(press)
                             tryAwaitRelease()
                             interactionSource.emit(PressInteraction.Release(press) )
-                            if(!isContextMenuVisible)/*若弹窗为关闭状态*/ onTap?.invoke()/*不为空则调用*/
+                        },
+                        onTap/*点击*/={
+                            if(showPopup)/*若弹窗为打开状态*/ showPopup=false/*关闭弹窗*/
+                            else onTap?.invoke()/*不为空则调用*/
                         },
                         )
                 }
@@ -101,9 +107,9 @@ fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*
             HorizontalDivider(Modifier.padding(start=80.dp), color=Color.LightGray)/*水平分割线*/
         }
 
-        if(isContextMenuVisible){/*若列表项弹窗状态为打开*/
+        if(showPopup){/*若列表项弹窗状态为打开*/
             Popup(alignment=Alignment.TopStart/*弹窗内容位置*/,
-                  onDismissRequest/*点外部关弹窗*/={ isContextMenuVisible=false; onShowPopup(false) },
+                  onDismissRequest/*点外部关弹窗*/={ showPopup=false; onShowPopup(showPopup) },
                   offset=with(density){ IntOffset(x=popupOffset.x.toInt(), y=popupOffset.y.toInt() ) },
 //                  properties=PopupProperties(focusable=true, dismissOnBackPress=true, dismissOnClickOutside=true),
                   ){
@@ -114,14 +120,17 @@ fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*
                             .clip(RoundedCornerShape(8.dp) )/*裁剪内容为圆角(为使点击涟漪不超出此布局圆角范围)*/
                        ){
                         for(i in 0..< popupItemsTitle.size){/*遍历弹窗列表标题集合的每个索引*/
-                            val endPadd=if(i !=popupItemsTitle.size-1)/*若不是最后一个元素*/ 5.dp else 0.dp
-                            Text(popupItemsTitle[i]/*标题*/, Modifier.background(windowItemBackground).padding(end=endPadd)
+                            val noEndIndex=i !=popupItemsTitle.size-1/*当前遍历值 不为 末尾索引*/
+                            val startPadd/*标签开头边距*/=if(i!=0)      /*若不是开头索引*/ 3.dp else 0.dp
+                            val endPadd  /*标签末尾边距*/=if(noEndIndex)/*若不是末尾索引*/ 3.dp else 0.dp
+                            Text(popupItemsTitle[i]/*标题*/, Modifier.background(windowItemBackground).padding(start=startPadd, end=endPadd)
                                 .clickable{
                                     popupItemsUnit[i].invoke()/*点击事件*/
                                 },
-                                 color=listItemWindowBackground,
-                                 fontSize=6.sp,
-                                 lineHeight=12.sp, )
+                                 color=listItemWindowBackground, fontSize=12.sp, lineHeight=12.sp, )
+                            if(noEndIndex){/*若不是最后一个索引*/
+                                VerticalDivider(Modifier.size(height=15.dp,width=2.dp), color=Color.LightGray)/*垂直分割线*/
+                            }
                         }
                     }
 
@@ -131,7 +140,8 @@ fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*
 
     }
 
-    BackHandler(isContextMenuVisible){/*只在列表项弹窗状态为打开时 拦截返回键 并执行代码*/
-        isContextMenuVisible=false/*关闭列表项弹窗*/
+    BackHandler(showPopup){/*只在列表项弹窗状态为打开时 拦截返回键 并执行代码*/
+        showPopup=false/*关闭列表项弹窗*/
+        onShowPopup(showPopup)
     }
 }
