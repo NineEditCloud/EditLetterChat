@@ -1,5 +1,6 @@
 package com.nineeditcloud.editletterchat
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.ComposeUIViewController
 import cafe.adriel.voyager.navigator.Navigator
 import com.nineeditcloud.editletterchat.client.FileKit
@@ -23,6 +24,7 @@ import platform.posix.exit
 //import kotlin.experimental.ExperimentalNativeApi
 
 /*IOS移动端-应用主函数*/
+@Composable
 fun MainViewController()=ComposeUIViewController{
 //    FileKit.init()
     exitApp={

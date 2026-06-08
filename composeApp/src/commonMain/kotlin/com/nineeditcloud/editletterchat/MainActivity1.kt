@@ -401,7 +401,7 @@ class MainActivity1:Screen{
                                 )
                         },
                         bottomBar/*底部栏*/={
-                            NavigationBar(Modifier.height(111-20.dp), containerColor=backgroundColor/*底部导航栏背景色*/ ){/*导航栏*/
+                            NavigationBar(Modifier.height( (111-20).dp), containerColor=backgroundColor/*底部导航栏背景色*/ ){/*导航栏*/
                                 navItems.forEach/*遍历items*/{ navItem/*每次赋值给新建navItem变量*/ ->
                                     NavigationBarItem(
                                         icon/*图标集*/={

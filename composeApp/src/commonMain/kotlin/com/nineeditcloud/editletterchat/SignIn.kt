@@ -164,7 +164,7 @@ class SignIn :Screen{
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     enabled = accountId.isNotEmpty() && password.isNotEmpty() && !isLoading/*按钮是否可用，账号和密码不为空且未在登录进行中*/,
                     shape = RoundedCornerShape(12.dp),/*设定按钮形状 圆角大小*/
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6933CC)/*按钮背景为蓝紫色*/)
+                    colors = ButtonDefaults.buttonColors(containerColor=Color(0xFF6933CC)/*按钮背景为蓝紫色*/)
                                   ){
                     val text=if(!isLoading) "登录" else "登录发送中..."
                     Row(verticalAlignment=Alignment.CenterVertically/*子项垂直居中*/){
@@ -179,8 +179,8 @@ class SignIn :Screen{
 
                 Text/*更改密码选项*/("忘记密码？", Modifier.pointerInput/*识别点击手势(无涟漪效果)*/(Unit){
                     detectTapGestures(
-                        onTap/*点击*/={  }
-                                     )
+                        onTap/*点击*/={  },
+                        )
                 }, color=MaterialTheme.colorScheme.onSurface, lineHeight = 1.sp/*行高设置为1可让文本占用位置变小*/)
             }
         }

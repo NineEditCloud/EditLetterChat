@@ -192,7 +192,7 @@ kotlin{
 
             implementation(compose.materialIconsExtended)/*MaterialIcons图标库 跨平台通用版，自动根据项目配置 为所有目标平台解析正确依赖，该库包含所有Material图标，体积庞大，务必启用 R8/ProGuard 以缩减包体积*/
 //            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)/*OptIn选项可能引发报错？*/
-//            implementation(compose.components.resources)/*compose通用资源，可能含painterResource用的composeResources资源、Res类 和 @Preview预览注解等(但Android端会被 actual 绕过)*/
+            implementation(compose.components.resources)/*compose通用资源，可能含painterResource用的composeResources资源、Res类 和 @Preview预览注解等(但Android端会被 actual 绕过)*/
 //            implementation("io.github.rabehx:iconsax-compose:2.1.1")/*Iconsax-Compose，imageVector用的超千款图标*/
 //            implementation("br.com.devsrsouza.compose.icons:simple-icons:${libs.versions.composeIcons.get()}")/*Compose-Icons Simple简易图标库*/
 //            implementation("br.com.devsrsouza.compose.icons:tabler-icons:${libs.versions.composeIcons.get()}")/*Compose-Icons Tabler图标包*/

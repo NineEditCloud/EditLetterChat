@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +48,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.nineeditcloud.editletterchat.common_tools.TopAppBar
 import editletterchat.composeapp.generated.resources.Res
 import editletterchat.composeapp.generated.resources.retutn
+import org.jetbrains.compose.resources.painterResource
 
 var sessionBackgroundColor=Color.White
 
@@ -65,13 +67,13 @@ class Session :Screen{
 //                   .systemBarsPadding()/*系统栏边距，防止内容跑到手机的 顶部状态栏 和 底部导航栏 后面被挡住，如果手机底部导航栏高度不清晰，可不用此参数*/
               ){
             Column(Modifier.fillMaxWidth().background(sessionBackgroundColor.copy(0.99f)/*带点透明*/), ){
-                TopAppBar(Res.drawable.retutn,{
+                TopAppBar(painterResource(Res.drawable.retutn), {
                     navigator.pop()/*关闭当前界面*/
 //                    activity.onBackPressed()/*模拟按下返回键*/
 //                    OnBackPressedCallback()/*安卓13以上模拟按下返回键*/
 //                    ActivityCompat.finishAfterTransition(this as Activity)/*退出当前活动，如果当前界面有过渡动画，等待过渡动画结束后再退出当前活动*/
-                }, selectedFriend.name,
-                   Icons.Default.MoreVert,{
+                }, selectedFriend!!.name,
+                          rememberVectorPainter(Icons.Default.MoreVert), {
 
                 }, )
             }

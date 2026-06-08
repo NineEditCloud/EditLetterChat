@@ -150,8 +150,7 @@ fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*
     }
 }
 
-
-
+@Composable
 fun popup(){
     val density=LocalDensity.current
     var show by remember{ mutableStateOf(false) }
