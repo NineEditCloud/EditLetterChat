@@ -24,7 +24,7 @@ import platform.posix.exit
 
 /*IOS移动端-应用主函数*/
 fun MainViewController()=ComposeUIViewController{
-    FileKit.init()
+//    FileKit.init()
     exitApp={
         exit(0)/*iOS退出应用(非正常推荐方式，但能做到)*/
         /*或用UIApplication相关方法*/

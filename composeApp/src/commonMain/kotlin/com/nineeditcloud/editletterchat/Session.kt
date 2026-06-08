@@ -44,6 +44,9 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.nineeditcloud.editletterchat.common_tools.TopAppBar
+import editletterchat.composeapp.generated.resources.Res
+import editletterchat.composeapp.generated.resources.retutn
 
 var sessionBackgroundColor=Color.White
 
@@ -54,7 +57,6 @@ class Session :Screen{
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
 
         var text by remember{ mutableStateOf("") }/*text对象，实时监听文本编辑框内容*/
-
         sessionBackgroundColor=if(!isSystemInDarkTheme()) Color(0xFFEEF2FD) else Color(0xF5080909)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
 
 
@@ -62,29 +64,20 @@ class Session :Screen{
                /*.background(sessionBackgroundColor)*/
 //                   .systemBarsPadding()/*系统栏边距，防止内容跑到手机的 顶部状态栏 和 底部导航栏 后面被挡住，如果手机底部导航栏高度不清晰，可不用此参数*/
               ){
-            Column(Modifier.fillMaxWidth() ){
-                Row/*水平布局*/(Modifier.statusBarsPadding()/*顶部状态栏边距，防止内容跑到 顶部状态栏 后边被挡住*/  .fillMaxWidth()/*填充全部宽度*/
-                                .background(sessionBackgroundColor.copy(0.99f)/*带点透明*/) /*如果容器布局已设置背景色，再设一层会加重颜色，此布局有自适应系统状态栏边距，再设置一层会导致状态栏后边部分与此布局颜色不同*/
-                                ,verticalAlignment=Alignment.CenterVertically/*子项垂直居中对齐*/){
-                    IconButton/*仅用来包裹图标的按钮，放在按钮里可点击命中区域更大*/(onClick={/*返回图标按钮点击事件*/
-                        navigator.pop()/*退出当前活动*/
-                    }){
-                        Icon(imageVector=Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription="返回图标"/*图标描述，必填项，否则报错*/)
-                    }
-                    Text(selectedFriend!!.name,/*昵称标题 不为空则调用*/ lineHeight=1.sp, modifier=Modifier/*.weight(1f*//*百分百*//*)*//*填充全部宽度*/
-                        .clickable{
+            Column(Modifier.fillMaxWidth().background(sessionBackgroundColor.copy(0.99f)/*带点透明*/), ){
+                TopAppBar(Res.drawable.retutn,{
+                    navigator.pop()/*关闭当前界面*/
+//                    activity.onBackPressed()/*模拟按下返回键*/
+//                    OnBackPressedCallback()/*安卓13以上模拟按下返回键*/
+//                    ActivityCompat.finishAfterTransition(this as Activity)/*退出当前活动，如果当前界面有过渡动画，等待过渡动画结束后再退出当前活动*/
+                }, selectedFriend.name,
+                   Icons.Default.MoreVert,{
 
-                        }, fontSize=10.sp, color=MaterialTheme.colorScheme.onSurface/*文字颜色根据主题自适应*/)
-                    Spacer(Modifier.weight(1f)/*填充全部宽度将 图标按钮 推到右侧*/)/*弹性空间，Modifier本身无weight，weight属性是用于Row、Column布局的子元素上的*/
-                    IconButton(onClick={/*消息界面右上角功能菜单按钮点击事件*/
-                    }, ){
-                        Icon(imageVector=Icons.Default.MoreVert, contentDescription="功能菜单图标")/*功能菜单图标*/
-                    }
-                }
+                }, )
             }
 
 
-            Column(Modifier.fillMaxSize()) {
+            Column(Modifier.fillMaxSize(), ){
                 LazyColumn(Modifier
                                .background(sessionBackgroundColor)
                                .weight(1f)/*填充全部空间将下一个布局推到底部，但不影响其显示，Modifier本身无weight，weight属性是用于Row、Column布局的子元素上的*/
@@ -93,8 +86,8 @@ class Session :Screen{
                 }
 
                 /*聊天界面底部工具部分*/
-                Column(Modifier.background(sessionBackgroundColor.copy(0.9f)).fillMaxWidth()
-                      ) {
+                Column(Modifier.background(sessionBackgroundColor.copy(0.9f)).fillMaxWidth(),
+                       ){
                     //HorizontalDivider(color = Color.Gray.copy(0.3f), modifier = Modifier.height(1.dp))/*水平分割线*/
                     Column(Modifier.navigationBarsPadding()/*确保内容不被挤到系统导航栏位置，系统导航栏边距*/) {
                         Row(verticalAlignment=Alignment.CenterVertically/*子项垂直居中对齐*/,

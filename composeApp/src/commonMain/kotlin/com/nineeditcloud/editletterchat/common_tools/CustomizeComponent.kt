@@ -9,18 +9,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,6 +43,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -188,6 +196,37 @@ fun FixedSizeText/*不受系统字体大小缩放的文本*/(text:String, fontSi
         (fontSize/fontScale).toSp()/*抵消系统字体缩放*/
     }
     Text(text=text, fontSize=scaledFontSize, lineHeight=lineHeight, fontWeight=fontWeight, color=color, modifier=modifier, textAlign=textAlign)
+}
+
+/*顶部应用栏*/
+@Composable
+fun TopAppBar(leftIcon/*左侧图标*/:ImageVector=Icons.AutoMirrored.Filled.KeyboardArrowLeft, leftIconClick:()->Unit=null,
+              title:String="界面顶部栏标题",
+              rightIcon/*右侧图标*/:ImageVector?=null, rightIconClick:()->Unit=null, ){
+    Row(Modifier.background(backgroundColor).fillMaxWidth().statusBarsPadding()/*顶部状态栏边距，防止内容跑到 顶部状态栏 后边被挡住*/
+        /*如果容器布局已设置背景色，再设一层会加重颜色，此布局有自适应系统状态栏边距，再设置一层会导致状态栏后边部分与此布局颜色不同*/
+        ,verticalAlignment=Alignment.CenterVertically/*子项垂直居中对齐*/){
+        Box(Modifier.fillMaxWidth(), /*contentAlignment=Alignment.CenterVertically*/){
+            IconButton/*仅用来包裹图标的按钮，放在按钮里可点击命中区域更大*/(onClick={/*返回图标按钮点击事件*/
+                leftIconClick?.invoke()/*左侧图标点击事件 不为空则调用*/
+            }, Modifier.align(Alignment.CenterStart)/*垂直居中+水平开头*/ ){
+                Icon(imageVector=leftIcon, contentDescription="左侧返回图标"/*图标描述，必填项，否则报错*/, )
+            }
+            Text(title/*标题*/, lineHeight=1.sp, modifier=Modifier/*.weight(1f*//*百分百*//*)*//*填充全部宽度*/
+                .align(Alignment.Center)/*垂直+水平 中心*/,
+                 fontSize=10.sp, color=MaterialTheme.colorScheme.onSurface/*文字颜色根据主题自适应*/, )
+//            Spacer(Modifier.weight(1f)/*填充全部宽度将 图标按钮 推到右侧*/)/*弹性空间，Modifier本身无weight，weight属性是用于Row、Column布局的子元素上的*/
+            if(endIcon!!){
+                IconButton(onClick={/*消息界面右上角功能菜单按钮点击事件*/
+                    rightIconClick?.invoke()/*右侧图标点击事件 不为空则调用*/
+                }, Modifier.align(Alignment.CenterEnd)/*垂直居中+水平结尾*/ ){
+                    Icon(imageVector=endIcon!!, contentDescription="右侧功能菜单图标")/*功能菜单图标*/
+                }
+            }
+
+        }
+
+    }
 }
 
 @Suppress("CoroutineCreationDuringComposition")
