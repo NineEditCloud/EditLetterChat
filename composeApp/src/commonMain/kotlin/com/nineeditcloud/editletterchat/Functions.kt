@@ -1,40 +1,23 @@
 package com.nineeditcloud.editletterchat
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Popup
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -47,57 +30,10 @@ import cafe.adriel.voyager.navigator.currentOrThrow
  * 收付款
  */
 
-
-
 class CreateGroupChat/*创建群聊界面*/: Screen{
     @Composable
     override fun Content(){
-        val density=LocalDensity.current
-        var show by remember{ mutableStateOf(false) }
-        var clickPosition by remember{ mutableStateOf(Offset.Zero) }/*每次赋值会重组刷新的位置信息*/
 
-        Box(Modifier.fillMaxSize()
-                .pointerInput(Unit){
-                    detectTapGestures(
-                        onLongPress={offset->/*长按获取位置*/
-                            clickPosition=offset/*获取相对于 Box 的点击位置*/
-                            show=true
-                        },
-                        ){/*综合触摸事件*/
-                    }
-                }
-           ){
-            Button(onClick={/* 可选：按钮点击也可以显示在按钮位置 */
-
-            }, Modifier.fillMaxWidth() ){
-                Text("Click anywhere to show menu at click position")
-            }
-
-            if(show){
-                Popup/*用Popup 而不是DropdownMenu*/(alignment=Alignment.TopStart,
-                   offset=with(density){ IntOffset(x=clickPosition.x.toInt(), y=clickPosition.y.toInt() ) },
-                   onDismissRequest={ show=false }
-                ){/*自定义菜单内容*/
-                    Column(Modifier.width(200.dp).background(Color.White, RoundedCornerShape(4.dp) )
-                               .shadow(4.dp)
-                               .pointerInput(Unit){
-                                   detectTapGestures{/*点击菜单外部关闭需要在 Popup 外部处理*/
-                                   }
-                               }
-                          ){
-                        Text("Menu Item 1", Modifier.fillMaxWidth().padding(16.dp)
-                            .clickable{ show=false }
-                            )
-                        Text("Menu Item 2", Modifier.fillMaxWidth().padding(16.dp)
-                            .clickable{ show=false }
-                            )
-                        Text("Dismiss", Modifier.fillMaxWidth().padding(16.dp)
-                            .clickable{ show=false }
-                            )
-                    }
-                }
-            }
-        }
     }
 }
 class Add_FriendAndGroupChat/*添加好友和群聊界面(添加联系)*/: Screen{

@@ -401,13 +401,12 @@ class MainActivity1:Screen{
                                 )
                         },
                         bottomBar/*底部栏*/={
-                            NavigationBar(Modifier.height(111.dp), containerColor=backgroundColor/*底部导航栏背景色*/ ){/*导航栏*/
+                            NavigationBar(Modifier.height(111-20.dp), containerColor=backgroundColor/*底部导航栏背景色*/ ){/*导航栏*/
                                 navItems.forEach/*遍历items*/{ navItem/*每次赋值给新建navItem变量*/ ->
                                     NavigationBarItem(
                                         icon/*图标集*/={
 
                                         },
-
                                         label/*标签集*/={
                                             BadgedBox/*徽章布局 给图标旁加徽章*/(
                                                 badge={/*徽章集*/
@@ -680,11 +679,11 @@ class MainActivity1:Screen{
                             Column{
                                 PopupItem(contactMessageItem.name, contactMessageItem.newMessage,
                                           onTap={
-                                              if(showPopup)/*若弹窗为打开状态*/ showPopup=false/*关闭弹窗*/
-                                              else{
+                                              if(!showPopup){/*若弹窗为关闭状态*/
                                                   selectedFriend=contactMessageItem; navigator.push(Session() )/*跳转 消息会话界面*/
+                                              }else{
+                                                   showPopup=false/*关闭弹窗*/
                                               }
-
                                                 },
                                           listOf("标为未读","取消置顶","移除选项"),
                                           listOf(

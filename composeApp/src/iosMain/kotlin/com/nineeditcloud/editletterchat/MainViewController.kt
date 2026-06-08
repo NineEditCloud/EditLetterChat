@@ -2,6 +2,7 @@ package com.nineeditcloud.editletterchat
 
 import androidx.compose.ui.window.ComposeUIViewController
 import cafe.adriel.voyager.navigator.Navigator
+import com.nineeditcloud.editletterchat.client.FileKit
 import com.nineeditcloud.editletterchat.common_tools.KMPTheme
 import platform.UIKit.UIApplication
 import platform.posix.exit
@@ -23,6 +24,7 @@ import platform.posix.exit
 
 /*IOS移动端-应用主函数*/
 fun MainViewController()=ComposeUIViewController{
+    FileKit.init()
     exitApp={
         exit(0)/*iOS退出应用(非正常推荐方式，但能做到)*/
         /*或用UIApplication相关方法*/

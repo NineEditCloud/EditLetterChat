@@ -12,12 +12,15 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
@@ -32,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -145,3 +149,56 @@ fun PopupItem(title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*
         onShowPopup(showPopup)
     }
 }
+
+
+
+fun popup(){
+    val density=LocalDensity.current
+    var show by remember{ mutableStateOf(false) }
+    var clickPosition by remember{ mutableStateOf(Offset.Zero) }/*每次赋值会重组刷新的位置信息*/
+
+    Box(Modifier.fillMaxSize()
+            .pointerInput(Unit){
+                detectTapGestures(
+                    onLongPress={offset->/*长按获取位置*/
+                        clickPosition=offset/*获取相对于 Box 的点击位置*/
+                        show=true
+                    },
+                    ){/*综合触摸事件*/
+                }
+            }
+       ){
+        Button(onClick={/* 可选：按钮点击也可以显示在按钮位置 */
+
+        }, Modifier.fillMaxWidth() ){
+            Text("Click anywhere to show menu at click position")
+        }
+
+        if(show){
+            Popup/*用Popup 而不是DropdownMenu*/(alignment=Alignment.TopStart,
+                                                offset=with(density){ IntOffset(x=clickPosition.x.toInt(), y=clickPosition.y.toInt() ) },
+                                                onDismissRequest={ show=false }
+                                               ){/*自定义菜单内容*/
+                Column(Modifier.width(200.dp).background(Color.White, RoundedCornerShape(4.dp) )
+                           .shadow(4.dp)
+                           .pointerInput(Unit){
+                               detectTapGestures{/*点击菜单外部关闭需要在 Popup 外部处理*/
+                               }
+                           }
+                      ){
+                    Text("Menu Item 1",
+                        Modifier.fillMaxWidth().padding(16.dp)
+                            .clickable { show=false })
+                    Text("Menu Item 2",
+                        Modifier.fillMaxWidth().padding(16.dp)
+                            .clickable { show=false })
+                    Text("Dismiss",
+                        Modifier.fillMaxWidth().padding(16.dp)
+                            .clickable { show=false })
+                }
+            }
+        }
+    }
+}
+
+
