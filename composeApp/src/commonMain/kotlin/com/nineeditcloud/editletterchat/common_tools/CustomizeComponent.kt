@@ -204,3 +204,4 @@ fun EasyToast/*简易Toast(放在堆叠布局最顶层)*/(message:String, ui/*�
     coroutineScope.launch{ stateCustomToast.show(message) }
 }
 
+

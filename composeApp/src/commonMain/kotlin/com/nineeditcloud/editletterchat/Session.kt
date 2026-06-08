@@ -71,7 +71,7 @@ class Session :Screen{
                     }){
                         Icon(imageVector=Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription="返回图标"/*图标描述，必填项，否则报错*/)
                     }
-                    Text(selectedName,/*昵称标题*/ lineHeight=1.sp, modifier=Modifier/*.weight(1f*//*百分百*//*)*//*填充全部宽度*/
+                    Text(selectedFriend!!.name,/*昵称标题 不为空则调用*/ lineHeight=1.sp, modifier=Modifier/*.weight(1f*//*百分百*//*)*//*填充全部宽度*/
                         .clickable{
 
                         }, fontSize=10.sp, color=MaterialTheme.colorScheme.onSurface/*文字颜色根据主题自适应*/)

@@ -61,8 +61,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -81,12 +79,8 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -95,15 +89,14 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.nineeditcloud.editletterchat.client.tcpLongConnClient
 import com.nineeditcloud.editletterchat.common_tools.Log
+import com.nineeditcloud.editletterchat.common_tools.PopupItem
 import com.nineeditcloud.editletterchat.common_tools.filesPath
 import com.nineeditcloud.editletterchat.database.AccountFriendLocalData
 import com.nineeditcloud.editletterchat.database.UserAccountLocalData
@@ -126,7 +119,6 @@ import io.github.vinceglb.filekit.path
 import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -134,17 +126,13 @@ import org.jetbrains.compose.resources.painterResource
 
 val userAccountDBTableDao=getDatabase("userAccount_localData")/*获取 用户账号本地数据 数据库实例*/.userAccountDao()/*获取数据库中的 已登录账号本地数据 表Dao*/
 var accountData:UserAccountLocalData?=null/*账号数据 默认值*/
-var selectedId=""
-var selectedName=""
+var selectedFriend:AccountFriendLocalData?=null/*好友数据 默认值*/
 
 var imagePath:String=""
 var backgroundColor:Color=Color.White/*全局背景色初始化值*/
 
 var navController:NavHostController?=null
 var currentRoute:String?=null/*当前导航页获取结果 初始值，equals(比较)扩展函数支持String?类型*/
-
-var showPopup=false/*列表弹窗菜单状态 初始值*/
-var popupOffset:Offset=Offset.Zero/*Popup屏幕坐标 初始值*/
 
 var exitApp:( ()->Unit)={}/*全局默认空实现，避免未注入时崩溃*/
 
@@ -216,12 +204,7 @@ class MainActivity1:Screen{
         val drawerBackgroundColor=if(!isSystemInDarkTheme()) Color.White else Color(0xFF1C1E1F) /*抽屉背景色*/
         val topCoverBackground=painterResource(Res.drawable.cover07)
 
-        var showPopup1 by remember{ mutableStateOf(false) }/*列表弹窗状态*/
-        showPopup=showPopup1
-        var popupOffset1 by remember{ mutableStateOf(Offset.Zero) }/*列表长按/弹窗组件 位置，每次赋值会重组发射新位置信息*/
-        popupOffset=popupOffset1
-        val density=LocalDensity.current
-
+        var listShowPopup/*接收 导航图代码方法-参数回调值的弹窗状态*/ by remember{ mutableStateOf(false)/*默认关闭状态*/ }/*值变化自动重组发射新值 用于判断作决定*/
         Box(Modifier.fillMaxSize().background(backgroundColor)/*.semantics(mergeDescendants=true){}*//*合并子组件语义*/
            ){
             ModalNavigationDrawer/*左侧抽屉，会自动适应系统 顶部状态栏和底部导航栏 部分的边距*/(
@@ -481,23 +464,24 @@ class MainActivity1:Screen{
                                                modifier=Modifier.padding(innerPadding).background(backgroundColor)
                                           ){
                                 /*放置导航图(内嵌界面加载)*/
-                                Nav(navController!!)
+                                Nav(navController!!){
+                                    listShowPopup=it/*将导航图代码方法的 参数回调值 赋值给listShowPopup列表弹窗状态变量*/
+                                }
 
                             }
 
                             @Suppress("DEPRECATION")
                             BackHandler/*拦截返回键*/{
                                 if(drawerState.isClosed)/*如果抽屉是关闭状态)*/
-                                    if(expanded||showPopup){/*如果有弹窗视图是打开状态*/
+                                    if(expanded){/*若有弹窗视图是打开状态*/
                                         expanded=false
-                                        showPopup=false
-                                    }else/*否则，抽屉是关闭状态*/
+                                    }else/*否则，弹窗是关闭状态*/
                                         if(navigator.canPop)/*若回退栈中有上个界面*/ navigator.pop()/*Voyager导航返回上个界面*/
                                         else{
 //                                            exitProcess(0)/*无法回退界面时暴力结束进程(不确定在某些条件下是否会导致发生问题)，Koltin/Native 中不可用*/
                                             exitApp.invoke()
                                         }
-                                else /*否则，抽屉是打开状态*/
+                                else/*否则，抽屉是打开状态*/
                                     scope.launch/*启动协程作用域(抽屉控制器操作执行工具)*/ { drawerState.close()/*关闭抽屉*/ }
                             }
 
@@ -585,36 +569,6 @@ class MainActivity1:Screen{
                         }
                     }
 
-                    if(showPopup){/*若列表项弹窗状态为打开*/
-                        Popup(alignment=Alignment.TopStart/*弹窗内容位置*/,
-                              offset=with(density){ IntOffset(x=popupOffset.x.toInt(), y=popupOffset.y.toInt() ) },
-                              onDismissRequest/*点外部关弹窗*/={ showPopup=false },
-                              properties=PopupProperties(focusable=true, dismissOnBackPress=true, dismissOnClickOutside=true),
-                        ){
-                            Row(Modifier/*.padding(end=10.dp)*/, /*horizontalArrangement=Arrangement.End*//*子项水平靠右*/){
-                                val listItemWindowBackground=if(!isSystemInDarkTheme() ) Color.White else Color.Black
-                                val windowItemBackground=if(!isSystemInDarkTheme() ) Color.Black else Color.White
-                                Row(Modifier.background(listItemWindowBackground,RoundedCornerShape(8.dp) )
-                                    .clip(RoundedCornerShape(8.dp) )/*裁剪内容为圆角(为使点击涟漪不超出此布局圆角范围)*/
-                                ){
-                                    Text("标为未读", modifier=Modifier.background(windowItemBackground).clickable{
-
-                                    }.padding(end = 5.dp), color=listItemWindowBackground,fontSize = 6.sp, lineHeight = 12.sp)
-                                    Text("设为置顶", Modifier.background(windowItemBackground).clickable{
-
-                                    }.padding(end = 5.dp), color=listItemWindowBackground,fontSize = 6.sp, lineHeight = 12.sp)
-                                    Text("移除此项", Modifier.background(windowItemBackground).clickable{
-
-                                    }.padding(end = 5.dp), color=listItemWindowBackground,fontSize = 6.sp, lineHeight = 12.sp)
-                                    Text("删除消息", Modifier.background(windowItemBackground).clickable{
-
-                                    }, color=listItemWindowBackground,fontSize=6.sp, lineHeight=12.sp)
-                                }
-
-                            }
-                        }
-                    }
-
                 }
 
             }
@@ -654,39 +608,41 @@ class MainActivity1:Screen{
 
 
     @Composable
-    fun Nav(navController:NavHostController, ){
-
+    fun Nav(navController:NavHostController, onListShowPopup:(Boolean)->Unit={}/*参数回调(其实不必)*/ ){
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigator跨平台Screen界面导航 绑定当前界面的导航控制器*/
-        /*改了导航界面路由名称，不要忘了改初始导航页界面路由名称*/
+
+        var showPopup by remember{ mutableStateOf(false) }/*列表项弹窗状态*/
+        var popupOffset by remember{ mutableStateOf(Offset.Zero) }/*列表子项在容器布局中的坐标，每次赋值会重组发射新位置信息*/
+        val density=LocalDensity.current/*列表项弹窗位置控制*/
         NavHost/*导航图主体组件*/(navController=navController,/*绑定导航控制器*/ startDestination="message"/*初始导航界面*/,
-                                  Modifier.fillMaxSize() ){
+                                  Modifier.fillMaxSize() ){/*改导航界面路由后，不要忘了改初始导航页界面路由名称*/
             composable("message"){/*消息界面*/
-                Box(Modifier.fillMaxSize(), ){
+                Box(Modifier.fillMaxSize()
+                    , ){
                     val listState=rememberLazyListState()/*LazyList有序列表状态*/
                     val listAlreadyExistsFriendItem=mutableSetOf<String>()/*列表已存在好友项 记录集合*/
                     val contactMessageItems=remember{ mutableStateListOf<AccountFriendLocalData>() }/*在任何地方调用add/remove/addAll 都会自动触发LazyColumn列表重组的 列表项集合*/
 
-                    if(accountData!=null){/*若当前账号数据不为默认数据*/
+                    if(accountData!=null){/*若当前账号数据不为空*/
                         val currentAccount_FriendDBTableDao=getDatabase("${accountData!!.id}friend")/*获取 当前账号(不为空则调用)好友本地数据 数据库实例*/.friendDao()/*获取数据库中的 好友表Dao*/
 //                        val allFriendsFlow by currentAccount_FriendDBTableDao.getAllFriend_Flow()/*获取当前账号好友数据库表中所有数据 Flow(数据变化自动发射新数据)*/.collectAsState(initial=emptyList()/*初始值*/ )
 
                         val scope=rememberCoroutineScope()
                         val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
-                        lifecycleOwner.lifecycleScope.launch(Dispatchers.IO/*数据库、通信必须在输入输出流线程执行 否则切换导航界面时会崩溃*/){
-                            Log.msg("Room数据库","已获取数据库：${accountData!!.id}friend")/*输出LogCat消息日志*/
-                            val allFriends=currentAccount_FriendDBTableDao.getAllFriend()/*获取当前账号好友数据库表中所有数据*/
-                            /*contactMessageItems列表项集合 和 Room返回的表数据集合 元素必须用同一个对象类型*/
-                            allFriends.forEach{/*遍历List集合元素，默认每次赋值给it*/
-                                contactMessageItems.add(it)/*列表项集合添加元素*/
-                                listAlreadyExistsFriendItem.add(it.id)/*在 列表已存在好友项记录集合中 添加对应好友ID*/
-                            }
-                            tcpLongConnClient(accountData!!.id, accountData!!.token){
-//                                if(it["type"]==""){
-//                                }
-                            }
-                        }
-                        LaunchedEffect(Unit){/*LaunchedEffect监听参数变化自动重载 协程作用域*/
-                            contactMessageItems.addAll(/*初始化列表项集合*/
+//                        lifecycleOwner.lifecycleScope.launch(Dispatchers.IO/*数据库、通信必须在输入输出流线程执行 否则切换导航界面时会崩溃*/){
+//                            Log.msg("Room数据库","已获取数据库：${accountData!!.id}friend")/*输出LogCat消息日志*/
+//                            val allFriends=currentAccount_FriendDBTableDao.getAllFriend()/*获取当前账号好友数据库表中所有数据*/
+//                            /*contactMessageItems列表项集合 和 Room返回的表数据集合 元素必须用同一个对象类型*/
+//                            allFriends.forEach{/*遍历List集合元素，默认每次赋值给it*/
+//                                contactMessageItems.add(it)/*列表项集合添加元素*/
+//                                listAlreadyExistsFriendItem.add(it.id)/*在 列表已存在好友项记录集合中 添加对应好友ID*/
+//                            }
+//                            tcpLongConnClient(accountData!!.id, accountData!!.token){
+////                                if(it["type"]==""){
+////                                }
+//                            }
+//                        }
+                        contactMessageItems.addAll(/*初始化列表项集合*/
                                 listOf(/*假设收到的最新每一条消息集，联系人消息集*/
                                        AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
                                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
@@ -706,74 +662,41 @@ class MainActivity1:Screen{
                                        AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
                                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
                                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
-                                       ),
-                                )
+                                      ),
+                        )
+//                        LaunchedEffect(Unit){/*LaunchedEffect监听参数变化自动重载 协程作用域*/
 //                            currentAccount_FriendDBTableDao.getAllFriend_Flow()/*获取当前账号好友数据库表中所有数据*/.collect{ allFriendsListFlow->/*收集Room返回的Flow，每次将List集合赋值给friendList变量名(若不写则默认赋值给it)*/
 //                                contactMessageItems.clear()/*直接替换整个列表(避免手动去重)，由于是初始化(将本地已知数据加入) 所以不必*/
 //                                contactMessageItems.addAll(allFriendsListFlow)/*添加集合全部内容，自动刷新列表*/
 //                            }
 //                            contactMessageItems.addAll(allFriends)/*在列表项集合中 添加 全部元素(全部好友数据集合)，不方便记录列表已存在好友项*/
-
-                        }
-
-
+//                        }
 
                     }
 
-
-
                     /*有时候 同层级或子层级 代码块中无法调用已存在参数 可能是前边某处代码多了个}，同样也不能多{ 否则后边函数调用处都报错*/
-                    LazyColumn/*垂直有序列表*/(Modifier.fillMaxSize(1f)
-                                             .pointerInput(Unit){
-                                                 detectTapGestures/*点击动作监听*/(
-                                                     onLongPress/*长按*/={offset->/*获取位置赋值给offset*/
-                                                         popupOffset=offset/*将列表点击位置 赋值给列表Popup弹窗位置*/
-                                                         showPopup=true/*打开列表弹窗*/
-                                                     },
-                                                 ){/*综合触摸事件*/
-                                                 }
-                                             }
-                                               , state=listState){
-                        items/*遍历列表多项*/(contactMessageItems){ contactMessageItem->/*Lambda表达式，赋值每次遍历值的变量名(若不写则默认赋值给it)*/
-                            Column(Modifier.combinedClickable(/*事件，列表项事件，不能获取触摸指针位置*/
-                                                              onClick={/*单击事件*/
-                                                                  if(!showPopup){
-                                                                      selectedId=contactMessageItem.id
-                                                                      selectedName=contactMessageItem.name
-                                                                      navigator.push(Session() )/*跳转 消息会话界面*/
-                                                                  }
-                                                              },
-                                                              )
+                    LazyColumn/*垂直有序列表*/(Modifier.fillMaxSize(1f), state=listState){
+                        items/*遍历列表多项*/(contactMessageItems, ){ contactMessageItem->/*Lambda表达式，赋值每次遍历值的变量名(若不写则默认赋值给it)*/
+                            Column{
+                                PopupItem(contactMessageItem.name, contactMessageItem.newMessage,
+                                          onTap={ selectedFriend=contactMessageItem; navigator.push(Session() )/*跳转 消息会话界面*/ },
+                                          listOf("标为未读","取消置顶","移除选项"),
+                                          listOf(
+                                              {
 
+                                              },{
 
-                                   ){
-                                Row/*水平布局*/(Modifier.fillMaxWidth()/*填充容器全部宽度，否则如果在Button按钮容器中会默认被放置中间*/
-                                                .padding(7.dp)/*内边距*/, ){
-                                    Image(painter=painterResource(Res.drawable.new_user)
-//                                            rememberAsyncImagePainter(model=File("${contactMessageItem.id}.jpg"))/*Image图片资源，加载账号Id对应的头像路径*/
-                                          ,contentDescription="头像圆角图片",/*Image描述(必填此项，否则报错)*/
-                                          Modifier.size(45.dp)/*设置图片尺寸*/.clip(RoundedCornerShape(5.dp) )/*设置圆角半径，12.dp为圆形*/
-                                              .background(Color.LightGray)/*可选：添加背景色，便于观察圆角效果*/,
-                                          contentScale=ContentScale.Crop,/*可选：缩放类型，如裁剪适应*/
-                                         )
-                                    Column/*竖直布局*/(Modifier.padding(start=10.dp)/*竖直布局外边距(因为是在Row水平布局中，所以是左边距)*/){
-                                        /*此布局内是昵称和最新消息 控件*/
-                                        Text/*昵称文本*/(contactMessageItem.name,color=MaterialTheme.colorScheme.onSurface/*昵称黑白色，导航图和列表里的界面必须用MaterialTheme，否则出现不会实时跟随系统深浅主题变色的Bug*/,
-                                                         fontSize=10.sp, lineHeight=15.sp)
-                                        Text/*最新消息文本*/(contactMessageItem.newMessage,color=Color.Gray/*内容灰色*/,
-                                                             fontSize=8.sp, lineHeight=10.sp)
-                                    }
+                                              },{
 
+                                              },
+                                              ),
+                                         ){
+//                                    showPopup=it
                                 }
-
-//                                Divider(Modifier.padding(start=80.dp) )/*列表项分割线，已废弃，更名为HorizontalDivider*/
-                                HorizontalDivider(Modifier.padding(start=80.dp), color=Color.LightGray)/*水平分割线*/
                             }
 
                         }
                     }
-
-
 
                 }
 
@@ -791,6 +714,7 @@ class MainActivity1:Screen{
                 }
 
             }
+
 
         }
     }
