@@ -129,7 +129,7 @@ var accountData:UserAccountLocalData?=null/*账号数据 默认值*/
 var selectedFriend:AccountFriendLocalData?=null/*好友数据 默认值*/
 
 var imagePath:String=""
-var backgroundColor:Color=Color.White/*全局背景色初始化值*/
+var backgroundColor:Color=Color.Transparent/*全局背景色初始化值*/
 
 var navController:NavHostController?=null
 var currentRoute:String?=null/*当前导航页获取结果 初始值，equals(比较)扩展函数支持String?类型*/
@@ -673,9 +673,10 @@ class MainActivity1:Screen{
                     }
 
                     /*有时候 同层级或子层级 代码块中无法调用已存在参数 可能是前边某处代码多了个}，同样也不能多{ 否则后边函数调用处都报错*/
-                    LazyColumn/*垂直有序列表*/(Modifier.fillMaxSize(1f), state=listState){
+                    LazyColumn/*垂直有序列表*/(Modifier.fillMaxSize(1f).background(Color.Transparent)
+                                               , state=listState){
                         items/*遍历列表多项*/(contactMessageItems, ){ contactMessageItem->/*Lambda表达式，赋值每次遍历值的变量名(若不写则默认赋值给it)*/
-                            Column{
+                            Column(Modifier.background(Color.Transparent), ){
                                 PopupItem(painterResource(Res.drawable.new_user),
                                           contactMessageItem.name, contactMessageItem.newMessage,
                                           onTap={
@@ -696,7 +697,7 @@ class MainActivity1:Screen{
                                               },
                                               ),
                                          ){
-                                    showPopup=it
+                                    showPopup=it/*将参数回调值 赋值给showPopup变量，否则无法实时监听多个列表项内最新发射的弹窗状态*/
                                 }
                             }
 

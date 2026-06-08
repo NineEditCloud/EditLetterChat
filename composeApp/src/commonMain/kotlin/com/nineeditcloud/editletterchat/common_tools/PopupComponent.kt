@@ -68,7 +68,7 @@ fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题
     val interactionSource=remember{ MutableInteractionSource() }
     val density=LocalDensity.current
     Card(elevation=0.dp, modifier=modifier.onSizeChanged{ itemHeight=with(density){ it.height.toDp() } }
-        .background(Color.Transparent)/*背景色透明*/,
+        .background(Color.Transparent)/*背景透明*/,
         ){
         Box(modifier=Modifier.fillMaxWidth().padding(0.dp).background(Color.Transparent)/*背景透明*/
                 .indication(interactionSource,LocalIndication.current)
@@ -145,7 +145,7 @@ fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题
 
     BackHandler(showPopup){/*只在列表项弹窗状态为打开时 拦截返回键 并执行代码*/
         showPopup=false/*关闭列表项弹窗*/
-        onShowPopup(showPopup)
+        onShowPopup(showPopup)/*参数回调*/
     }
 }
 
