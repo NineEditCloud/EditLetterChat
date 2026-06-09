@@ -14,7 +14,6 @@
 
 name: AppleAuto Build (macOS & iOS)
 
-# ---------- 触发条件 ----------
 on:
   push:
     branches: [ main, master, develop ]
@@ -24,95 +23,64 @@ on:
       - '.gitignore'
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:  # 手动触发，无需参数
+  workflow_dispatch:
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4"
   JAVA_VERSION: '21'
   XCODE_VERSION: '16.2'
 
-# ==================== 构建任务 ====================
 jobs:
   
-  # ══════════════════════════════════════════
-  # 任务1: 构建 macOS 应用 (.app / .dmg)
-  # ══════════════════════════════════════════
+  # ==================== 任务1: macOS ====================
   build-macos:
     name: 🖥️ Build macOS App
     runs-on: macos-14
     timeout-minutes: 45
     
     steps:
-      # ---- 检出代码 ----
       - name: 📥 Checkout
         uses: actions/checkout@v4
       
-      # ---- 配置 JDK ----
       - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
       
-      # ---- Gradle 缓存加速 ----
       - name: 📦 Setup Gradle
         uses: gradle/actions/setup-gradle@v4
       
-      # ---- 授权 Xcode ----
       - name: 🔑 Accept Xcode License
         run: |
           sudo xcodebuild -license accept
           sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer || true
       
-      # ---- 编译 Kotlin/Native Framework for macOS ----
       - name: 🔨 Build Kotlin Framework (macOS)
         run: |
-          echo "========== macOS Native Framework =========="
-          
-          # 编译所有 macOS 架构
           ./gradlew :composeApp:linkReleaseFrameworkMacosArm64 \
                     :composeApp:linkReleaseFrameworkMacosX64 \
-                    --no-daemon \
-                    --build-cache \
-                    --stacktrace || {
-            echo "⚠️ Release 失败，尝试 Debug..."
+                    --no-daemon --build-cache --stacktrace || {
             ./gradlew :composeApp:linkDebugFrameworkMacosArm64 \
-                      :composeApp:linkDebugFrameworkMacosX64 \
-                      --no-daemon
+                      :composeApp:linkDebugFrameworkMacosX64 --no-daemon
           }
       
-      # ---- 打包 macOS .app (如果存在 Xcode 项目) ----
       - name: 📦 Package macOS App
         if: always()
         run: |
-          echo "========== macOS App 打包 =========="
-          
-          # 尝试查找并打包 .app 文件
           APP_DIR=$(find composeApp/build/bin -name "*.app" -type d 2>/dev/null | head -1)
-          
           if [ -n "$APP_DIR" ]; then
-            echo "✅ 找到应用: $APP_DIR"
-          
-            # 创建 .zip 归档
             cd "$(dirname "$APP_DIR")"
             zip -r "$RUNNER_TEMP/EditLetterChat-macos-${{ github.run_id }}.zip" "$(basename "$APP_DIR")"
             mv "$RUNNER_TEMP/EditLetterChat-macos-"*.zip "$GITHUB_WORKSPACE/"
-          
-            echo "📦 打包完成: EditLetterChat-macos-${{ github.run_id }}.zip"
           else
-            echo "ℹ️ 未找到 .app 文件，尝试从 Framework 创建..."
-          
-            # 如果没有 .app，上传 Framework 供后续使用
             FRAMEWORKS=$(find composeApp/build/bin/macos*/releaseFramework -name "*.framework" -type d 2>/dev/null | head -5)
-          
             if [ -n "$FRAMEWORKS" ]; then
               mkdir -p "$GITHUB_WORKSPACE/output/macOS-frameworks"
               cp -r $FRAMEWORKS "$GITHUB_WORKSPACE/output/macOS-frameworks/" 2>/dev/null || true
-              echo "📁 已导出 Framework 到 output/macOS-frameworks/"
             fi
           fi
       
-      # ---- 上传产物 ----
       - name: 📤 Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -123,20 +91,16 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
   
-  # ══════════════════════════════════════════
-  # 任务2: 构建 iOS Framework (无签名要求)
-  # ══════════════════════════════════════════
+  # ==================== 任务2: iOS Framework ====================
   build-ios-framework:
     name: 📱 Build iOS Framework
     runs-on: macos-14
     timeout-minutes: 60
     
     steps:
-      # ---- 检出代码 ----
       - name: 📥 Checkout
         uses: actions/checkout@v4
       
-      # ---- 配置环境 ----
       - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
@@ -146,41 +110,22 @@ jobs:
       - name: 📦 Setup Gradle
         uses: gradle/actions/setup-gradle@v4
       
-      # ---- 授权 Xcode ----
       - name: 🔑 Accept Xcode License
         run: |
           sudo xcodebuild -license accept
           sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer || true
       
-      # ---- 编译 iOS 全架构 Framework ----
       - name: 🔨 Build Kotlin Framework (iOS All Architectures)
         run: |
-          echo "========== iOS Native Framework =========="
-          echo "目标: iosArm64 (真机64位)"
-          echo "      iosSimulatorArm64 (M系列模拟器)"
-          echo "      iosX64 (Intel模拟器)"
-          echo "=========================================="
-          
-          # 编译所有 iOS 目标架构的 Framework
           ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
                     :composeApp:linkReleaseFrameworkIosX64 \
                     :composeApp:linkReleaseFrameworkIosSimulatorArm64 \
-                    --no-daemon \
-                    --build-cache \
-                    --stacktrace || {
-            echo "⚠️ Release 构建失败，回退到 Debug 模式..."
+                    --no-daemon --build-cache --stacktrace || {
             ./gradlew :composeApp:linkDebugFrameworkIosArm64 \
                       :composeApp:linkDebugFrameworkIosX64 \
-                      :composeApp:linkDebugFrameworkIosSimulatorArm64 \
-                      --no-daemon
+                      :composeApp:linkDebugFrameworkIosSimulatorArm64 --no-daemon
           }
-          
-          echo ""
-          echo "✅ iOS Framework 编译完成！"
-          ls -la composeApp/build/bin/*/releaseFramework/*/ 2>/dev/null || \
-          ls -la composeApp/build/bin/*/debugFramework/*/ 2>/dev/null || true
       
-      # ---- 上传 Framework ----
       - name: 📤 Upload iOS Frameworks
         uses: actions/upload-artifact@v4
         with:
@@ -195,41 +140,50 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
   
-  # ══════════════════════════════════════════
-  # 任务3: 打包 iOS IPA (Xcode自动签名)
-  # ══════════════════════════════════════════
+  # ==================== 任务3: iOS IPA (已移除 hashFiles) ====================
   build-ios-ipa:
     name: 🍎 Build iOS IPA (Auto Sign)
     runs-on: macos-14
     needs: build-ios-framework
     timeout-minutes: 90
     
-    # 仅在非 PR 且有 iOS 项目时运行
-    if: github.event_name != 'pull_request' && hashFiles('iosApp/**') != ''
+    # ✅ 已修复：只保留有效条件
+    if: github.event_name != 'pull_request'
     
     steps:
-      # ---- 检出代码 ----
+      - name: 🔍 Check iOS Project Exists
+        id: check-ios
+        run: |
+          if [ -d "iosApp" ]; then
+            echo "::set-output name=exists::true"
+          else
+            echo "::set-output name=exists::false"
+            echo "⚠️ 未检测到 iOS 项目目录"
+          fi
+      
       - name: 📥 Checkout
+        if: steps.check-ios.outputs.exists == 'true'
         uses: actions/checkout@v4
       
-      # ---- 配置环境 ----
       - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
+        if: steps.check-ios.outputs.exists == 'true'
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
       
       - name: 📦 Setup Gradle
+        if: steps.check-ios.outputs.exists == 'true'
         uses: gradle/actions/setup-gradle@v4
       
-      # ---- 授权 Xcode ----
       - name: 🔑 Accept Xcode License
+        if: steps.check-ios.outputs.exists == 'true'
         run: |
           sudo xcodebuild -license accept
           sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer || true
       
-      # ---- 安装 CocoaPods 依赖 (如果需要) ----
       - name: 🌿 CocoaPods Install
+        if: steps.check-ios.outputs.exists == 'true'
         working-directory: ./iosApp
         run: |
           if [ -f "Podfile" ]; then
@@ -238,27 +192,19 @@ jobs:
             echo "ℹ️ 未检测到 Podfile，跳过 CocoaPods 安装"
           fi
       
-      # ---- 重新构建 Framework (确保最新) ----
       - name: 🔨 Rebuild iOS Framework
+        if: steps.check-ios.outputs.exists == 'true'
         run: |
           ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
                     :composeApp:linkReleaseFrameworkIosSimulatorArm64 \
-                    --no-daemon \
-                    --build-cache
+                    --no-daemon --build-cache
       
-      # ---- Xcode 自动签名打包 IPA ----
       - name: 🏗️ Archive & Export IPA (Auto Sign)
         id: ipa-build
+        if: steps.check-ios.outputs.exists == 'true'
         working-directory: ./iosApp
-        continue-on-error: true  # 签名失败不阻断流程
+        continue-on-error: true
         run: |
-          echo "========== Xcode 自动签名模式 =========="
-          echo "✅ 无需手动配置证书和描述文件"
-          echo "✅ Xcode 会自动处理所有签名事宜"
-          echo "=========================================="
-          echo ""
-          
-          # 创建 ExportOptions.plist (自动签名专用)
           cat > ExportOptions.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
@@ -276,31 +222,22 @@ jobs:
               <key>stripSwiftSymbols</key>
               <true/>
               <key>teamID</key>
-              <string></string>  <!-- 自动选择 -->
+              <string></string>
           </dict>
           </plist>
           EOF
           
-          # 方法1: 尝试使用 workspace (CocoaPods 项目)
           WORKSPACE_PATH=""
           SCHEME_NAME="iosApp"
           
           if [ -f "iosApp.xcworkspace/xcshareddata/xcschemes/${SCHEME_NAME}.xcscheme" ]; then
             WORKSPACE_PATH="-workspace iosApp.xcworkspace"
-            echo "📂 找到 Workspace: iosApp.xcworkspace"
           elif [ -f "../iosApp.xcworkspace/xcshareddata/xcschemes/${SCHEME_NAME}.xcscheme" ]; then
             WORKSPACE_PATH="-workspace ../iosApp.xcworkspace"
-            echo "📂 找到上级 Workspace"
           else
-            # 回退到 project
             WORKSPACE_PATH="-project iosApp.xcodeproj"
-            echo "📂 使用 Project: iosApp.xcodeproj"
           fi
           
-          echo ""
-          echo "🔨 开始 Archive..."
-          
-          # Archive 步骤 (自动签名 + 允许自动更新配置文件)
           xcodebuild ${WORKSPACE_PATH} \
                      -scheme "${SCHEME_NAME}" \
                      -sdk iphoneos \
@@ -313,7 +250,6 @@ jobs:
                      CODE_SIGN_IDENTITY="Apple Development" \
                      -quiet | xcpretty || {
           
-            echo "⚠️ Release Archive 失败，尝试 Debug..."
             xcodebuild ${WORKSPACE_PATH} \
                        -scheme "${SCHEME_NAME}" \
                        -sdk iphoneos \
@@ -329,10 +265,6 @@ jobs:
             RUNNER_TEMP_ARCHIVE="$RUNNER_TEMP/iosApp-debug.xcarchive"
           }
           
-          echo ""
-          echo "📦 开始导出 IPA..."
-          
-          # 导出 IPA
           ARCHIVE_PATH="${RUNNER_TEMP_ARCHIVE:-$RUNNER_TEMP/iosApp.xcarchive}"
           
           xcodebuild -exportArchive \
@@ -341,24 +273,17 @@ jobs:
                      -exportPath "$RUNNER_TEMP/export" \
                      -allowProvisioningUpdates \
                      -quiet | xcpretty || {
-            echo "⚠️ IPA 导出失败，可能原因:"
-            echo "  1. 未登录 Apple ID（需在 GitHub Settings → Codesigning 中添加）"
-            echo "  2. 设备未注册（免费账号限制）"
-            echo "  3. Bundle Identifier 冲突"
+            echo "⚠️ IPA 导出失败"
             exit 1
           }
           
-          # 重命名产物
           if ls "$RUNNER_TEMP/export/"*.ipa 1>/dev/null 2>&1; then
             mv "$RUNNER_TEMP/export/"*.ipa "$RUNNER_TEMP/EditLetterChat-auto-${{ github.run_number }}.ipa"
-            echo "✅ IPA 导出成功!"
             echo "::set-output name=success::true"
           else
-            echo "❌ 未生成 IPA 文件"
             echo "::set-output name=success::false"
           fi
       
-      # ---- 上传 IPA ----
       - name: 📤 Upload iOS IPA
         if: steps.ipa-build.outputs.success == 'true'
         uses: actions/upload-artifact@v4
@@ -367,27 +292,20 @@ jobs:
           path: ${{ runner.temp }}/EditLetterChat-auto-*.ipa
           retention-days: 7
       
-      # ---- 备选方案: 如果 IPA 失败，提供说明 ----
       - name: 💡 IPA Build Info
-        if: steps.ipa-build.outputs.success != 'true'
+        if: steps.ipa-build.outputs.success != 'true' && steps.check-ios.outputs.exists == 'true'
         run: |
           echo "## ℹ️ iOS IPA 构建说明" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           echo "**IPA 自动签名失败的可能原因：**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           echo "| 原因 | 解决方案 |" >> $GITHUB_STEP_SUMMARY
           echo "|------|----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| ❌ 未注册 Apple 开发者 | 在 [GitHub Codesigning](https://github.com/settings/codesigning) 添加 Apple ID |" >> $GITHUB_STEP_SUMMARY
-          echo "| ❌ 测试设备未注册 | 在 [Apple Developer](https://developer.apple.com/account/resources/device/list) 注册设备 UUID |" >> $GITHUB_STEP_SUMMARY
-          echo "| ❌ Bundle ID 被占用 | 修改 iosApp 的 Bundle Identifier 为唯一值 |" >> $GITHUB_STEP_SUMMARY
-          echo "| ⚠️ 免费账号限制 | IPA 有效期仅7天，正式发布需付费开发者账号 (\$99/年) |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**✅ Framework 已成功编译**（可在任务2中下载）" >> $GITHUB_STEP_SUMMARY
-          echo "**💡 建议**: 先下载 Framework，在本地 Mac 用 Xcode 打包完整应用" >> $GITHUB_STEP_SUMMARY
-
-  # ══════════════════════════════════════════
-  # 任务4: 构建报告 (已修复引号问题)
-  # ══════════════════════════════════════════
+          echo "| 未注册 Apple 开发者 | 在 GitHub Codesigning 添加 Apple ID |" >> $GITHUB_STEP_SUMMARY
+          echo "| 测试设备未注册 | 注册设备 UUID |" >> $GITHUB_STEP_SUMMARY
+          echo "| Bundle ID 被占用 | 修改 Bundle Identifier |" >> $GITHUB_STEP_SUMMARY
+          echo "| 免费账号限制 | 有效期仅7天 |" >> $GITHUB_STEP_SUMMARY
+          echo "**✅ Framework 已成功编译**" >> $GITHUB_STEP_SUMMARY
+  
+  # ==================== 任务4: 报告 ====================
   report:
     name: 📊 Build Report
     runs-on: ubuntu-latest
@@ -402,7 +320,6 @@ jobs:
           echo "| 平台 | 状态 | 产物 |" >> $GITHUB_STEP_SUMMARY
           echo "|------|------|------|" >> $GITHUB_STEP_SUMMARY
           
-          # ========== macOS 状态 ==========
           MAC_RESULT="${{ needs.build-macos.result }}"
           case "$MAC_RESULT" in
             success)   MAC_STATUS="✅ 成功" ;;
@@ -412,7 +329,6 @@ jobs:
           esac
           echo "| 🖥️ **macOS App** | ${MAC_STATUS} | [📥 下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
           
-          # ========== iOS Framework 状态 ==========
           IOS_FW_RESULT="${{ needs.build-ios-framework.result }}"
           case "$IOS_FW_RESULT" in
             success)   IOS_FW_STATUS="✅ 成功" ;;
@@ -422,7 +338,6 @@ jobs:
           esac
           echo "| 📱 **iOS Framework** | ${IOS_FW_STATUS} | [📥 下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
           
-          # ========== iOS IPA 状态 ==========
           IPA_RESULT="${{ needs.build-ios-ipa.result }}"
           case "$IPA_RESULT" in
             success)   IPA_STATUS="✅ 成功" ;;
@@ -435,10 +350,8 @@ jobs:
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           echo "**构建信息**" >> $GITHUB_STEP_SUMMARY
           echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- 分支: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- 触发者: @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
           echo "- 时间: $(date '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "- 运行ID: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
