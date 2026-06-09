@@ -275,14 +275,6 @@ kotlin{
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${libs.versions.kotlinx.get()}")/*Kotlin协程依赖测试版*/
         }
 
-        nonMacosMain.dependencies/*android+ios共享但macOS排除的依赖(这些库不支持macOS平台)*/{
-            implementation("com.darkrockstudios:mpfilepicker:3.1.0")/*跨平台文件选择器(不支持macOS arm64)*/
-            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Toast提示(不支持macOS)*/
-            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")/*文件对话框(不支持macOS)*/
-            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")/*Compose文件对话框(不支持macOS)*/
-            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*图片文件选取(不支持macOS)*/
-        }
-
         androidMain.dependencies/*安卓依赖*/{
             implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.composeMultiplatform.get()}")/*JetpackCompose 1.9.0-rc01版本兼容安卓5.0，但不兼容IOS*/
             implementation("androidx.activity:activity-compose:1.11.0")/*安卓专用工具库，1.11.0版本兼容安卓5.0，绝对不可更改为更高版本！！！*/
@@ -294,7 +286,6 @@ kotlin{
 
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${libs.versions.kotlinx.get()}")/*Kotlin协程-安卓，Room内部依赖需要*/
             implementation("io.ktor:ktor-client-okhttp:${libs.versions.ktor.get()}")/*Ktor-安卓端底层OkHttp引擎*/
-
 //            implementation("androidx.room:room-sqlite-wrapper")/*Room需要的SQLite库，Room2.8+引入的库(2.8+可用)*/
 
             implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付-SDK，6.8.34仍兼容安卓4.1*/
@@ -324,6 +315,9 @@ kotlin{
             implementation("org.slf4j:slf4j-simple:2.0.7")/*JVM桌面端SLF4J日志库，Room桌面端内部日志依赖*/
         }
 //        macosMain.dependencies/*MacOS运行依赖*/{
+//            implementation("com.darkrockstudios:mpfilepicker-macosx64:3.1.0")/*MacOS 64位 跨平台文件选择器*/
+//            implementation("io.github.vinceglb:filekit-macos:${libs.versions.filekit.get()}")
+//            implementation("io.github.vinceglb:filekit-coil-macosarm64:0.14.1")
 //        }
 
 //        nativeMain.dependencies/*Kotlin/Native中间层原生源代码集，目标平台IOS/MacOS/Linux共享*/{
