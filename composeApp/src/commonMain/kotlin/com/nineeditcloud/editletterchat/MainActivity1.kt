@@ -61,6 +61,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -95,6 +96,7 @@ import androidx.navigation.NavHostController
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.nineeditcloud.editletterchat.client.tcpLongConnClient
 import com.nineeditcloud.editletterchat.common_tools.Log
 import com.nineeditcloud.editletterchat.common_tools.PopupItem
 import com.nineeditcloud.editletterchat.common_tools.filesPath
@@ -119,6 +121,7 @@ import io.github.vinceglb.filekit.path
 import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -618,29 +621,31 @@ class MainActivity1:Screen{
             composable("message"){/*消息界面*/
                 Box(Modifier.fillMaxSize(), ){
                     val listState=rememberLazyListState()/*LazyList有序列表状态*/
-                    val listAlreadyExistsFriendItem=mutableSetOf<String>()/*列表已存在好友项 记录集合*/
-                    val contactMessageItems=remember{ mutableStateListOf<AccountFriendLocalData>() }/*在任何地方调用add/remove/addAll 都会自动触发LazyColumn列表重组的 列表项集合*/
+                    val contactMessageItems=remember{ mutableStateListOf<AccountFriendLocalData>() }
+                    /*在任何地方调用add/remove/addAll 都会自动触发LazyColumn列表重组的 列表项集合*/
+                    val listAlreadyExistsFriendItem/*列表已存在好友项 记录集合*/=mutableSetOf<String>()
 
-                    if(accountData!=null){/*若当前账号数据不为空*/
-                        val currentAccount_FriendDBTableDao=getDatabase("${accountData!!.id}friend")/*获取 当前账号(不为空则调用)好友本地数据 数据库实例*/.friendDao()/*获取数据库中的 好友表Dao*/
-//                        val allFriendsFlow by currentAccount_FriendDBTableDao.getAllFriend_Flow()/*获取当前账号好友数据库表中所有数据 Flow(数据变化自动发射新数据)*/.collectAsState(initial=emptyList()/*初始值*/ )
+//                    val scope=rememberCoroutineScope()/*数据变化自动重组发射新值的 协程作用域*/
+                    val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
+                    /*用LaunchedEffect实时监听accountData变化，加载数据*/
+                    LaunchedEffect(accountData!=null){
+                        if(accountData!=null){/*若当前账号数据不为空*/
+                            lifecycleOwner.lifecycleScope.launch(Dispatchers.IO/*数据库、通信必须在输入输出流线程执行 否则切换导航界面时会崩溃*/){
+                                val currentAccount_FriendDBTableDao=getDatabase("${accountData!!.id}friend")/*获取 当前账号(不为空则调用)好友本地数据 数据库实例*/.friendDao()/*获取数据库中的 好友表Dao*/
+                                Log.msg("Room数据库","已获取数据库：${accountData!!.id}friend")/*输出LogCat消息日志*/
+                                val allFriends=currentAccount_FriendDBTableDao.getAllFriend()/*获取当前账号好友数据库表中所有数据*/
+                                /*contactMessageItems列表项集合 和 Room返回的表数据集合 元素必须用同一个对象类型*/
+                                allFriends.forEach{/*遍历List集合元素，默认每次赋值给it*/
+                                    contactMessageItems.add(it)/*列表项集合添加元素*/
+                                    listAlreadyExistsFriendItem.add(it.id)/*在 列表已存在好友项记录集合中 添加对应好友ID*/
+                                }
+                                tcpLongConnClient(accountData!!.id, accountData!!.token){
+//                                    if(it["type"]==""){
+//                                    }
+                                }
+                            }
 
-                        val scope=rememberCoroutineScope()
-                        val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
-//                        lifecycleOwner.lifecycleScope.launch(Dispatchers.IO/*数据库、通信必须在输入输出流线程执行 否则切换导航界面时会崩溃*/){
-//                            Log.msg("Room数据库","已获取数据库：${accountData!!.id}friend")/*输出LogCat消息日志*/
-//                            val allFriends=currentAccount_FriendDBTableDao.getAllFriend()/*获取当前账号好友数据库表中所有数据*/
-//                            /*contactMessageItems列表项集合 和 Room返回的表数据集合 元素必须用同一个对象类型*/
-//                            allFriends.forEach{/*遍历List集合元素，默认每次赋值给it*/
-//                                contactMessageItems.add(it)/*列表项集合添加元素*/
-//                                listAlreadyExistsFriendItem.add(it.id)/*在 列表已存在好友项记录集合中 添加对应好友ID*/
-//                            }
-//                            tcpLongConnClient(accountData!!.id, accountData!!.token){
-////                                if(it["type"]==""){
-////                                }
-//                            }
-//                        }
-                        contactMessageItems.addAll(/*初始化列表项集合*/
+                            contactMessageItems.addAll(/*初始化列表项集合*/
                                 listOf(/*假设收到的最新每一条消息集，联系人消息集*/
                                        AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
                                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
@@ -661,15 +666,8 @@ class MainActivity1:Screen{
                                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
                                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
                                       ),
-                        )
-//                        LaunchedEffect(Unit){/*LaunchedEffect监听参数变化自动重载 协程作用域*/
-//                            currentAccount_FriendDBTableDao.getAllFriend_Flow()/*获取当前账号好友数据库表中所有数据*/.collect{ allFriendsListFlow->/*收集Room返回的Flow，每次将List集合赋值给friendList变量名(若不写则默认赋值给it)*/
-//                                contactMessageItems.clear()/*直接替换整个列表(避免手动去重)，由于是初始化(将本地已知数据加入) 所以不必*/
-//                                contactMessageItems.addAll(allFriendsListFlow)/*添加集合全部内容，自动刷新列表*/
-//                            }
-//                            contactMessageItems.addAll(allFriends)/*在列表项集合中 添加 全部元素(全部好友数据集合)，不方便记录列表已存在好友项*/
-//                        }
-
+                            )
+                        }
                     }
 
                     /*有时候 同层级或子层级 代码块中无法调用已存在参数 可能是前边某处代码多了个}，同样也不能多{ 否则后边函数调用处都报错*/

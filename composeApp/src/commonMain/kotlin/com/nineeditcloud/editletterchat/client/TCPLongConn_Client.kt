@@ -80,6 +80,7 @@ fun tcpLongConnClient(account:String, token:String,
             }else Log.e("Ktor-TCP长连接", "连接异常", e)
             if(coroutineContext.isActive) delay(5_000)/*连接异常、读写异常等，等5秒自动重连(防止连续异常时 重连太频繁造成服务端压力)*/
         }
+        /*连接异常通常是与服务端未连接成功(或服务端未启动)、连接断开*/
     }
 }
 

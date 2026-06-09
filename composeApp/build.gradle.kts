@@ -128,7 +128,8 @@ kotlin{
         podfile=project.file("../iosApp/Podfile")/*指向iOS项目的Podfile*/
     }
 
-//    ohosArm64()/*HarmonyOSNext(华为独立鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
+//    ohosArm64{/*HarmonyOSNext(华为独立鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
+//    }
     
     jvm()/*JVM桌面目标*/
 //    linuxX64();linuxArm64()
