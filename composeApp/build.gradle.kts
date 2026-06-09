@@ -129,7 +129,7 @@ kotlin{
         version="1.0.0"
         summary="KMP 共享模块：登录 + 支付"
         homepage="https://github.com/NineEditCloud/EditLetterChat"/*项目Git仓库链接*/
-        ios.deploymentTarget="12.0"/*支持iOS12+*/
+        ios.deploymentTarget="14.0"/*支持iOS12+，可能仅支持14+？*/
         podfile=project.file("../iosApp/Podfile")/*指向iOS项目的Podfile*/
     }
 
