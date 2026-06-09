@@ -384,9 +384,9 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**✅ Framework 已成功编译**（可在任务2中下载）" >> $GITHUB_STEP_SUMMARY
           echo "**💡 建议**: 先下载 Framework，在本地 Mac 用 Xcode 打包完整应用" >> $GITHUB_STEP_SUMMARY
-  
+
   # ══════════════════════════════════════════
-  # 任务4: 构建报告
+  # 任务4: 构建报告 (已修复引号问题)
   # ══════════════════════════════════════════
   report:
     name: 📊 Build Report
@@ -402,17 +402,36 @@ jobs:
           echo "| 平台 | 状态 | 产物 |" >> $GITHUB_STEP_SUMMARY
           echo "|------|------|------|" >> $GITHUB_STEP_SUMMARY
           
-          # macOS
-          MAC_STATUS='${{ needs.build-macos.result == ''success'' && ''✅ 成功'' || needs.build-macos.result == ''failure'' ? ''❌ 失败'' : ''⏳ 跳过'' }}'
-          echo "| 🖥️ **macOS App** | $MAC_STATUS | [📥 下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
+          # ========== macOS 状态 ==========
+          MAC_RESULT="${{ needs.build-macos.result }}"
+          case "$MAC_RESULT" in
+            success)   MAC_STATUS="✅ 成功" ;;
+            failure)   MAC_STATUS="❌ 失败" ;;
+            cancelled) MAC_STATUS="🚫 已取消" ;;
+            *)         MAC_STATUS="⏳ 跳过" ;;
+          esac
+          echo "| 🖥️ **macOS App** | ${MAC_STATUS} | [📥 下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
           
-          # iOS Framework
-          IOS_FW_STATUS='${{ needs.build-ios-framework.result == ''success'' && ''✅ 成功'' || ''❌ 失败'' }}'
-          echo "| 📱 **iOS Framework** | $IOS_FW_STATUS | [📥 下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
+          # ========== iOS Framework 状态 ==========
+          IOS_FW_RESULT="${{ needs.build-ios-framework.result }}"
+          case "$IOS_FW_RESULT" in
+            success)   IOS_FW_STATUS="✅ 成功" ;;
+            failure)   IOS_FW_STATUS="❌ 失败" ;;
+            cancelled) IOS_FW_STATUS="🚫 已取消" ;;
+            *)         IOS_FW_STATUS="⏳ 跳过" ;;
+          esac
+          echo "| 📱 **iOS Framework** | ${IOS_FW_STATUS} | [📥 下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
           
-          # iOS IPA
-          IPA_STATUS='${{ needs.build-ios-ipa.result == ''success'' && ''✅ 成功'' || needs.build-ios-ipa.result == ''skipped'' ? ''⏭️ 已跳过'' : ''❌ 失败/需配置'' }}'
-          echo "| 🍎 **iOS IPA** | $IPA_STATUS | [📥 下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
+          # ========== iOS IPA 状态 ==========
+          IPA_RESULT="${{ needs.build-ios-ipa.result }}"
+          case "$IPA_RESULT" in
+            success)   IPA_STATUS="✅ 成功" ;;
+            failure)   IPA_STATUS="❌ 失败/需配置" ;;
+            skipped)   IPA_STATUS="⏭️ 已跳过" ;;
+            cancelled) IPA_STATUS="🚫 已取消" ;;
+            *)         IPA_STATUS="⏳ 未运行" ;;
+          esac
+          echo "| 🍎 **iOS IPA** | ${IPA_STATUS} | [📥 下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
