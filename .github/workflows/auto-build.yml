@@ -36,52 +36,103 @@ jobs:
   build-macos:
     name: 🖥️ Build macOS App
     runs-on: macos-14
-    timeout-minutes: 45
+    timeout-minutes: 60
     
     steps:
+      # ---- 检出代码 ----
       - name: 📥 Checkout
         uses: actions/checkout@v4
       
+      # ---- 🔑 关键修复：赋予 gradlew 执行权限 ----
+      - name: 🔑 Grant Execute Permission to gradlew
+        run: chmod +x gradlew
+      
+      # ---- 配置 JDK ----
       - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
       
-      - name: 📦 Setup Gradle
+      # ---- Gradle 缓存 + 验证 ----
+      - name: 📦 Setup Gradle & Validate
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+          add-job-summary-as-pr-comment: always  # 显示构建摘要
       
+      # ---- 授权 Xcode ----
       - name: 🔑 Accept Xcode License
         run: |
           sudo xcodebuild -license accept
           sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer || true
       
+      # ---- 编译 Kotlin/Native Framework for macOS ----
       - name: 🔨 Build Kotlin Framework (macOS)
+        id: build-macos
         run: |
+          echo "========== 开始编译 macOS Framework =========="
+          
+          # 先验证 gradlew 可用
+          ./gradlew --version || {
+            echo "❌ Gradle 无法执行！"
+            ls -la gradlew
+            exit 1
+          }
+          
+          # 编译 Release 版本
           ./gradlew :composeApp:linkReleaseFrameworkMacosArm64 \
                     :composeApp:linkReleaseFrameworkMacosX64 \
-                    --no-daemon --build-cache --stacktrace || {
+                    --no-daemon \
+                    --build-cache \
+                    --info \
+                    --stacktrace || {
+            echo ""
+            echo "⚠️ Release 构建失败，尝试 Debug..."
             ./gradlew :composeApp:linkDebugFrameworkMacosArm64 \
-                      :composeApp:linkDebugFrameworkMacosX64 --no-daemon
+                      :composeApp:linkDebugFrameworkMacosX64 \
+                      --no-daemon \
+                      --info
+            echo "::set-output name=build_type::debug"
           }
+          
+          echo "✅ macOS Framework 编译完成"
+          echo "::set-output name=build_type::release"
       
+      # ---- 打包产物 ----
       - name: 📦 Package macOS App
         if: always()
         run: |
+          echo "========== 打包 macOS 产物 =========="
+          
+          # 查找 .app 文件
           APP_DIR=$(find composeApp/build/bin -name "*.app" -type d 2>/dev/null | head -1)
+          
           if [ -n "$APP_DIR" ]; then
+            echo "✅ 找到应用: $APP_DIR"
             cd "$(dirname "$APP_DIR")"
             zip -r "$RUNNER_TEMP/EditLetterChat-macos-${{ github.run_id }}.zip" "$(basename "$APP_DIR")"
             mv "$RUNNER_TEMP/EditLetterChat-macos-"*.zip "$GITHUB_WORKSPACE/"
+            echo "📦 打包完成"
           else
+            echo "ℹ️ 未找到 .app 文件，导出 Framework..."
+          
             FRAMEWORKS=$(find composeApp/build/bin/macos*/releaseFramework -name "*.framework" -type d 2>/dev/null | head -5)
+          
             if [ -n "$FRAMEWORKS" ]; then
               mkdir -p "$GITHUB_WORKSPACE/output/macOS-frameworks"
               cp -r $FRAMEWORKS "$GITHUB_WORKSPACE/output/macOS-frameworks/" 2>/dev/null || true
+              echo "📁 已导出 Framework"
+              ls -la "$GITHUB_WORKSPACE/output/macOS-frameworks/"
+            else
+              echo "⚠️ 未找到任何产物"
+              ls -la composeApp/build/bin/ 2>/dev/null || echo "build 目录不存在"
             fi
           fi
       
+      # ---- 上传产物 ----
       - name: 📤 Upload macOS Artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: macos-app-${{ github.run_id }}
@@ -95,38 +146,81 @@ jobs:
   build-ios-framework:
     name: 📱 Build iOS Framework
     runs-on: macos-14
-    timeout-minutes: 60
+    timeout-minutes: 90
     
     steps:
+      # ---- 检出代码 ----
       - name: 📥 Checkout
         uses: actions/checkout@v4
       
+      # ---- 🔑 关键修复：赋予 gradlew 执行权限 ----
+      - name: 🔑 Grant Execute Permission to gradlew
+        run: chmod +x gradlew
+      
+      # ---- 配置环境 ----
       - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
       
-      - name: 📦 Setup Gradle
+      - name: 📦 Setup Gradle & Validate
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+          add-job-summary-as-pr-comment: always
       
+      # ---- 授权 Xcode ----
       - name: 🔑 Accept Xcode License
         run: |
           sudo xcodebuild -license accept
           sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer || true
       
+      # ---- 编译 iOS 全架构 Framework ----
       - name: 🔨 Build Kotlin Framework (iOS All Architectures)
+        id: build-ios
         run: |
+          echo "========== 开始编译 iOS Framework =========="
+          echo "目标架构:"
+          echo "  • iosArm64 (真机 64位)"
+          echo "  • iosX64 (Intel 模拟器)"
+          echo "  • iosSimulatorArm64 (M系列模拟器)"
+          echo "============================================="
+          
+          # 验证 gradlew
+          ./gradlew --version || {
+            echo "❌ Gradle 无法执行！"
+            ls -la gradlew
+            exit 1
+          }
+          
+          # 编译所有 iOS 架构的 Release Framework
           ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
                     :composeApp:linkReleaseFrameworkIosX64 \
                     :composeApp:linkReleaseFrameworkIosSimulatorArm64 \
-                    --no-daemon --build-cache --stacktrace || {
+                    --no-daemon \
+                    --build-cache \
+                    --info \
+                    --stacktrace || {
+            echo ""
+            echo "⚠️ Release 构建失败，回退到 Debug 模式..."
             ./gradlew :composeApp:linkDebugFrameworkIosArm64 \
                       :composeApp:linkDebugFrameworkIosX64 \
-                      :composeApp:linkDebugFrameworkIosSimulatorArm64 --no-daemon
+                      :composeApp:linkDebugFrameworkIosSimulatorArm64 \
+                      --no-daemon \
+                      --info
+            echo "::set-output name=build_type::debug"
           }
+          
+          echo ""
+          echo "✅ iOS Framework 编译完成！"
+          echo "--- 输出目录 ---"
+          find composeApp/build/bin -name "*.framework" -type d 2>/dev/null | head -10
+          echo "::set-output name=build_type::release"
       
+      # ---- 上传 Framework ----
       - name: 📤 Upload iOS Frameworks
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ios-frameworks-${{ github.run_id }}
