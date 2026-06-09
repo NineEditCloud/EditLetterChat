@@ -106,7 +106,7 @@ kotlin{
             freeCompilerArgs.addAll(listOf("-Xjvm-default=all", "-Xcontext-receivers") )
 //            optIn.add("kotlin.RequiresOptIn")
         }
-//        compilations/*Kotlin2.2.x+弃用*/.all{
+//        compilations/*Kotlin2.2.x+已弃用*/.all{
 //            @Suppress("DEPRECATION") kotlinOptions{
 //                freeCompilerArgs += listOf("-Xjvm-default=all")
 //                freeCompilerArgs += listOf("-Xcontext-receivers")
