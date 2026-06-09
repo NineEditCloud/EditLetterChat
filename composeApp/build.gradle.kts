@@ -163,7 +163,7 @@ kotlin{
 //    }
     
     jvm()/*JVM桌面目标*/
-    macosX64()/*Intel芯片版*/; macosArm64()/*M芯片版*/
+//    macosX64()/*Intel芯片版*/; macosArm64()/*M芯片版*/
 //    linuxX64();linuxArm64()
 //    mingwX64()
 
@@ -231,6 +231,11 @@ kotlin{
 //            implementation("br.com.devsrsouza.compose.icons:tabler-icons:${libs.versions.composeIcons.get()}")/*Compose-Icons Tabler图标包*/
             implementation("br.com.devsrsouza.compose.icons:octicons:${libs.versions.composeIcons.get()}")/*Compose-Icons Octicons图标库，imageVector用的多套开源图标包之一*/
 
+            implementation("com.darkrockstudios:mpfilepicker:3.1.0")/*跨平台文件选择器*/
+
+            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Toast提示*/
+
+            
 
 
 
@@ -251,6 +256,9 @@ kotlin{
 //            implementation("io.realm.kotlin:library-base:${libs.versions.realm.get()}")/*Realm 对象型数据存储框架*/
 
             implementation("io.github.vinceglb:filekit-core:${libs.versions.filekit.get()}")/*FileKit核心库(仅兼容Kotlin2.1+)，跨平台 文件操作 和 应用私有路径访问*/
+            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")/*文件对话框*/
+            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")/*Compose文件对话框*/
+            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*图片文件选取*/
 
 //            implementation("org.jetbrains.kotlinx:kotlinx-io-core:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO(疑似依赖链接失效) 字节流/字符流、缓冲、协程读写*/
 //            implementation("org.jetbrains.kotlinx:kotlinx-io-bytestring:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO-ByteString高效字节串*/
@@ -267,6 +275,14 @@ kotlin{
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${libs.versions.kotlinx.get()}")/*Kotlin协程依赖测试版*/
         }
 
+        nonMacosMain.dependencies/*android+ios共享但macOS排除的依赖(这些库不支持macOS平台)*/{
+            implementation("com.darkrockstudios:mpfilepicker:3.1.0")/*跨平台文件选择器(不支持macOS arm64)*/
+            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Toast提示(不支持macOS)*/
+            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")/*文件对话框(不支持macOS)*/
+            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")/*Compose文件对话框(不支持macOS)*/
+            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*图片文件选取(不支持macOS)*/
+        }
+
         androidMain.dependencies/*安卓依赖*/{
             implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.composeMultiplatform.get()}")/*JetpackCompose 1.9.0-rc01版本兼容安卓5.0，但不兼容IOS*/
             implementation("androidx.activity:activity-compose:1.11.0")/*安卓专用工具库，1.11.0版本兼容安卓5.0，绝对不可更改为更高版本！！！*/
@@ -280,29 +296,17 @@ kotlin{
             implementation("io.ktor:ktor-client-okhttp:${libs.versions.ktor.get()}")/*Ktor-安卓端底层OkHttp引擎*/
 
 //            implementation("androidx.room:room-sqlite-wrapper")/*Room需要的SQLite库，Room2.8+引入的库(2.8+可用)*/
-//            implementation("org.jetbrains.exposed:exposed-core:1.2.0")/*Exposed核心模块(必须)，由于Room不方便分表，SQLlin不兼容安卓5.0，所以安卓用Exposed*/
-//            implementation("org.jetbrains.exposed:exposed-jdbc:1.2.0")/*Exposed数据传输模块(必须)：使用 JDBC 作为传输层*/
-//            implementation("org.jetbrains.exposed:exposed-dao:1.2.0")/*Exposed DAO模块(可选)：提供更高层级的 DAO API*/
-//            implementation("com.h2database:h2:2.1.214")/*数据库驱动，以H2为例*/
 
             implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付-SDK，6.8.34仍兼容安卓4.1*/
             implementation("com.alipay.sdk:alipaysdk-android:+@aar")          /*安卓调起支付宝支付-SDK +@aar代表下载最新aar软件包版，15.8.2@aar仍兼容安卓5.0*/
             /*客户端无银联云闪付SDK等，绑卡支付功能是放在服务端执行*/
 
-            /*以下库不支持macOS，故从commonMain移至androidMain+iosMain分别声明*/
-            implementation("com.darkrockstudios:mpfilepicker:3.1.0")/*跨平台文件选择器*/
-            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Toast提示*/
-            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")/*文件对话框*/
-            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")/*Compose文件对话框*/
-            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*图片文件选取*/
         }
         iosMain.dependencies/*IOS端依赖*/{
 //            implementation("org.jetbrains.compose.window:window:${libs.versions.composeMultiplatform.get()}")/*Compose1.6.x及以下-IOS端依赖，1.7.x+版org.jetbrains.compose.ui库已自动包含 手补以防万一切换到旧版*/
 
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
 
-//            implementation("com.ctrip.sqllin:sqllin-dsl:${libs.versions.sqllin.get()}")/*SQLlin，跨平台且方便分库分表的DSL数据库框架，KSP用于编译时生成代码，dsl模块已包含必要注解，无需额外添加*/
-//            implementation("com.ctrip.sqllin:sqllin-driver:${libs.versions.sqllin.get()}")/*一套通用的多平台SQLite低阶API，DSL的底层依赖*/
         }
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{
@@ -318,15 +322,9 @@ kotlin{
             implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")/*Ktor-纯Kotlin跨平台网路请求引擎(建议给各平台加各自的，不加的话HttpClient方法传CIO)，或apache、java*/
 
             implementation("org.slf4j:slf4j-simple:2.0.7")/*JVM桌面端SLF4J日志库，Room桌面端内部日志依赖*/
-//            implementation("com.ctrip.sqllin:sqllin-dsl:${libs.versions.sqllin.get()}")/*SQLlin，跨平台且方便分库分表的DSL数据库框架，KSP用于编译时生成代码，dsl模块已包含必要注解，无需额外添加*/
-//            implementation("com.ctrip.sqllin:sqllin-driver:${libs.versions.sqllin.get()}")/*一套通用的多平台SQLite低阶API，DSL的底层依赖*/
-//            implementation("io.exoquery:exoquery-runner-jdbc:${libs.versions.exoqueryRun.get()}")/*JVM runner*/
-//            implementation("org.xerial:sqlite-jdbc")/*Room JVM桌面端SQLite-JDBC驱动*/
-//            implementation("org.postgresql:postgresql:42.7.0")/*JVM桌面端PostgreSQL-JDBC驱动*/
         }
-        macosMain.dependencies/*MacOS运行依赖*/{
-
-        }
+//        macosMain.dependencies/*MacOS运行依赖*/{
+//        }
 
 //        nativeMain.dependencies/*Kotlin/Native中间层原生源代码集，目标平台IOS/MacOS/Linux共享*/{
 //            implementation("io.exoquery:exoquery-runner-native:1.0.0")/*Native runner*/
@@ -354,8 +352,6 @@ dependencies/*可用于部分平台调用的共享依赖*/{
 //    implementation(platform("androidx.compose:compose-bom:2024.09.00"))/*Compose-Bom物料清单(必备，否则下载包不全)，最高2024.09.00支持安卓5.0，改了更高版本会有内容缺失*/
     debugImplementation("org.jetbrains.compose.ui:ui-tooling:${libs.versions.composeMultiplatform.get()}")
 
-
-
 //    implementation("org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}")/*Kotlin标准库*/
 //    implementation("org.jetbrains.kotlin:kotlin-reflect:${libs.versions.kotlin.get()}")/*Kotlin反射依赖，KSP必须！！！*/
     implementation(kotlin("stdlib") ) /*Kotlin标准库，用Kotlin插件添加对应版本*/
@@ -372,7 +368,6 @@ dependencies/*可用于部分平台调用的共享依赖*/{
 //        "kspNative"/* Kotlin/Native 目标*/
         ).forEach{ target ->/*循环遍历 每次赋值给target(不设变量名时默认赋值给新变量it)*/
             add(target, libs.androidx.room.compiler)/*为各平台添加Room处理器，缺少此依赖会导致异常：Caused by: java.lang.ClassNotFoundException: com.nineeditcloud.editletterchat.database.AppDatabase_Impl*/
-//            add(target, "com.ctrip.sqllin:sqllin-processor:${libs.versions.sqllin.get()}")/*除安卓外，配置KSP以处理使用SQLlin依赖中的注解*/
     }
 
 
@@ -399,13 +394,13 @@ configurations.all{/*全部配置*/
 //        if(requested.name/*依赖包名称*/.contains("filekit-coil") ){
 //        }
         if(requested.group/*依赖包位置*/=="org.jetbrains.kotlin"){
-            useVersion(libs.versions.kotlin.get())/*强制更改Kotlin所有库(包括stdlib) 与Koltin插件版本统一*/
+            useVersion(libs.versions.kotlin.get() )/*强制更改Kotlin所有库(包括stdlib) 与Koltin插件版本统一*/
         }
         if(requested.group=="io.coil-kt.coil3"){
-            useVersion(libs.versions.coil.get())/*强制更改Coil为统一版本*/
+            useVersion(libs.versions.coil.get() )/*强制更改Coil为统一版本*/
         }
         if(requested.name.contains("kotlinx-io-bytestring")||requested.name.contains("kotlinx-io-core") ){
-            useVersion(libs.versions.kotlinxIo.get())/*强制更改Kotlin-IO版本*/
+            useVersion(libs.versions.kotlinxIo.get() )/*强制更改Kotlin-IO版本*/
         }
     }
 }
