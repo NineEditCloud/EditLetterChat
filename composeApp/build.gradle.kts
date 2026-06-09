@@ -122,6 +122,16 @@ kotlin{
             isStatic=true/*生成静态框架，加速编译*/
 //            linkerOpts.add("-lsqlite3")/*Required when using NativeSQLiteDriver*/
 //            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖API，以便从Swift进行访问*/
+
+            freeCompilerArgs += listOf(/*为Link阶段分配更多内存*/
+                "-Xbinary=bundleId=com.nineeditcloud.editletterchat", /*消除 bundle ID 警告*/
+                "-memory-model", "experimental", /*用新内存模型减少峰值*/
+                )
+            iosTarget.compilations.all{/*Konan 编译器额外参数*/
+                compilerOptions.options.freeCompilerArgs.addAll(
+                    listOf("-opt-in=kotlin.experimental.ExperimentalNativeApi", ),
+                    )
+            }
         }
     }
     cocoapods{/*配置CocoaPods，iOS端通过Pod引入共享模块*/
