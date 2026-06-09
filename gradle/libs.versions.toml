@@ -14,12 +14,12 @@ composeHotReload="1.1.0"#ComposeHotReload，仅Kotlin2.1.x+支持的插件
 composeMultiplatform="1.9.0-rc01"#CMP插件和JetpackCompose依赖版本，最高1.9.0-rc01兼容安卓5.0且有CMP插件，1.7+兼容Kotlin2.1/2.2，1.6.11兼容Kotlin2.0.x
 kuiklyCompose="2.0.0"#KuiklyCompose跨平台适应原生界面框架，2.0.0兼容Kotlin2.1.x、安卓5.0、IOS12
 junit="4.13.2"
-junitJupiter = "5.14.0"#
+junitJupiter = "5.14.0"
 logback="1.5.32"
 material3="1.9.0"#Compose基础Material包控件、组件，最高1.4.0兼容安卓5.0，但不支持wasmJS，1.6.0兼容安卓5.0
 material="1.7.3"
 
-kotlin="2.1.20"#1.9.23兼容Realm1.16.0，2.0.20兼容Realm2.3.0，     2.1.21兼容Krdb，2.3.21新版
+kotlin="2.1.20"#1.9.23兼容Realm1.16.0，2.0.20兼容Realm2.3.0，  2.1.21兼容Krdb，2.3.21新版，2.2.10兼容composeToast2.0.0
 kotlinx="1.8.1"#1.8.1兼容Kotlin2.0/2.1/2.2，1.9兼容Kotlin2.1/2.2/2.3，1.11.0兼容Kotlin2.3
 
 ktor="3.2.3"#Ktor2.3.7/2.3.12/3.0.1兼容Kotlin2.0、Kotlinx-IO0.6.0，3.2.3兼容Kotlin2.1.21、Netty4.2.10.Final，   3.4.3兼容Kotlin2.3

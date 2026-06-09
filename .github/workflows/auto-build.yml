@@ -158,6 +158,7 @@ jobs:
       - name: 🔨 Build iOS - iosArm64 (真机)
         id: build-ios-arm64
         run: |
+          set -o pipefail
           echo ">>> 编译 iosArm64 Release..."
           ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
                     --no-daemon --build-cache --stacktrace 2>&1 | tee ios-arm64.log
@@ -166,6 +167,7 @@ jobs:
       - name: 🔨 Build iOS - iosSimulatorArm64 (M芯片模拟器)
         id: build-ios-sim
         run: |
+          set -o pipefail
           echo ">>> 编译 iosSimulatorArm64 Release..."
           ./gradlew :composeApp:linkReleaseFrameworkIosSimulatorArm64 \
                     --no-daemon --build-cache --stacktrace 2>&1 | tee ios-sim.log
@@ -174,6 +176,7 @@ jobs:
       - name: 🔨 Build iOS - iosX64 (Intel模拟器)
         id: build-ios-x64
         run: |
+          set -o pipefail
           echo ">>> 编译 iosX64 Release..."
           ./gradlew :composeApp:linkReleaseFrameworkIosX64 \
                     --no-daemon --build-cache --stacktrace 2>&1 | tee ios-x64.log

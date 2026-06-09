@@ -136,8 +136,8 @@ kotlin{
 //    }
     
     jvm()/*JVM桌面目标*/
-    macosX64();macosArm64()
-    linuxX64();linuxArm64()
+//    macosX64();macosArm64()
+//    linuxX64();linuxArm64()
 //    mingwX64()
 
 //    js(IR){
