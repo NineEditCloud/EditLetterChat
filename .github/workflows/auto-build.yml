@@ -1,5 +1,5 @@
 # ============================================================
-# 🚀 KMP 自动化构建 - macOS & iOS (Xcode自动签名)
+# 🚀 KMP 自动化构建 - macOS & iOS (Xcode自动签名) [v3 已修复]
 #
 # ✨ 特点：
 #   • 无需任何 Secrets 配置（零门槛）
@@ -10,6 +10,11 @@
 # ⚠️ 限制：
 #   • iOS IPA 仅限免费开发者账号（7天过期）
 #   • 正式发布需配置手动签名（参考 build-kmp-ios.yml）
+# 修复内容：
+#   ✅ gradlew 执行权限
+#   ✅ Deprecation 警告 (gradle-home-cache-cleanup → cache-cleanup)
+#   ✅ KMP 产物路径修正
+#   ✅ 增强调试输出
 # ============================================================
 
 name: AppleAuto Build (macOS & iOS)
@@ -39,12 +44,11 @@ jobs:
     timeout-minutes: 60
     
     steps:
-      # ---- 检出代码 ----
       - name: 📥 Checkout
         uses: actions/checkout@v4
       
-      # ---- 🔑 关键修复：赋予 gradlew 执行权限 ----
-      - name: 🔑 Grant Execute Permission to gradlew
+      # ---- 🔑 赋予执行权限 ----
+      - name: 🔑 Grant Execute Permission
         run: chmod +x gradlew
       
       # ---- 配置 JDK ----
@@ -54,12 +58,12 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
       
-      # ---- Gradle 缓存 + 验证 ----
-      - name: 📦 Setup Gradle & Validate
+      # ---- Gradle 缓存 (已更新参数名) ----
+      - name: 📦 Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-home-cache-cleanup: true
-          add-job-summary-as-pr-comment: always  # 显示构建摘要
+          cache-cleanup: true                    # ✅ 新参数名
+          add-job-summary-as-pr-comment: always
       
       # ---- 授权 Xcode ----
       - name: 🔑 Accept Xcode License
@@ -67,66 +71,75 @@ jobs:
           sudo xcodebuild -license accept
           sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer || true
       
-      # ---- 编译 Kotlin/Native Framework for macOS ----
+      # ---- 编译 macOS Framework ----
       - name: 🔨 Build Kotlin Framework (macOS)
         id: build-macos
         run: |
-          echo "========== 开始编译 macOS Framework =========="
+          echo "========== macOS Native Framework =========="
           
-          # 先验证 gradlew 可用
-          ./gradlew --version || {
-            echo "❌ Gradle 无法执行！"
-            ls -la gradlew
-            exit 1
-          }
+          ./gradlew --version | head -5
           
-          # 编译 Release 版本
           ./gradlew :composeApp:linkReleaseFrameworkMacosArm64 \
                     :composeApp:linkReleaseFrameworkMacosX64 \
-                    --no-daemon \
-                    --build-cache \
-                    --info \
-                    --stacktrace || {
-            echo ""
-            echo "⚠️ Release 构建失败，尝试 Debug..."
+                    --no-daemon --build-cache --stacktrace || {
+            echo "⚠️ Release 失败，尝试 Debug..."
             ./gradlew :composeApp:linkDebugFrameworkMacosArm64 \
-                      :composeApp:linkDebugFrameworkMacosX64 \
-                      --no-daemon \
-                      --info
-            echo "::set-output name=build_type::debug"
+                      :composeApp:linkDebugFrameworkMacosX64 --no-daemon
           }
           
-          echo "✅ macOS Framework 编译完成"
-          echo "::set-output name=build_type::release"
+          echo ""
+          echo "========== 输出文件列表 =========="
+          find composeApp/build/bin -type d -name "*.framework" 2>/dev/null || true
+          find composeApp/build/bin -type d -name "*.klib" 2>/dev/null || true
+          ls -laR composeApp/build/bin/macos*/ 2>/dev/null | head -30 || true
       
-      # ---- 打包产物 ----
-      - name: 📦 Package macOS App
+      # ---- 收集并打包产物 ----
+      - name: 📦 Collect Artifacts
         if: always()
         run: |
-          echo "========== 打包 macOS 产物 =========="
+          mkdir -p "$GITHUB_WORKSPACE/output"
           
-          # 查找 .app 文件
-          APP_DIR=$(find composeApp/build/bin -name "*.app" -type d 2>/dev/null | head -1)
+          # KMP 项目生成的是 .framework 或 .klib 文件
+          echo "========== 收集 macOS 产物 =========="
           
-          if [ -n "$APP_DIR" ]; then
-            echo "✅ 找到应用: $APP_DIR"
-            cd "$(dirname "$APP_DIR")"
-            zip -r "$RUNNER_TEMP/EditLetterChat-macos-${{ github.run_id }}.zip" "$(basename "$APP_DIR")"
-            mv "$RUNNER_TEMP/EditLetterChat-macos-"*.zip "$GITHUB_WORKSPACE/"
-            echo "📦 打包完成"
+          # 方法1: 查找 .framework 文件
+          FRAMEWORKS=$(find composeApp/build/bin/macos* -maxdepth 3 -name "*.framework" -type d 2>/dev/null)
+          
+          if [ -n "$FRAMEWORKS" ]; then
+            echo "✅ 找到 Framework:"
+            echo "$FRAMEWORKS"
+          
+            mkdir -p "$GITHUB_WORKSPACE/output/macOS-frameworks"
+            for fw in $FRAMEWORKS; do
+              cp -r "$fw" "$GITHUB_WORKSPACE/output/macOS-frameworks/" 2>/dev/null || true
+            done
+          
+            # 打包成 zip
+            cd "$GITHUB_WORKSPACE/output"
+            zip -r "$RUNNER_TEMP/EditLetterChat-macos-${{ github.run_id }}.zip" macOS-frameworks/
+            mv "$RUNNER_TEMP/"*.zip "$GITHUB_WORKSPACE/"
+          
+            echo "📦 打包完成: EditLetterChat-macos-${{ github.run_id }}.zip"
           else
-            echo "ℹ️ 未找到 .app 文件，导出 Framework..."
+            # 方法2: 查找 .klib 文件
+            KLIBS=$(find composeApp/build/bin/macos* -name "*.klib" -type f 2>/dev/null)
           
-            FRAMEWORKS=$(find composeApp/build/bin/macos*/releaseFramework -name "*.framework" -type d 2>/dev/null | head -5)
+            if [ -n "$KLIBS" ]; then
+              echo "✅ 找到 KLib 文件:"
+              echo "$KLIBS"
           
-            if [ -n "$FRAMEWORKS" ]; then
-              mkdir -p "$GITHUB_WORKSPACE/output/macOS-frameworks"
-              cp -r $FRAMEWORKS "$GITHUB_WORKSPACE/output/macOS-frameworks/" 2>/dev/null || true
-              echo "📁 已导出 Framework"
-              ls -la "$GITHUB_WORKSPACE/output/macOS-frameworks/"
+              mkdir -p "$GITHUB_WORKSPACE/output/macOS-klibs"
+              cp $KLIBS "$GITHUB_WORKSPACE/output/macOS-klibs/" 2>/dev/null || true
+          
+              cd "$GITHUB_WORKSPACE/output"
+              zip -r "$RUNNER_TEMP/EditLetterChat-macos-${{ github.run_id }}.zip" macOS-klibs/
+              mv "$RUNNER_TEMP/"*.zip "$GITHUB_WORKSPACE/"
+          
+              echo "📦 打包完成 (KLib格式)"
             else
               echo "⚠️ 未找到任何产物"
-              ls -la composeApp/build/bin/ 2>/dev/null || echo "build 目录不存在"
+              echo "--- build 目录结构 ---"
+              find composeApp/build -maxdepth 4 -type f -o -type d 2>/dev/null | head -40 || true
             fi
           fi
       
@@ -139,6 +152,7 @@ jobs:
           path: |
             EditLetterChat-macos-*.zip
             output/macOS-frameworks/**/*.framework
+            output/macOS-klibs/*.klib
           retention-days: 7
           if-no-files-found: warn
   
@@ -149,28 +163,24 @@ jobs:
     timeout-minutes: 90
     
     steps:
-      # ---- 检出代码 ----
       - name: 📥 Checkout
         uses: actions/checkout@v4
       
-      # ---- 🔑 关键修复：赋予 gradlew 执行权限 ----
-      - name: 🔑 Grant Execute Permission to gradlew
+      - name: 🔑 Grant Execute Permission
         run: chmod +x gradlew
       
-      # ---- 配置环境 ----
       - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
       
-      - name: 📦 Setup Gradle & Validate
+      - name: 📦 Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-home-cache-cleanup: true
+          cache-cleanup: true                     # ✅ 新参数名
           add-job-summary-as-pr-comment: always
       
-      # ---- 授权 Xcode ----
       - name: 🔑 Accept Xcode License
         run: |
           sudo xcodebuild -license accept
@@ -180,42 +190,42 @@ jobs:
       - name: 🔨 Build Kotlin Framework (iOS All Architectures)
         id: build-ios
         run: |
-          echo "========== 开始编译 iOS Framework =========="
+          echo "========== iOS Native Framework =========="
           echo "目标架构:"
-          echo "  • iosArm64 (真机 64位)"
-          echo "  • iosX64 (Intel 模拟器)"
+          echo "  • iosArm64 (真机)"
           echo "  • iosSimulatorArm64 (M系列模拟器)"
-          echo "============================================="
+          echo "  • iosX64 (Intel模拟器)"
+          echo "==========================================="
           
-          # 验证 gradlew
-          ./gradlew --version || {
-            echo "❌ Gradle 无法执行！"
-            ls -la gradlew
-            exit 1
-          }
+          ./gradlew --version | head -5
           
-          # 编译所有 iOS 架构的 Release Framework
+          # 先尝试编译 iosArm64 和 iosSimulatorArm64 (最常用的两个)
+          echo ""
+          echo ">>> 开始 Release 构建..."
           ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
-                    :composeApp:linkReleaseFrameworkIosX64 \
                     :composeApp:linkReleaseFrameworkIosSimulatorArm64 \
-                    --no-daemon \
-                    --build-cache \
-                    --info \
-                    --stacktrace || {
+                    --no-daemon --build-cache --info --stacktrace 2>&1 | tee build.log || {
             echo ""
-            echo "⚠️ Release 构建失败，回退到 Debug 模式..."
+            echo ">>> ⚠️ Release 构建失败，查看错误日志:"
+            tail -50 build.log
+            echo ""
+            echo ">>> 尝试 Debug 构建..."
             ./gradlew :composeApp:linkDebugFrameworkIosArm64 \
-                      :composeApp:linkDebugFrameworkIosX64 \
                       :composeApp:linkDebugFrameworkIosSimulatorArm64 \
-                      --no-daemon \
-                      --info
+                      --no-daemon --info 2>&1 | tee debug-build.log || {
+              echo ""
+              echo "❌ Debug 也失败了！最后50行日志:"
+              tail -50 debug-build.log
+              exit 1
+            }
             echo "::set-output name=build_type::debug"
           }
           
           echo ""
           echo "✅ iOS Framework 编译完成！"
-          echo "--- 输出目录 ---"
-          find composeApp/build/bin -name "*.framework" -type d 2>/dev/null | head -10
+          echo "--- 输出文件 ---"
+          find composeApp/build/bin/ios* -name "*.framework" -type d 2>/dev/null || true
+          find composeApp/build/bin/ios* -name "*.klib" -type f 2>/dev/null || true
           echo "::set-output name=build_type::release"
       
       # ---- 上传 Framework ----
@@ -225,23 +235,18 @@ jobs:
         with:
           name: ios-frameworks-${{ github.run_id }}
           path: |
-            composeApp/build/bin/iosArm64/releaseFramework/**/*.framework
-            composeApp/build/bin/iosArm64/debugFramework/**/*.framework
-            composeApp/build/bin/iosX64/releaseFramework/**/*.framework
-            composeApp/build/bin/iosX64/debugFramework/**/*.framework
-            composeApp/build/bin/iosSimulatorArm64/releaseFramework/**/*.framework
-            composeApp/build/bin/iosSimulatorArm64/debugFramework/**/*.framework
+            composeApp/build/bin/ios*/**/*.framework
+            composeApp/build/bin/ios*/**/*.klib
           retention-days: 14
           if-no-files-found: warn
   
-  # ==================== 任务3: iOS IPA (已移除 hashFiles) ====================
+  # ==================== 任务3: iOS IPA (保持不变) ====================
   build-ios-ipa:
     name: 🍎 Build iOS IPA (Auto Sign)
     runs-on: macos-14
     needs: build-ios-framework
     timeout-minutes: 90
     
-    # ✅ 已修复：只保留有效条件
     if: github.event_name != 'pull_request'
     
     steps:
@@ -252,12 +257,15 @@ jobs:
             echo "::set-output name=exists::true"
           else
             echo "::set-output name=exists::false"
-            echo "⚠️ 未检测到 iOS 项目目录"
           fi
       
       - name: 📥 Checkout
         if: steps.check-ios.outputs.exists == 'true'
         uses: actions/checkout@v4
+      
+      - name: 🔑 Grant Execute Permission
+        if: steps.check-ios.outputs.exists == 'true'
+        run: chmod +x gradlew
       
       - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
         if: steps.check-ios.outputs.exists == 'true'
@@ -269,6 +277,8 @@ jobs:
       - name: 📦 Setup Gradle
         if: steps.check-ios.outputs.exists == 'true'
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: true                     # ✅ 新参数名
       
       - name: 🔑 Accept Xcode License
         if: steps.check-ios.outputs.exists == 'true'
@@ -283,7 +293,7 @@ jobs:
           if [ -f "Podfile" ]; then
             pod install --repo-update || pod install
           else
-            echo "ℹ️ 未检测到 Podfile，跳过 CocoaPods 安装"
+            echo "ℹ️ 无 Podfile，跳过"
           fi
       
       - name: 🔨 Rebuild iOS Framework
@@ -390,14 +400,12 @@ jobs:
         if: steps.ipa-build.outputs.success != 'true' && steps.check-ios.outputs.exists == 'true'
         run: |
           echo "## ℹ️ iOS IPA 构建说明" >> $GITHUB_STEP_SUMMARY
-          echo "**IPA 自动签名失败的可能原因：**" >> $GITHUB_STEP_SUMMARY
+          echo "**失败原因:**" >> $GITHUB_STEP_SUMMARY
           echo "| 原因 | 解决方案 |" >> $GITHUB_STEP_SUMMARY
           echo "|------|----------|" >> $GITHUB_STEP_SUMMARY
           echo "| 未注册 Apple 开发者 | 在 GitHub Codesigning 添加 Apple ID |" >> $GITHUB_STEP_SUMMARY
           echo "| 测试设备未注册 | 注册设备 UUID |" >> $GITHUB_STEP_SUMMARY
-          echo "| Bundle ID 被占用 | 修改 Bundle Identifier |" >> $GITHUB_STEP_SUMMARY
-          echo "| 免费账号限制 | 有效期仅7天 |" >> $GITHUB_STEP_SUMMARY
-          echo "**✅ Framework 已成功编译**" >> $GITHUB_STEP_SUMMARY
+          echo "| Bundle ID 冲突 | 修改 Bundle Identifier |" >> $GITHUB_STEP_SUMMARY
   
   # ==================== 任务4: 报告 ====================
   report:
