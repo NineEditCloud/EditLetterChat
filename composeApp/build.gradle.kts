@@ -103,15 +103,16 @@ kotlin{
     androidTarget/*安卓目标*/{
         compilerOptions/*编译选项*/{
             jvmTarget.set(JvmTarget.JVM_21)
+            freeCompilerArgs.addAll(listOf("-Xjvm-default=all", "-Xcontext-receivers") )
 //            optIn.add("kotlin.RequiresOptIn")
         }
-        compilations.all{
-            @Suppress("DEPRECATION") kotlinOptions{
-                freeCompilerArgs += listOf("-Xjvm-default=all")
-                freeCompilerArgs += listOf("-Xcontext-receivers")
+//        compilations/*Kotlin2.2.x+弃用*/.all{
+//            @Suppress("DEPRECATION") kotlinOptions{
+//                freeCompilerArgs += listOf("-Xjvm-default=all")
+//                freeCompilerArgs += listOf("-Xcontext-receivers")
 //                freeCompilerArgs += listOf("-P", "plugin:androidx.compose.compiler.plugins.kotlin:functionKeyMetaClasses=true")
-            }
-        }
+//            }
+//        }
     }
 
 //    iosX64();iosArm64();iosSimulatorArm64()
