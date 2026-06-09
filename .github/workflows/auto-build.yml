@@ -58,11 +58,11 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
       
-      # ---- Gradle 缓存 (已更新参数名) ----
+      # ---- Gradle 缓存 (✅ 已修复) ----
       - name: 📦 Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-cleanup: true                    # ✅ 新参数名
+          cache-cleanup: 'on-success'              # ✅ 有效值：never / always / on-success
           add-job-summary-as-pr-comment: always
       
       # ---- 授权 Xcode ----
@@ -175,10 +175,11 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
       
+      # ---- Gradle 缓存 (✅ 已修复) ----
       - name: 📦 Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-cleanup: true                     # ✅ 新参数名
+          cache-cleanup: 'on-success'              # ✅ 有效值：never / always / on-success
           add-job-summary-as-pr-comment: always
       
       - name: 🔑 Accept Xcode License
