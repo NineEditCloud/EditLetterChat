@@ -1,11 +1,13 @@
 package com.nineeditcloud.editletterchat
 
+//import androidx.compose.ui.interop.InteropEffect/*若需要UIKit与Compose互操作*/
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.ComposeUIViewController
 import cafe.adriel.voyager.navigator.Navigator
 import com.nineeditcloud.editletterchat.client.FileKit
 import com.nineeditcloud.editletterchat.common_tools.KMPTheme
 import platform.UIKit.UIApplication
+import platform.UIKit.UIView
 import platform.posix.exit
 
 //import platform.darwin.nil
@@ -25,6 +27,8 @@ import platform.posix.exit
 
 /*IOS移动端-应用主函数*/
 @Composable
+@Suppress("unused")/*忽略异常，Windows下IDE报红 但实际代码正确*/
+/*CMP1.7.x+版本有ComposeUIViewController，Windows端无法识别IOS端Compose代码*/
 fun MainViewController()=ComposeUIViewController{
 //    FileKit.init()
     exitApp={

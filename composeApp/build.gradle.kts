@@ -79,6 +79,10 @@ gradlew build --refresh-dependencies
 
 若遇到依赖下载失败报错：composeApp:iosSimulatorArm64Main: Could not download skiko.klib (org.jetbrains.skiko:skiko-iossimulatorarm64:0.9.22.2)
 只需使用KMP依赖包国内源仓库即可解决，用国际源仓库挂VPN也下载失败，因为此版本IOS插件依赖疑似只有国内源https://plugins.gradle.org/m2/还有
+
+AndroidStudio打包安卓应用输出路径：
+Generate用AS默认签名打包(不下载签名工具)：项目路径\composeApp\build\outputs\apk\debug或release\
+GenerateSigned(自定义签名 会下载签名工具)：项目路径\composeApp\release或debug\
 */
 
 /*---KMP跨平台最方便好用的数据库框架
@@ -276,7 +280,7 @@ kotlin{
             /*客户端无银联云闪付SDK等，绑卡支付功能是放在服务端执行*/
         }
         iosMain.dependencies/*IOS端依赖*/{
-//            implementation("org.jetbrains.compose.window:window:${libs.versions.composeMultiplatform.get()}")
+//            implementation("org.jetbrains.compose.window:window:${libs.versions.composeMultiplatform.get()}")/*Compose1.6.x及以下-IOS端依赖，1.7.x+版org.jetbrains.compose.ui库已自动包含 手补以防万一切换到旧版*/
 
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
 
