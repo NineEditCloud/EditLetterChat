@@ -157,14 +157,21 @@ jobs:
       # ---- 编译 iOS Framework (逐个编译便于定位错误) ----
       - name: 🔨 Build iOS - iosArm64 (真机)
         id: build-ios-arm64
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.jvmargs=-Xmx3g" # 添加环境变量覆盖
         run: |
           set -o pipefail
+          
+          # 新增：导出大内存环境变量
+          export JAVA_OPTS="-Xmx3g -XX:MaxMetaspaceSize=512m"
+          export GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=512m"
+          
+          # 新增：Kotlin/Native 额外内存配置
+          export KOTLIN_NATIVE_OPTS="-Xmx4096m"
+          
           echo ">>> 编译 iosArm64 Release..."
           ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
                     --no-daemon --build-cache --stacktrace 2>&1 | tee ios-arm64.log
           echo "✅ iosArm64 Release 成功"
+
 
       - name: 🔨 Build iOS - iosSimulatorArm64 (M芯片模拟器)
         id: build-ios-sim
