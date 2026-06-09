@@ -115,23 +115,21 @@ kotlin{
 //        }
     }
 
-//    iosX64();iosArm64();iosSimulatorArm64()
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64() ).forEach{ iosTarget ->/*遍历多个IOS架构，每次赋值给iosTarget(若不写传参名 则默认it)*/
+    listOf(iosX64()/*Intel模拟器版*/, iosArm64()/*M芯片真机版*/, iosSimulatorArm64()/*M芯片模拟器版*/ ).forEach{ iosTarget ->/*遍历多个IOS架构，每次赋值给iosTarget(若不写传参名 则默认it)*/
         iosTarget.binaries.framework{/*IOS目标二进制框架*/
             baseName="TodoApp"
             isStatic=true/*生成静态框架，加速编译*/
 //            linkerOpts.add("-lsqlite3")/*Required when using NativeSQLiteDriver*/
 //            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖API，以便从Swift进行访问*/
-
             freeCompilerArgs += listOf(/*为Link阶段分配更多内存*/
-                "-Xbinary=bundleId=com.nineeditcloud.editletterchat", /*消除 bundle ID 警告*/
-                "-memory-model", "experimental", /*用新内存模型减少峰值*/
+                "-Xbinary=bundleId=com.nineeditcloud.editletterchat", /*消除bundleID警告*/
+                "-memory-model", "experimental", /*用新内存模型减少峰值(已弃用 未来会移除)*/
                 )
-            iosTarget.compilations.all{/*Konan 编译器额外参数*/
-                compilerOptions.options.freeCompilerArgs.addAll(
-                    listOf("-opt-in=kotlin.experimental.ExperimentalNativeApi", ),
-                    )
-            }
+//            iosTarget.compilations.all{/*Konan编译器额外参数(API已过时 未来会移除)*/
+//                compilerOptions.options.freeCompilerArgs.addAll(
+//                    listOf("-opt-in=kotlin.experimental.ExperimentalNativeApi", ),
+//                    )
+//            }
         }
     }
     cocoapods{/*配置CocoaPods，iOS端通过Pod引入共享模块*/
@@ -147,7 +145,7 @@ kotlin{
 //    }
     
     jvm()/*JVM桌面目标*/
-//    macosX64();macosArm64()
+    macosX64()/*Intel芯片版*/; macosArm64()/*M芯片版*/
 //    linuxX64();linuxArm64()
 //    mingwX64()
 
