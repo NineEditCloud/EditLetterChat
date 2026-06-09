@@ -101,7 +101,7 @@ jobs:
           
           # 打印完整目录结构用于调试
           echo "--- composeApp/build 目录结构 ---"
-          find composeApp/build -type f $ -name "*.framework" -o -name "*.klib" -o -name "*.dylib" $ 2>/dev/null | head -20 || true
+          find composeApp/build -type f \( -name "*.framework" -o -name "*.klib" -o -name "*.dylib" \) 2>/dev/null | head -20 || true
           echo ""
           echo "--- bin 子目录 ---"
           ls -laR composeApp/build/bin/ 2>/dev/null | head -40 || true
