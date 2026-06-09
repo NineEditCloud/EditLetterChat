@@ -26,7 +26,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-
+  
   # ==================== 任务1: macOS DMG ====================
   build-macos:
     name: 🖥️ Build macOS DMG
@@ -39,25 +39,25 @@ jobs:
       
       - name: 🔑 Grant Execute Permission
         run: chmod +x gradlew
-
+      
       - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-
+      
       - name: 📦 Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-cleanup: 'on-success'
           add-job-summary-as-pr-comment: always
-
+      
       # ---- 编译并打包 macOS DMG ----
       - name: 🔨 Build macOS DMG
         id: build-macos
         run: |
           echo "========== 编译 macOS 桌面应用 (JVM) =========="
-
+          
           ./gradlew :composeApp:packageDmg \
                     --no-daemon --build-cache --stacktrace 2>&1 | tee build-macos.log || {
             echo ""
@@ -70,7 +70,7 @@ jobs:
               exit 1
             }
           }
-
+          
           # 查找 DMG 产物
           echo ""
           echo "--- 查找 DMG 产物 ---"
@@ -86,7 +86,7 @@ jobs:
             find composeApp/build -type f -name "*.jar" -o -name "*.app" 2>/dev/null | head -10 || true
           fi
           echo "build_status=success" >> "$GITHUB_OUTPUT"
-
+      
       # ---- 收集并上传产物 ----
       - name: 📦 Package & Collect Artifacts
         if: always()
@@ -98,7 +98,7 @@ jobs:
           if [ -n "$DMG" ]; then
             cp "$DMG" "$GITHUB_WORKSPACE/"
             echo "📦 已复制 DMG: $(basename "$DMG")"
-            
+          
             # 同时复制到 output 目录
             cp "$DMG" "$GITHUB_WORKSPACE/output/macOS/"
           fi
@@ -117,7 +117,7 @@ jobs:
           echo "========== 已收集的产物 =========="
           ls -la "$GITHUB_WORKSPACE/"*.dmg 2>/dev/null || echo "(无 DMG)"
           ls -la "$GITHUB_WORKSPACE/output/macOS/" 2>/dev/null || echo "(output 目录为空)"
-
+      
       - name: 📤 Upload macOS Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -128,7 +128,7 @@ jobs:
             output/macOS/**
           retention-days: 7
           if-no-files-found: warn
-
+  
   # ==================== 任务2: iOS Framework ====================
   build-ios-framework:
     name: 📱 Build iOS Framework
@@ -138,22 +138,22 @@ jobs:
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
-
+      
       - name: 🔑 Grant Execute Permission
         run: chmod +x gradlew
-
+      
       - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-
+      
       - name: 📦 Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-cleanup: 'on-success'
           add-job-summary-as-pr-comment: always
-
+      
       # ---- 编译 iOS Framework (逐个编译便于定位错误) ----
       - name: 🔨 Build iOS - iosArm64 (真机)
         id: build-ios-arm64
@@ -161,8 +161,8 @@ jobs:
           set -o pipefail
           
           # 新增：导出大内存环境变量
-          export JAVA_OPTS="-Xmx3g -XX:MaxMetaspaceSize=512m"
-          export GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=512m"
+          export JAVA_OPTS="-Xmx4g -XX:MaxMetaspaceSize=512m"
+          export GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=512m"
           
           # 新增：Kotlin/Native 额外内存配置
           export KOTLIN_NATIVE_OPTS="-Xmx4096m"
@@ -171,8 +171,8 @@ jobs:
           ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
                     --no-daemon --build-cache --stacktrace 2>&1 | tee ios-arm64.log
           echo "✅ iosArm64 Release 成功"
-
-
+      
+      
       - name: 🔨 Build iOS - iosSimulatorArm64 (M芯片模拟器)
         id: build-ios-sim
         run: |
@@ -181,7 +181,7 @@ jobs:
           ./gradlew :composeApp:linkReleaseFrameworkIosSimulatorArm64 \
                     --no-daemon --build-cache --stacktrace 2>&1 | tee ios-sim.log
           echo "✅ iosSimulatorArm64 Release 成功"
-
+      
       - name: 🔨 Build iOS - iosX64 (Intel模拟器)
         id: build-ios-x64
         run: |
@@ -190,7 +190,7 @@ jobs:
           ./gradlew :composeApp:linkReleaseFrameworkIosX64 \
                     --no-daemon --build-cache --stacktrace 2>&1 | tee ios-x64.log
           echo "✅ iosX64 Release 成功"
-
+      
       # ---- 收集产物 ----
       - name: 📦 Collect iOS Artifacts
         if: always()
@@ -227,7 +227,7 @@ jobs:
           echo ""
           echo "========== output/iOS 内容 =========="
           ls -laR "$GITHUB_WORKSPACE/output/iOS/" 2>/dev/null || echo "(空)"
-
+      
       - name: 📤 Upload iOS Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -236,7 +236,7 @@ jobs:
           path: output/iOS/**
           retention-days: 14
           if-no-files-found: warn
-
+      
       # ---- 失败时显示错误日志摘要 ----
       - name: 📋 Show Error Log (on failure)
         if: failure()
@@ -249,7 +249,7 @@ jobs:
               tail -50 "$log" 2>/dev/null || true
             fi
           done
-
+  
   # ==================== 任务3: iOS IPA ====================
   build-ios-ipa:
     name: 🍎 Build iOS IPA (Auto Sign)
@@ -261,21 +261,21 @@ jobs:
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
-
+      
       - name: 🔑 Grant Execute Permission
         run: chmod +x gradlew
-
+      
       - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-
+      
       - name: 📦 Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-cleanup: 'on-success'
-
+      
       - name: 🌿 CocoaPods Install
         working-directory: ./iosApp
         run: |
@@ -284,7 +284,7 @@ jobs:
           else
             echo "ℹ️ 无 Podfile，跳过"
           fi
-
+      
       - name: 🔨 Build iOS Framework (单架构 + 大内存)
         run: |
           export JAVA_OPTS="-Xmx4g -XX:MaxMetaspaceSize=512m"
@@ -292,6 +292,8 @@ jobs:
           
           echo ">>> [1/3] 编译 iosArm64 Release..."
           ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
+                    :composeApp:linkReleaseFrameworkIosSimulatorArm64 \
+                    --no-daemon --build-cache
                     --no-daemon --build-cache --stacktrace 2>&1 | tee ios-arm64.log
           
           echo ">>> [2/3] 编译 iosSimulatorArm64 Release..."
@@ -303,7 +305,7 @@ jobs:
                     --no-daemon --build-cache --stacktrace 2>&1 | tee ios-x64.log
           
           echo "✅ iOS Framework 编译完成"
-
+      
       - name: 🔑 Read Team ID
         id: team-id
         run: |
@@ -322,13 +324,14 @@ jobs:
           else
             echo "TEAM_ID=" >> "$GITHUB_OUTPUT"
           fi
-
+      
       - name: 🏗️ Archive & Export IPA
         id: ipa-build
         working-directory: ./iosApp
+        continue-on-error: true
         run: |
           TEAM_ID="${{ steps.team-id.outputs.TEAM_ID }}"
-
+          
           if [ -z "$TEAM_ID" ]; then
             echo "⚠️ 未配置 Apple Developer Team ID"
             echo "   请在 GitHub Secrets 中添加 DEVELOPER_TEAM_ID，"
@@ -336,9 +339,9 @@ jobs:
             echo "success=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
+          
           echo ">>> 使用 Team ID: $TEAM_ID"
-
+          
           cat > ExportOptions.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
@@ -356,19 +359,20 @@ jobs:
               <key>stripSwiftSymbols</key>
               <true/>
               <key>teamID</key>
+              <string></string>
               <string>_PLACEHOLDER_</string>
           </dict>
           </plist>
           EOF
           sed -i '' "s/_PLACEHOLDER_/$TEAM_ID/" ExportOptions.plist
-
+          
           SCHEME_NAME="iosApp"
           if [ -f "iosApp.xcworkspace/xcshareddata/xcschemes/${SCHEME_NAME}.xcscheme" ]; then
             WORKSPACE_PATH="-workspace iosApp.xcworkspace"
           else
             WORKSPACE_PATH="-project iosApp.xcodeproj"
           fi
-
+          
           echo ">>> Archive..."
           set -o pipefail
           xcodebuild ${WORKSPACE_PATH} \
@@ -379,20 +383,27 @@ jobs:
             archive \
             CODE_SIGN_STYLE=Automatic \
             -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="" \
+            -quiet | xcpretty || {
             DEVELOPMENT_TEAM="$TEAM_ID" \
             2>&1 | tee archive.log
           ARCHIVE_EXIT=$?
-
+          
           if [ $ARCHIVE_EXIT -ne 0 ]; then
             echo ">>> Release Archive 失败, 尝试 Debug..."
             xcodebuild ${WORKSPACE_PATH} \
               -scheme "${SCHEME_NAME}" \
               -sdk iphoneos \
               -configuration Debug \
+              -archivePath "$RUNNER_TEMP/iosApp-debug.xcarchive" \
               -archivePath "$RUNNER_TEMP/iosApp.xcarchive" \
               archive \
               CODE_SIGN_STYLE=Automatic \
               -allowProvisioningUpdates \
+              DEVELOPMENT_TEAM="" \
+              -quiet | xcpretty
+            RUNNER_TEMP_ARCHIVE="$RUNNER_TEMP/iosApp-debug.xcarchive"
+          }
               DEVELOPMENT_TEAM="$TEAM_ID" \
               2>&1 | tee archive-debug.log || {
               echo "❌ Archive 失败, 请检查签名配置"
@@ -400,19 +411,24 @@ jobs:
               exit 0
             }
           fi
-
+          
+          ARCHIVE_PATH="${RUNNER_TEMP_ARCHIVE:-$RUNNER_TEMP/iosApp.xcarchive}"
           echo ">>> Export IPA..."
           xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
             -archivePath "$RUNNER_TEMP/iosApp.xcarchive" \
             -exportOptionsPlist ExportOptions.plist \
             -exportPath "$RUNNER_TEMP/export" \
             -allowProvisioningUpdates \
+            -quiet | xcpretty || {
+            echo "⚠️ IPA 导出失败"
+            exit 1
             2>&1 | tee export.log || {
             echo "⚠️ IPA 导出失败, 签名可能有问题"
             echo "success=false" >> "$GITHUB_OUTPUT"
             exit 0
           }
-
+          
           if ls "$RUNNER_TEMP/export/"*.ipa 1>/dev/null 2>&1; then
             mv "$RUNNER_TEMP/export/"*.ipa "$RUNNER_TEMP/EditLetterChat-auto-${{ github.run_number }}.ipa"
             echo "success=true" >> "$GITHUB_OUTPUT"
@@ -421,7 +437,7 @@ jobs:
             echo "❌ 未找到 .ipa 文件"
             echo "success=false" >> "$GITHUB_OUTPUT"
           fi
-
+      
       - name: 📤 Upload iOS IPA
         if: steps.ipa-build.outputs.success == 'true'
         uses: actions/upload-artifact@v4
@@ -429,7 +445,7 @@ jobs:
           name: ios-ipa-auto-${{ github.run_id }}
           path: ${{ runner.temp }}/EditLetterChat-auto-*.ipa
           retention-days: 7
-
+  
   # ==================== 任务4: 报告 ====================
   report:
     name: 📊 Build Report
@@ -444,22 +460,23 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| 平台 | 状态 | 产物 |" >> $GITHUB_STEP_SUMMARY
           echo "|------|------|------|" >> $GITHUB_STEP_SUMMARY
-
+          
           case "${{ needs.build-macos.result }}" in
             success) S="✅ 成功" ;; failure) S="❌ 失败" ;; *) S="⏳ 跳过" ;;
           esac
           echo "| 🖥️ **macOS** | ${S} | [下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
-
+          
           case "${{ needs.build-ios-framework.result }}" in
             success) S="✅ 成功" ;; failure) S="❌ 失败" ;; *) S="⏳ 跳过" ;;
           esac
           echo "| 📱 **iOS FW** | ${S} | [下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
-
+          
           case "${{ needs.build-ios-ipa.result }}" in
             success) S="✅ 成功" ;; skipped) S="⏭️ 跳过" ;; failure) S="❌ 需配置" ;; *) S="-" ;;
           esac
           echo "| 🍎 **iOS IPA** | ${S} | [下载](../actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
-
+          
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** \`${{ github.sha }}\` | **分支:** \`${{ github.ref_name }}\` | **触发:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+

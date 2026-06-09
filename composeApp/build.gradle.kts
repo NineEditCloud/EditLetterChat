@@ -97,6 +97,24 @@ GenerateSigned(自定义签名 会下载签名工具)：项目路径\composeApp\
 * packageExe打包Win应用执行包 packageMsi打包Win应用安装包
 * packageDmg打包MacOS应用安装包
 * packageDeb打包DebianLinux系列软胶包 packageRpm打包RedHatLinux系列软胶包
+* ---KMP跨平台 Gradle构建工具-快捷打包各移动系统应用 指令
+* packageAndroidApk打包安卓应用 packageAndroidAab打包安卓应用安装包
+* packageIosFramework打包IOS框架 packageIosApp打包IOS应用
+*
+* auto-build.yml 的 IPA job 做了以下关键修改：
+* 新增🔑ReadTeamID步骤	        优先从 GitHub Secret DEVELOPER_TEAM_ID 读取，其次从 Config.xcconfig 读取
+* 移除continue-on-error:true	不再静默吞掉错误
+* 无TeamID时优雅跳过            打印提示信息后正常退出，不导致 job 失败
+* TeamID动态注入               用sed将实际TeamID写入ExportOptions.plist
+* 修复xcpretty管道问题          改用tee保存日志，set -o pipefail 确保错误不被吞掉
+* Archive/Export 分步执行      每步有独立日志，失败时清晰定位
+*
+* GitHubActions IOS签名：
+* 要生成 IPA，只需在GitHub仓库设置中添加一个Secret：Settings → Secrets and variables → Actions → New repository secret
+名称:         DEVELOPER_TEAM_ID
+值:          你的 Apple Developer TeamID (10位字母数字, 可在 developer.apple.com/account 找到)
+或者直接修改iosApp/Configuration/Config.xcconfig第1行：TEAM_ID=你的TeamID
+* 配置后重新触发构建，IPA就会自动生成并出现在Artifacts中
 */
 
 kotlin{
@@ -212,19 +230,6 @@ kotlin{
 //            implementation("br.com.devsrsouza.compose.icons:simple-icons:${libs.versions.composeIcons.get()}")/*Compose-Icons Simple简易图标库*/
 //            implementation("br.com.devsrsouza.compose.icons:tabler-icons:${libs.versions.composeIcons.get()}")/*Compose-Icons Tabler图标包*/
             implementation("br.com.devsrsouza.compose.icons:octicons:${libs.versions.composeIcons.get()}")/*Compose-Icons Octicons图标库，imageVector用的多套开源图标包之一*/
-//            implementation("br.com.devsrsouza.compose.icons:font-awesome:${libs.versions.composeIcons.get()}")/*Compose-Icons Font-Awesome*/
-//            implementation("br.com.devsrsouza.compose.icons:line-awesome:${libs.versions.composeIcons.get()}")/*Compose-Icons Line-Awesome*/
-//            api("dev.icerock.moko:resources:${libs.versions.mokoResources.get()}")/*mokoResources综合资源 核心依赖*/
-//            api("dev.icerock.moko:resources-compose:${libs.versions.mokoResources.get()}")/*mokoResources综合资源 Compose支持，含painterResource用的图标资源*/
-
-            implementation("com.darkrockstudios:mpfilepicker:3.1.0")/*基于ComposeMultiplatform框架的 跨平台 文件选择器组件*/
-
-//            implementation("io.github.dokar3:sonner:0.3.1")/*Compose-Sonner，跨平台Toast底部弹窗提示(与布局有绑定关系)*/
-            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Compose_Toast跨平台底部弹窗提示，兼容安卓5.0，自定义UI依赖Box堆叠容器，含自适应原生弹窗功能不依赖布局定位*/
-//            implementation("io.github.the-best-is-best:compose-utils:${libs.versions.composeToast.get()}")/*Compose-Utils*/
-//            implementation("io.github.the-best-is-best:kadaptiveui:1.2.0")/*KAdaptiveUI 跨平台Toast底部弹窗提示，仅兼容安卓7.0+，含自适应原生弹窗功能不依赖布局定位，且可自定义弹窗内容为Compose组件*/
-//            implementation("io.github.khubaibkhan4:alert-kmp:0.0.4")/*Alert-KMP，兼容安卓7.0+，极致便捷的跨平台底部弹窗提示，完全不依赖Box或布局绑定*/
-//            implementation("network.chaintech:cmptoast:1.0.8")/*CMPToast 跨平台底部弹窗提示，兼容安卓5.0，但与安卓name获取Context冲突*/
 
 
 
@@ -246,11 +251,6 @@ kotlin{
 //            implementation("io.realm.kotlin:library-base:${libs.versions.realm.get()}")/*Realm 对象型数据存储框架*/
 
             implementation("io.github.vinceglb:filekit-core:${libs.versions.filekit.get()}")/*FileKit核心库(仅兼容Kotlin2.1+)，跨平台 文件操作 和 应用私有路径访问*/
-            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")
-            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")
-            /*filekit-dialogs专门用来调起系统原生的文件选择对话框(打开文件/保存文件/选择目录)，并返回用户选择的文件路径，
-            它屏蔽了各平台的实现差异：Android：通过ActivityResultContracts启动系统文件选择器，iOS：使用UIDocumentPickerViewController，桌面端(JVM)：借助AWT的 FileDialog或Swing 的 JFileChooser，Web(Wasm)：提供对应的浏览器文件选择API封装。没有这个模块，开发者就需要自己去写这些平台相关的调用逻辑*/
-            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*fileKit选取图片文件，内部依赖不兼容Kotlin旧版，建议用AsyncImage(model=selectedFile.path)*/
 
 //            implementation("org.jetbrains.kotlinx:kotlinx-io-core:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO(疑似依赖链接失效) 字节流/字符流、缓冲、协程读写*/
 //            implementation("org.jetbrains.kotlinx:kotlinx-io-bytestring:${libs.versions.kotlinxIo.get()}")/*Kotlinx-IO-ByteString高效字节串*/
@@ -288,6 +288,13 @@ kotlin{
             implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付-SDK，6.8.34仍兼容安卓4.1*/
             implementation("com.alipay.sdk:alipaysdk-android:+@aar")          /*安卓调起支付宝支付-SDK +@aar代表下载最新aar软件包版，15.8.2@aar仍兼容安卓5.0*/
             /*客户端无银联云闪付SDK等，绑卡支付功能是放在服务端执行*/
+
+            /*以下库不支持macOS，故从commonMain移至androidMain+iosMain分别声明*/
+            implementation("com.darkrockstudios:mpfilepicker:3.1.0")/*跨平台文件选择器*/
+            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Toast提示*/
+            implementation("io.github.vinceglb:filekit-dialogs:${libs.versions.filekit.get()}")/*文件对话框*/
+            implementation("io.github.vinceglb:filekit-dialogs-compose:${libs.versions.filekit.get()}")/*Compose文件对话框*/
+            implementation("io.github.vinceglb:filekit-coil:${libs.versions.filekit.get()}")/*图片文件选取*/
         }
         iosMain.dependencies/*IOS端依赖*/{
 //            implementation("org.jetbrains.compose.window:window:${libs.versions.composeMultiplatform.get()}")/*Compose1.6.x及以下-IOS端依赖，1.7.x+版org.jetbrains.compose.ui库已自动包含 手补以防万一切换到旧版*/
