@@ -158,6 +158,9 @@ jobs:
       - name: 🔨 Build iOS - iosArm64 (真机)
         id: build-ios-arm64
         run: |
+        # 添加环境变量覆盖
+        env:
+        GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.jvmargs=-Xmx4g"
           set -o pipefail
           echo ">>> 编译 iosArm64 Release..."
           ./gradlew :composeApp:linkReleaseFrameworkIosArm64 \
