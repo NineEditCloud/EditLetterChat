@@ -317,6 +317,9 @@ kotlin{
 //            implementation("org.xerial:sqlite-jdbc")/*Room JVM桌面端SQLite-JDBC驱动*/
 //            implementation("org.postgresql:postgresql:42.7.0")/*JVM桌面端PostgreSQL-JDBC驱动*/
         }
+        macosMain.dependencies/*MacOS运行依赖*/{
+
+        }
 
 //        nativeMain.dependencies/*Kotlin/Native中间层原生源代码集，目标平台IOS/MacOS/Linux共享*/{
 //            implementation("io.exoquery:exoquery-runner-native:1.0.0")/*Native runner*/

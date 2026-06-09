@@ -8,7 +8,7 @@ Pod::Spec.new do |spec|
     spec.summary                  = 'KMP 共享模块：登录 + 支付'
     spec.vendored_frameworks      = 'build/cocoapods/framework/composeApp.framework'
     spec.libraries                = 'c++'
-    spec.ios.deployment_target    = '12.0'
+    spec.ios.deployment_target    = '14.0'
                 
                 
     if !Dir.exist?('build/cocoapods/framework/composeApp.framework') || Dir.empty?('build/cocoapods/framework/composeApp.framework')

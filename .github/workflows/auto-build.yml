@@ -298,13 +298,47 @@ jobs:
           ./gradlew :composeApp:linkReleaseFrameworkIosSimulatorArm64 \
                     --no-daemon --build-cache --stacktrace 2>&1 | tee ios-sim-log
           
+          echo ">>> [3/3] 编译 iosX64 Release..."
+          ./gradlew :composeApp:linkReleaseFrameworkIosX64 \
+                    --no-daemon --build-cache --stacktrace 2>&1 | tee ios-x64.log
+          
           echo "✅ iOS Framework 编译完成"
+
+      - name: 🔑 Read Team ID
+        id: team-id
+        run: |
+          # 优先使用 GitHub Secret，否则从 Config.xcconfig 读取
+          if [ -n "${{ secrets.DEVELOPER_TEAM_ID }}" ]; then
+            echo "TEAM_ID=${{ secrets.DEVELOPER_TEAM_ID }}" >> "$GITHUB_OUTPUT"
+            echo "📌 使用 Secrets 中的 Team ID"
+          elif [ -f iosApp/Configuration/Config.xcconfig ]; then
+            TID=$(grep -oP 'TEAM_ID=\K.*' iosApp/Configuration/Config.xcconfig | head -1 | xargs)
+            if [ -n "$TID" ]; then
+              echo "TEAM_ID=$TID" >> "$GITHUB_OUTPUT"
+              echo "📌 使用 Config.xcconfig 中的 Team ID: $TID"
+            else
+              echo "TEAM_ID=" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "TEAM_ID=" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: 🏗️ Archive & Export IPA
         id: ipa-build
         working-directory: ./iosApp
-        continue-on-error: true
         run: |
+          TEAM_ID="${{ steps.team-id.outputs.TEAM_ID }}"
+
+          if [ -z "$TEAM_ID" ]; then
+            echo "⚠️ 未配置 Apple Developer Team ID"
+            echo "   请在 GitHub Secrets 中添加 DEVELOPER_TEAM_ID，"
+            echo "   或在 iosApp/Configuration/Config.xcconfig 中设置 TEAM_ID"
+            echo "success=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo ">>> 使用 Team ID: $TEAM_ID"
+
           cat > ExportOptions.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
@@ -322,10 +356,11 @@ jobs:
               <key>stripSwiftSymbols</key>
               <true/>
               <key>teamID</key>
-              <string></string>
+              <string>_PLACEHOLDER_</string>
           </dict>
           </plist>
           EOF
+          sed -i '' "s/_PLACEHOLDER_/$TEAM_ID/" ExportOptions.plist
 
           SCHEME_NAME="iosApp"
           if [ -f "iosApp.xcworkspace/xcshareddata/xcschemes/${SCHEME_NAME}.xcscheme" ]; then
@@ -334,6 +369,8 @@ jobs:
             WORKSPACE_PATH="-project iosApp.xcodeproj"
           fi
 
+          echo ">>> Archive..."
+          set -o pipefail
           xcodebuild ${WORKSPACE_PATH} \
             -scheme "${SCHEME_NAME}" \
             -sdk iphoneos \
@@ -342,37 +379,46 @@ jobs:
             archive \
             CODE_SIGN_STYLE=Automatic \
             -allowProvisioningUpdates \
-            DEVELOPMENT_TEAM="" \
-            -quiet | xcpretty || {
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            2>&1 | tee archive.log
+          ARCHIVE_EXIT=$?
 
+          if [ $ARCHIVE_EXIT -ne 0 ]; then
+            echo ">>> Release Archive 失败, 尝试 Debug..."
             xcodebuild ${WORKSPACE_PATH} \
               -scheme "${SCHEME_NAME}" \
               -sdk iphoneos \
               -configuration Debug \
-              -archivePath "$RUNNER_TEMP/iosApp-debug.xcarchive" \
+              -archivePath "$RUNNER_TEMP/iosApp.xcarchive" \
               archive \
               CODE_SIGN_STYLE=Automatic \
               -allowProvisioningUpdates \
-              DEVELOPMENT_TEAM="" \
-              -quiet | xcpretty
-            RUNNER_TEMP_ARCHIVE="$RUNNER_TEMP/iosApp-debug.xcarchive"
-          }
+              DEVELOPMENT_TEAM="$TEAM_ID" \
+              2>&1 | tee archive-debug.log || {
+              echo "❌ Archive 失败, 请检查签名配置"
+              echo "success=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            }
+          fi
 
-          ARCHIVE_PATH="${RUNNER_TEMP_ARCHIVE:-$RUNNER_TEMP/iosApp.xcarchive}"
+          echo ">>> Export IPA..."
           xcodebuild -exportArchive \
-            -archivePath "$ARCHIVE_PATH" \
+            -archivePath "$RUNNER_TEMP/iosApp.xcarchive" \
             -exportOptionsPlist ExportOptions.plist \
             -exportPath "$RUNNER_TEMP/export" \
             -allowProvisioningUpdates \
-            -quiet | xcpretty || {
-            echo "⚠️ IPA 导出失败"
-            exit 1
+            2>&1 | tee export.log || {
+            echo "⚠️ IPA 导出失败, 签名可能有问题"
+            echo "success=false" >> "$GITHUB_OUTPUT"
+            exit 0
           }
 
           if ls "$RUNNER_TEMP/export/"*.ipa 1>/dev/null 2>&1; then
             mv "$RUNNER_TEMP/export/"*.ipa "$RUNNER_TEMP/EditLetterChat-auto-${{ github.run_number }}.ipa"
             echo "success=true" >> "$GITHUB_OUTPUT"
+            echo "✅ IPA 生成成功: $RUNNER_TEMP/EditLetterChat-auto-${{ github.run_number }}.ipa"
           else
+            echo "❌ 未找到 .ipa 文件"
             echo "success=false" >> "$GITHUB_OUTPUT"
           fi
 
