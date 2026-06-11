@@ -1,0 +1,10 @@
+platform :ios, '12.0'
+use_frameworks!
+
+target 'iosApp' do
+   #添加微信SDK
+   pod 'WechatOpenSDK', '2.0.4'
+   #添加支付宝SDK
+   pod 'AlipaySDK-iOS', '15.8.30'
+  # 其他依赖...
+end

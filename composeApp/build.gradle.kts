@@ -149,6 +149,11 @@ kotlin{
             baseName="辑信"
             isStatic=true/*生成静态框架库(避免符号冲突)，加速编译*/
 //            linkerOpts.add("-lsqlite3")/*Required when using NativeSQLiteDriver*/
+
+            /*为从Kotlin代码中调用支付宝SDK，本地导入链接支付宝framework(需从支付宝开放平台下载支付宝SDK框架 并在“项目/iosApp/Frameworks”路径手动导入文件)*/
+            linkerOpts.add("-F${projectDir}/../iosApp/Frameworks", )
+            linkerOpts.add("-framework AlipaySDK")
+
 //            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖代码接口，以便从Swift进行访问*/
             freeCompilerArgs += listOf(/*为Link阶段分配更多内存*/
                 "-Xbinary=bundleId=com.nineeditcloud.editletterchat", /*消除bundleID警告*/
@@ -160,31 +165,45 @@ kotlin{
 //                    )
 //            }
         }
+        /*为支付宝SDK配置手动cinterop绑定(其CocoaPod缺乏正确moduleMap导致自动cinterop失败)*/
+        iosTarget.compilations.getByName("main"){
+            cinterops{
+                val alipaySDK by creating{
+                    defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
+                    packageName("com.alipay.sdk")
+                }
+            }
+        }
     }
-    cocoapods{/*配置CocoaPods，iOS端通过Pod引入共享模块*/
+    cocoapods{/*配置CocoaPods-iOS端共享模块管理工具*/
         name="SharedModule"/*Pod名，iOS端会用到*/
         version="1.0.0"/*Pod版本*/
         summary="KMP 共享模块：登录 + 支付"/*摘要 简介？*/
         homepage="https://github.com/NineEditCloud/EditLetterChat"/*应用主页，项目Git仓库链接也行*/
         ios.deploymentTarget="12.0"/*IOS目标最低版本要求，微信/支付宝 支付接口SDK最低兼容iOS12.0+*/
-        podfile=project.file("../iosApp/Podfile")/*iOS项目Podfile*/
+        podfile=project.file("../iosApp/Podfile")/*iOS项目Podfile配置文件路径*/
         framework{
-            baseName="Shared"/*框架名 将作为Pod名*/
+            baseName="Shared"/*框架名(将作为Pod名)*/
             isStatic=true/*生成静态框架库(避免符号冲突)，加速编译*/
         }
-        pod("WechatOpenSDK"){/*声明 微信OpenSDK依赖*/
-            version="2.0.4"/*2.0.5最低支持IOS12.0+*/
+        pod("WechatOpenSDK")/*声明 微信OpenSDK依赖*/{
+            moduleName="WechatOpenSDK"; version="2.0.4"/*2.0.5最低支持IOS12.0+*/
             /*若需指定subspec，如无默认头文件可配置：moduleName="WechatOpenSDK"*/
         }
-        pod("AlipaySDK-iOS"){/*声明 支付宝SDK依赖*/
-//            version="15.8.30"/*15.8.30最低支持IOS12.0+*/
+//        pod("AlipaySDK-iOS")/*声明 支付宝SDK依赖*/{
+//            version="15.8.30"/*15.8.30最低支持IOS12.0+，15.2.1、15.7.11*/
             /*支付宝SDK可能需添加额外链接器标志，若编译出错 可在iosMain的cinterop中配置*/
-        }
+//        }
+        /*pod()方法会自动尝试生成Kotlin绑定(让Kotlin代码能调用共享模块依赖)，
+        但支付宝SDK的CocoaPod没正确的moduleMap或头文件 导致cinterop失败，
+        改为手动cinterop配置(见上方forEach中的cinterops块)*/
     }
 
 //    ohosArm64{/*HarmonyOSNext(华为独立鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
 //    }
-    
+
+
+
     jvm()/*标准JVM桌面目标(Win端安装包内置JRE)，覆盖架构(若32位不可用则启动64位)： arm(aarch) 32/64、Intel&AMD x86/x86_64/x64(早期手机芯片架构 性能差/发热)*/
 
     macosArm64{/*macOS桌面-AppleSilicon arm64(aarch64)芯片版*/
@@ -272,12 +291,9 @@ kotlin{
 
             implementation("com.darkrockstudios:mpfilepicker:3.1.0")/*跨平台文件选择器*/
 
-            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Toast提示*/
+            implementation("io.github.the-best-is-best:compose_toast:${libs.versions.composeToast.get()}")/*Compose_Toast 跨平台底部弹窗提示，附带各平台原生模式 不依赖Box或其它布局容器*/
 
             
-
-
-
 
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${libs.versions.kotlinx.get()}")/*Kotlin序列化核心库-跨平台，ExoQuery和JSON所需依赖，*/
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${libs.versions.kotlinx.get()}")/*Kotlin序列化-Json，包含JSON 编解码/序列化/反序列化*/
@@ -330,13 +346,12 @@ kotlin{
             implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付-SDK，6.8.34仍兼容 安卓4.1，2.0+兼容IOS12.0+*/
             implementation("com.alipay.sdk:alipaysdk-android:+@aar")          /*安卓调起支付宝支付-SDK +@aar代表下载最新aar软件包版，15.8.2@aar仍兼容 安卓5.0/IOS12.0*/
             /*客户端无银联云闪付SDK等，绑卡支付功能是放在服务端执行*/
-
         }
         iosMain.dependencies/*IOS端依赖*/{
 //            implementation("org.jetbrains.compose.window:window:${libs.versions.composeMultiplatform.get()}")/*Compose1.6.x及以下-IOS端依赖，1.7.x+版org.jetbrains.compose.ui库已自动包含 手补以防万一切换到旧版*/
 
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
-
+            implementation(files("path/to/cinterop") )
         }
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{
