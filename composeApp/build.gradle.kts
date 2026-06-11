@@ -118,6 +118,12 @@ GenerateSigned(自定义签名 会下载签名工具)：项目路径\composeApp\
 * 配置后重新触发构建，IPA就会自动生成并出现在Artifacts中
 *
 * 很多库没MacOS专用依赖 打包IOS时不建议项目加MacOS架构(改用JVM依赖)，这样Xcode编译IOS框架时也不会因缺失MacOS专用依赖而报错
+*
+* 打开GitHub仓库Actions界面，
+* 选择 workflow配置，若无Run workflow选项，
+* 或选择 已运行的workflow记录，若输出文件无下载按钮，
+* 说明：网络重置后 未重新登录GitHub
+*
 */
 
 kotlin{

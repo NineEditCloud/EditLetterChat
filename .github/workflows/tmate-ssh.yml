@@ -1,35 +1,15 @@
 name: 🔍 Tmate SSH (macOS Debug)
 
 on:
-  workflow_dispatch:   # 手动触发，需在默认分支上才能看到按钮
+  workflow_dispatch:   # 手动触发，需在默认分支上才能启动
 
 jobs:
   debug:
     runs-on: macos-14
     timeout-minutes: 120
     steps:
-      - name: 🔧 安装 tmate
-        run: brew install tmate
-
-      - name: 🛰️ 启动 tmate SSH 并等待连接
-        run: |
-          # 后台启动 tmate 守护进程
-          tmate -S /tmp/tmate.sock new-session -d
-          
-          # 等待连接建立（阻塞直到就绪）
-          tmate -S /tmp/tmate.sock wait tmate-ready
-          
-          # 打印 Web 连接（浏览器打开即可，无需 SSH 客户端）
-          echo ""
-          echo "================================================"
-          echo "🌐 Web 终端:  $(tmate -S /tmp/tmate.sock display -p '#{tmate_web}')"
-          echo "💻 SSH 命令:  $(tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')"
-          echo "================================================"
-          echo ""
-          echo "⏰ 180分钟内保持连接，调试完后在 GitHub 点 Cancel workflow"
-          
-          # 保持会话活着
-          for i in $(seq 1 180); do
-            sleep 60
-            echo "[$(date '+%H:%M:%S')] SSH在线 ${i}分钟..."
-          done
+      - name: 🛰️ 启动 Tmate SSH 会话
+        uses: mxschmitt/action-tmate@v3
+        with:
+#          limit-access-to-actor: true   # 只有触发者本人能连接（更安全）
+          timeout-minutes: 120          # 120分钟后自动断开
