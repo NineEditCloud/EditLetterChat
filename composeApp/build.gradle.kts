@@ -171,8 +171,24 @@ kotlin{
 //    ohosArm64{/*HarmonyOSNext(华为独立鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
 //    }
     
-    jvm()/*JVM桌面目标*/
-//    macosX64()/*Intel芯片版*/; macosArm64()/*M芯片版*/ /*很多库没MacOS专用依赖，打包IOS时不建议加MacOS架构(改用JVM依赖)，这样Xcode编译IOS框架时也不会因缺失MacOS专用依赖而报错*/
+    jvm()/*标准JVM桌面目标(Win端安装包内置JRE)*/
+
+//    macosX64{/*macOS-Intel芯片版*/
+//        binaries{
+//            executable{
+//                linkerOpts("-mmacosx-version-min=10.13")/*Intel芯片x64架构 最低macOS版本10.13(缺少低于10.13的Intel版mac必要系统API)*/
+//            }
+//        }
+//    }
+//    macosArm64{/*macOS-M芯片aarch64架构版*/
+//        binaries{
+//            executable{
+//                linkerOpts("-mmacosx-version-min=11.0")/*AppleSilicon芯片aarch64架构 最低macOS版本11.0(mac系统库是从11.0才提供AppleSilicon芯片arm64切片)*/
+//            }
+//        }
+//    }
+    /*有些库没MacOS专用依赖，打包IOS时不建议加MacOS架构(改用JVM依赖)，这样Xcode编译IOS框架时也不会因缺失MacOS专用依赖而报错*/
+
 //    linuxX64();linuxArm64()
 //    mingwX64()
 
