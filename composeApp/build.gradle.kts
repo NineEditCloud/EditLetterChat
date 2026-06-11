@@ -117,7 +117,7 @@ GenerateSigned(自定义签名 会下载签名工具)：项目路径\composeApp\
 或者直接修改iosApp/Configuration/Config.xcconfig第1行：TEAM_ID=你的TeamID
 * 配置后重新触发构建，IPA就会自动生成并出现在Artifacts中
 *
-* 很多库没MacOS专用依赖 打包IOS时不建议项目加MacOS架构(改用JVM依赖)，这样Xcode编译IOS框架时也不会因缺失MacOS专用依赖而报错
+* 有些库没MacOS专用依赖 打包IOS时不建议项目加MacOS架构(改用JVM依赖)，这样Xcode编译IOS框架时也不会因缺失MacOS专用依赖而报错
 *
 * 打开GitHub仓库Actions界面，
 * 选择 workflow配置，若无Run workflow选项，
@@ -127,7 +127,7 @@ GenerateSigned(自定义签名 会下载签名工具)：项目路径\composeApp\
 */
 
 kotlin{
-    androidTarget/*安卓目标*/{
+    androidTarget/*安卓目标，覆盖架构(若32位不可用则启动64位)：arm/aarch 32/64、Intel&AMD x86/x86_64/x64(早期手机芯片架构 性能差/发热)*/{
         compilerOptions/*编译选项*/{
             jvmTarget.set(JvmTarget.JVM_21)
             freeCompilerArgs.addAll(listOf("-Xjvm-default=all", "-Xcontext-receivers") )
@@ -142,18 +142,18 @@ kotlin{
 //        }
     }
 
-    listOf(iosArm64()/*M芯片aarch64真机版*/, iosSimulatorArm64()/*M芯片aarch64模拟器版*/,
-           iosX64()/*Intel芯片模拟器版*/, ).forEach{ iosTarget ->/*遍历多个IOS架构，每次赋值给iosTarget(若不写传参名 则默认it)*/
+    listOf(iosArm64()/*IOS-AppleSilicon arm64/aarch64芯片真机版*/, iosSimulatorArm64()/*IOS-arm64/aarch64芯片模拟器版*/,
+           iosX64()/*IOS-Intel&AMD x86_64/x64芯片模拟器版*/, ).forEach{ iosTarget ->/*遍历多个IOS架构，每次赋值给iosTarget(若不写传参名 则默认it)*/
         iosTarget.binaries.framework{/*IOS目标二进制框架*/
             baseName="辑信"
             isStatic=true/*生成静态框架，加速编译*/
 //            linkerOpts.add("-lsqlite3")/*Required when using NativeSQLiteDriver*/
-//            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖API，以便从Swift进行访问*/
+//            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖代码接口，以便从Swift进行访问*/
             freeCompilerArgs += listOf(/*为Link阶段分配更多内存*/
                 "-Xbinary=bundleId=com.nineeditcloud.editletterchat", /*消除bundleID警告*/
-                "-memory-model", "experimental", /*用新内存模型减少峰值(已弃用 未来会移除)*/
+                "-memory-model", "experimental", /*新内存模型减少峰值(选项已弃用-未来会移除)*/
                 )
-//            iosTarget.compilations.all{/*Konan编译器额外参数(API已过时 未来会移除)*/
+//            iosTarget.compilations.all{/*Konan编译器额外参数(接口已过时-未来会移除)*/
 //                compilerOptions.options.freeCompilerArgs.addAll(
 //                    listOf("-opt-in=kotlin.experimental.ExperimentalNativeApi", ),
 //                    )
@@ -172,23 +172,23 @@ kotlin{
 //    ohosArm64{/*HarmonyOSNext(华为独立鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
 //    }
     
-    jvm()/*标准JVM桌面目标(Win端安装包内置JRE)*/
+    jvm()/*标准JVM桌面目标(Win端安装包内置JRE)，覆盖架构(若32位不可用则启动64位)： arm/aarch 32/64、Intel&AMD x86/x86_64/x64(早期手机芯片架构 性能差/发热)*/
 
-//    macosX64{/*macOS-Intel芯片版*/
-//        binaries{
-//            executable{
-//                linkerOpts("-mmacosx-version-min=10.13")/*Intel芯片x64架构 最低macOS版本10.13(缺少低于10.13的Intel版mac必要系统API)*/
-//            }
-//        }
-//    }
-//    macosArm64{/*macOS-M芯片aarch64架构版*/
-//        binaries{
-//            executable{
-//                linkerOpts("-mmacosx-version-min=11.0")/*AppleSilicon芯片aarch64架构 最低macOS版本11.0(mac系统库是从11.0才提供AppleSilicon芯片arm64切片)*/
-//            }
-//        }
-//    }
-    /*有些库没MacOS专用依赖，打包IOS时不建议加MacOS架构(改用JVM依赖)，这样Xcode编译IOS框架时也不会因缺失MacOS专用依赖而报错*/
+    macosX64{/*macOS桌面-Intel&AMD x86_64/x64芯片版*/
+        binaries{/*二进制字节码*/
+            executable{/*执行包*/
+                linkerOpts("-mmacosx-version-min=10.13")/*Intel芯片 最低macOS版本10.13(缺少低于10.13的Intel版mac必要系统API)*/
+            }
+        }
+    }
+    macosArm64{/*macOS桌面-AppleSilicon arm64/aarch64芯片版*/
+        binaries{
+            executable{
+                linkerOpts("-mmacosx-version-min=11.0")/*M芯片aarch64 最低macOS版本11.0(mac系统库是从11.0才提供AppleSilicon芯片arm64切片)*/
+            }
+        }
+    }
+    /*有些库没MacOS专用依赖，打包IOS时不建议加MacOS架构(改用JVM依赖)，这样Xcode编译应用IOS框架时 不会因缺失MacOS专用依赖而报错*/
 
 //    linuxX64();linuxArm64()
 //    mingwX64()
