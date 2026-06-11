@@ -159,7 +159,11 @@ jobs:
         working-directory: ./iosApp
         run: |
           if [ -f "Podfile" ]; then
-            pod install --repo-update || pod install
+            echo ">>> 运行 pod install..."
+            pod install --repo-update 2>&1 || pod install 2>&1
+            echo ">>> 验证 Pods 目录..."
+            ls -la Pods/AlipaySDK-iOS/ 2>/dev/null || echo "⚠️ AlipaySDK-iOS 目录不存在"
+            ls -la Pods/WechatOpenSDK/ 2>/dev/null || echo "⚠️ WechatOpenSDK 目录不存在"
           else
             echo "ℹ️ 无 Podfile，跳过"
           fi

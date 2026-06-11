@@ -1,5 +1,7 @@
 language=Objective-C
-headers=AlipaySDK/AlipaySDK.h
+headers=AlipaySDK.h
+#AlipaySDK/AlipaySDK.h
+
 headerFilter=**/*.h
 package=com.alipay.sdk
 

@@ -165,6 +165,9 @@ kotlin{
 //                    )
 //            }
         }
+        iosTarget.binaries.all{
+            linkerOpts("-F${project.rootDir}/iosApp/Pods/AlipaySDK-iOS", "-framework", "AlipaySDK")
+        }
         /*为支付宝SDK配置手动cinterop绑定(其CocoaPod缺乏正确moduleMap导致自动cinterop失败)*/
         iosTarget.compilations.getByName("main"){
             cinterops{
@@ -173,12 +176,16 @@ kotlin{
                     packageName("com.alipay.sdk")
 
                     /*支付宝SDK通过CocoaPods管理(iosApp/Podfile中声明)，
-                    配置cinterop指向CocoaPods下载的framework
+                    配置cinterop指向CocoaPods下载的framework(需先运行pod install)
                     (若src/nativeInterop/cinterop/AlipaySDK.def配置的手动导入framework路径错误)*/
-                    val podsBase=project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
-                    val frameworkHeaders=podsBase.resolve("AlipaySDK.framework/Headers")
-                    compilerOpts("-I${frameworkHeaders.absolutePath}", "-F${podsBase.absolutePath}", )
-                    linkerOpts("-F${podsBase.absolutePath}", "-framework", "AlipaySDK", )
+                    val podsDir=project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
+//                    val frameworkHeaders=podsDir.resolve("AlipaySDK.framework/Headers")
+//                    compilerOpts("-I${frameworkHeaders.absolutePath}", "-F${podsDir.absolutePath}", )
+//                    linkerOpts("-F${podsDir.absolutePath}", "-framework", "AlipaySDK", )
+
+                    val frameworkDir = podsDir.resolve("AlipaySDK.framework")
+                    val headersDir = frameworkDir.resolve("Headers")
+                    compilerOpts("-I${headersDir.absolutePath}", "-F${podsDir.absolutePath}")
                 }
             }
         }
