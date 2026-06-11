@@ -6,14 +6,22 @@ on:
 jobs:
   debug:
     runs-on: macos-latest    # 可按需改为 macos-13、macos-14
-    timeout-minutes: 30      # 限制最长调试时间
+#    timeout-minutes: 30      # 限制最长调试时间
     
     steps:
-      - name: 检出代码（如需）
+      - name: 安装并启动 tmate
+        run: |
+          brew install tmate
+          # -F 开启前台模式，-N 设置会话名
+          tmate -F -n debug-session &
+          sleep 3
+          # 从日志里提取 SSH 连接字符串
+          tmate show-messages | grep "ssh session"
+          echo "看到连接地址后，请在本地终端连接。"
+      - name: 保持会话
+        run: sleep 3600
+      - name: 检出代码(如需)
         uses: actions/checkout@v4
-      
-      - name: 通过 tmate 开启远程 SSH 会话
-        uses: mxschmitt/action-tmate@v3
         # 可选配置项
         # with:
         #   limit-access-to-actor: true  # 只有触发者本人能连，更安全
