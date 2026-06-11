@@ -142,9 +142,10 @@ kotlin{
 //        }
     }
 
-    listOf(iosX64()/*Intel模拟器版*/, iosArm64()/*M芯片真机版*/, iosSimulatorArm64()/*M芯片模拟器版*/ ).forEach{ iosTarget ->/*遍历多个IOS架构，每次赋值给iosTarget(若不写传参名 则默认it)*/
+    listOf(iosArm64()/*M芯片aarch64真机版*/, iosSimulatorArm64()/*M芯片aarch64模拟器版*/,
+           iosX64()/*Intel芯片模拟器版*/, ).forEach{ iosTarget ->/*遍历多个IOS架构，每次赋值给iosTarget(若不写传参名 则默认it)*/
         iosTarget.binaries.framework{/*IOS目标二进制框架*/
-            baseName="TodoApp"
+            baseName="辑信"
             isStatic=true/*生成静态框架，加速编译*/
 //            linkerOpts.add("-lsqlite3")/*Required when using NativeSQLiteDriver*/
 //            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖API，以便从Swift进行访问*/
