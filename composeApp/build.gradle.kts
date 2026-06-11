@@ -166,11 +166,11 @@ kotlin{
 //            }
         }
         /*为支付宝SDK配置手动cinterop绑定(其CocoaPod缺乏正确moduleMap导致自动cinterop失败)*/
-        iosTarget.compilations.getByName("main"){
-            cinterops{
-                val alipaySDK by creating{
-                    defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
-                    packageName("com.alipay.sdk")
+//        iosTarget.compilations.getByName("main"){
+//            cinterops{
+//                val alipaySDK by creating{
+//                    defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
+//                    packageName("com.alipay.sdk")
 
                     /*支付宝SDK通过CocoaPods管理(iosApp/Podfile中声明)，
                     配置cinterop指向CocoaPods下载的framework(若Podfile指定的手动导入framework路径错误)*/
@@ -178,9 +178,9 @@ kotlin{
 //                    val frameworkHeaders=podsBase.resolve("AlipaySDK.framework/Headers")
 //                    compilerOpts("-I${frameworkHeaders.absolutePath}", "-F${podsBase.absolutePath}")
 //                    linkerOpts("-F${podsBase.absolutePath}", "-framework", "AlipaySDK")
-                }
-            }
-        }
+//                }
+//            }
+//        }
     }
     cocoapods{/*配置CocoaPods-iOS端共享模块管理工具*/
         name="SharedModule"/*Pod名，iOS端会用到*/
@@ -358,8 +358,8 @@ kotlin{
 //            implementation("org.jetbrains.compose.window:window:${libs.versions.composeMultiplatform.get()}")/*Compose1.6.x及以下-IOS端依赖，1.7.x+版org.jetbrains.compose.ui库已自动包含 手补以防万一切换到旧版*/
 
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
-            implementation(files("path/to/cinterop") )
-//            implementation(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
+//            implementation(files("path/to/cinterop") )
+            implementation(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
         }
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{
