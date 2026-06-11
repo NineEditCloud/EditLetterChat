@@ -117,7 +117,7 @@ GenerateSigned(自定义签名 会下载签名工具)：项目路径\composeApp\
 或者直接修改iosApp/Configuration/Config.xcconfig第1行：TEAM_ID=你的TeamID
 * 配置后重新触发构建，IPA就会自动生成并出现在Artifacts中
 *
-* 很多库没MacOS专用依赖 不建议加MacOS架构(改用JVM依赖)，这样Xcode编译IOS框架时也不会因缺失MacOS专用依赖而报错
+* 很多库没MacOS专用依赖 打包IOS时不建议项目加MacOS架构(改用JVM依赖)，这样Xcode编译IOS框架时也不会因缺失MacOS专用依赖而报错
 */
 
 kotlin{
@@ -166,7 +166,7 @@ kotlin{
 //    }
     
     jvm()/*JVM桌面目标*/
-//    macosX64()/*Intel芯片版*/; macosArm64()/*M芯片版*/ /*很多库没MacOS专用依赖，不建议加MacOS架构(改用JVM依赖)，这样Xcode编译IOS框架时也不会因缺失MacOS专用依赖而报错*/
+//    macosX64()/*Intel芯片版*/; macosArm64()/*M芯片版*/ /*很多库没MacOS专用依赖，打包IOS时不建议加MacOS架构(改用JVM依赖)，这样Xcode编译IOS框架时也不会因缺失MacOS专用依赖而报错*/
 //    linuxX64();linuxArm64()
 //    mingwX64()
 

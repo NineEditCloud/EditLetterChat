@@ -4,7 +4,7 @@
 # 关键修复：
 #   ✅ macOS: 使用 packageDmg 而非不存在的 linkReleaseFrameworkMacos*
 #   ✅ iOS:   保留全架构 framework 编译 + 增强错误日志
-#   ✅ 产物:  使用正确路径上传
+#   ✅ 产物:  用正确路径上传
 # ============================================================
 
 name: AppleAuto Build (macOS & iOS)
@@ -22,7 +22,7 @@ on:
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-  JAVA_VERSION: '21'
+  JAVA_VERSION: '17'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
