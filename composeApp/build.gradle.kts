@@ -358,8 +358,9 @@ kotlin{
 //            implementation("org.jetbrains.compose.window:window:${libs.versions.composeMultiplatform.get()}")/*Compose1.6.x及以下-IOS端依赖，1.7.x+版org.jetbrains.compose.ui库已自动包含 手补以防万一切换到旧版*/
 
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
-//            implementation(files("path/to/cinterop") )
-            implementation(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
+
+            implementation(files("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
+//            implementation(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
         }
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{
