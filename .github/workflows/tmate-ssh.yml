@@ -1,4 +1,4 @@
-name: tmate ssh (macOS)
+name: Tmate Ssh (macOS)
 
 on:
   workflow_dispatch:   # 手动触发
@@ -7,7 +7,6 @@ jobs:
   debug:
     runs-on: macos-latest    # 可按需改为 macos-13、macos-14
 #    timeout-minutes: 3600      # 限制最长调试时间
-    
     steps:
       - name: 安装并启动 tmate
         run: |
