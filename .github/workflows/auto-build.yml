@@ -154,6 +154,16 @@ jobs:
           cache-cleanup: 'on-success'
           add-job-summary-as-pr-comment: always
       
+      # ---- 先运行 pod install ----
+      - name: 🌿 CocoaPods Install
+        working-directory: ./iosApp
+        run: |
+          if [ -f "Podfile" ]; then
+            pod install --repo-update || pod install
+          else
+            echo "ℹ️ 无 Podfile，跳过"
+          fi
+      
       # ---- 编译 iOS Framework (逐个编译便于定位错误) ----
       - name: 🔨 Build iOS - iosArm64 (真机)
         id: build-ios-arm64
