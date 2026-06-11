@@ -1,0 +1,4 @@
+language = Objective-C
+headers = WechatOpenSDK.h
+headerFilter = **/*.h
+package = com.wechat.opensdk

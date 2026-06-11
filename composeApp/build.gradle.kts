@@ -172,9 +172,9 @@ kotlin{
             val xcframeworkDir = podsDir.resolve("AlipaySDK.xcframework")
             linkerOpts("-F${xcframeworkDir.absolutePath}", "-framework", "AlipaySDK")
         }
-        /*为支付宝SDK配置手动cinterop绑定(其CocoaPod缺乏正确moduleMap导致自动cinterop失败)*/
+        /*支付宝SDK其CocoaPod缺乏正确moduleMap导致自动cinterop失败*/
         /*支付宝SDK通过CocoaPods管理(iosApp/Podfile中声明)，
-        配置cinterop指向CocoaPods下载的framework(需先运行pod install)
+        手动配置cinterop指向CocoaPods下载的framework(需先运行pod install)
         (若src/nativeInterop/cinterop/AlipaySDK.def配置的手动导入framework路径错误)*/
         iosTarget.compilations.getByName("main"){
             cinterops{
@@ -224,8 +224,9 @@ kotlin{
             isStatic=true/*生成静态框架库(避免符号冲突)，加速编译*/
         }
         pod("WechatOpenSDK")/*声明 微信OpenSDK依赖*/{
-            moduleName="WechatOpenSDK"; version="2.0.4"/*2.0.5最低支持IOS12.0+*/
-            /*若需指定subspec，如无默认头文件可配置：moduleName="WechatOpenSDK"*/
+//            moduleName="WechatOpenSDK"
+            version="2.0.4"/*2.0.5最低支持IOS12.0+*/
+            /*若需指定subspec(如无默认头文件可配置：moduleName="WechatOpenSDK")*/
         }
 //        pod("AlipaySDK-iOS")/*声明 支付宝SDK依赖*/{
 //            version="15.8.30"/*15.8.30最低支持IOS12.0+，15.2.1、15.7.11*/
