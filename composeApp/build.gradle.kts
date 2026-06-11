@@ -127,7 +127,7 @@ GenerateSigned(自定义签名 会下载签名工具)：项目路径\composeApp\
 */
 
 kotlin{
-    androidTarget/*安卓目标，覆盖架构(若32位不可用则启动64位)：arm/aarch 32/64、Intel&AMD x86/x86_64/x64(早期手机芯片架构 性能差/发热)*/{
+    androidTarget/*安卓目标，覆盖架构(若32位不可用则启动64位)：arm(aarch) 32/64、Intel&AMD x86/x86_64/x64(早期手机芯片架构 性能差/发热)*/{
         compilerOptions/*编译选项*/{
             jvmTarget.set(JvmTarget.JVM_21)
             freeCompilerArgs.addAll(listOf("-Xjvm-default=all", "-Xcontext-receivers") )
@@ -142,11 +142,12 @@ kotlin{
 //        }
     }
 
-    listOf(iosArm64()/*IOS-AppleSilicon arm64/aarch64芯片真机版*/, iosSimulatorArm64()/*IOS-arm64/aarch64芯片模拟器版*/,
+    listOf(iosArm64()/*IOS-AppleSilicon arm64(aarch64)芯片真机版*/, iosSimulatorArm64()/*IOS-arm64(aarch64)芯片模拟器版*/,
            iosX64()/*IOS-Intel&AMD x86_64/x64芯片模拟器版*/, ).forEach{ iosTarget ->/*遍历多个IOS架构，每次赋值给iosTarget(若不写传参名 则默认it)*/
+        /*ArmV7全部为aarch32架构，KMP现在的IOS目标不再支持32位架构*/
         iosTarget.binaries.framework{/*IOS目标二进制框架*/
             baseName="辑信"
-            isStatic=true/*生成静态框架，加速编译*/
+            isStatic=true/*生成静态框架库(避免符号冲突)，加速编译*/
 //            linkerOpts.add("-lsqlite3")/*Required when using NativeSQLiteDriver*/
 //            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖代码接口，以便从Swift进行访问*/
             freeCompilerArgs += listOf(/*为Link阶段分配更多内存*/
@@ -161,18 +162,30 @@ kotlin{
         }
     }
     cocoapods{/*配置CocoaPods，iOS端通过Pod引入共享模块*/
-        name="SharedModule"/*Pod名称，iOS端会用到*/
-        version="1.0.0"
-        summary="KMP 共享模块：登录 + 支付"
-        homepage="https://github.com/NineEditCloud/EditLetterChat"/*项目Git仓库链接*/
-        ios.deploymentTarget="12.0"/*支持iOS12+，可能仅支持14+？*/
-        podfile=project.file("../iosApp/Podfile")/*指向iOS项目的Podfile*/
+        name="SharedModule"/*Pod名，iOS端会用到*/
+        version="1.0.0"/*Pod版本*/
+        summary="KMP 共享模块：登录 + 支付"/*摘要 简介？*/
+        homepage="https://github.com/NineEditCloud/EditLetterChat"/*应用主页，项目Git仓库链接也行*/
+        ios.deploymentTarget="12.0"/*IOS目标最低版本要求，微信/支付宝 支付接口SDK最低兼容iOS12.0+*/
+        podfile=project.file("../iosApp/Podfile")/*iOS项目Podfile*/
+        framework{
+            baseName="Shared"/*框架名 将作为Pod名*/
+            isStatic=true/*生成静态框架库(避免符号冲突)，加速编译*/
+        }
+        pod("WechatOpenSDK"){/*声明 微信OpenSDK依赖*/
+            version="2.0.4"/*2.0.4最低支持IOS12.0+*/
+            /*若需指定subspec，如无默认头文件可配置：moduleName="WechatOpenSDK"*/
+        }
+        pod("AlipaySDK-iOS"){/*声明 支付宝SDK依赖*/
+            version="15.8.2"/*15.8.2最低支持IOS12.0+*/
+            /*支付宝SDK可能需添加额外链接器标志，若编译出错 可在iosMain的cinterop中配置*/
+        }
     }
 
 //    ohosArm64{/*HarmonyOSNext(华为独立鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
 //    }
     
-    jvm()/*标准JVM桌面目标(Win端安装包内置JRE)，覆盖架构(若32位不可用则启动64位)： arm/aarch 32/64、Intel&AMD x86/x86_64/x64(早期手机芯片架构 性能差/发热)*/
+    jvm()/*标准JVM桌面目标(Win端安装包内置JRE)，覆盖架构(若32位不可用则启动64位)： arm(aarch) 32/64、Intel&AMD x86/x86_64/x64(早期手机芯片架构 性能差/发热)*/
 
     macosX64{/*macOS桌面-Intel&AMD x86_64/x64芯片版*/
         binaries{/*二进制字节码*/
@@ -181,7 +194,7 @@ kotlin{
             }
         }
     }
-    macosArm64{/*macOS桌面-AppleSilicon arm64/aarch64芯片版*/
+    macosArm64{/*macOS桌面-AppleSilicon arm64(aarch64)芯片版*/
         binaries{
             executable{
                 linkerOpts("-mmacosx-version-min=11.0")/*M芯片aarch64 最低macOS版本11.0(mac系统库是从11.0才提供AppleSilicon芯片arm64切片)*/
@@ -314,8 +327,8 @@ kotlin{
             implementation("io.ktor:ktor-client-okhttp:${libs.versions.ktor.get()}")/*Ktor-安卓端底层OkHttp引擎*/
 //            implementation("androidx.room:room-sqlite-wrapper")/*Room需要的SQLite库，Room2.8+引入的库(2.8+可用)*/
 
-            implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付-SDK，6.8.34仍兼容安卓4.1*/
-            implementation("com.alipay.sdk:alipaysdk-android:+@aar")          /*安卓调起支付宝支付-SDK +@aar代表下载最新aar软件包版，15.8.2@aar仍兼容安卓5.0*/
+            implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付-SDK，6.8.34仍兼容 安卓4.1，2.0+兼容IOS12.0+*/
+            implementation("com.alipay.sdk:alipaysdk-android:+@aar")          /*安卓调起支付宝支付-SDK +@aar代表下载最新aar软件包版，15.8.2@aar仍兼容 安卓5.0/IOS12.0*/
             /*客户端无银联云闪付SDK等，绑卡支付功能是放在服务端执行*/
 
         }

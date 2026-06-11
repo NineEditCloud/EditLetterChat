@@ -58,8 +58,8 @@ composeToast="2.1.0"#1.0.2兼容Kotlin1.0.2/2.1.x 疑似无MacOS专用依赖 但
 filekit="0.11.0"#FileKit跨平台 应用私有路径获取、文件操作 库(仅兼容Kotlin2.1+无问题)，
 #0.14.1兼容Kotlin2.1/2.2、安卓5.0/MacOS12.0.1
 #FileKit0.12.0+ 安卓/JVM/MacOS 版支持 CMP1.9.0及RC版本、安卓5.0、Kotlin2.1/2.2 但IOS版不兼容Koltin2.1(用Kotlin2.2.20编译的)，
-#FileKit0.11.0 安卓/IOS/JVM/MacOS专用依赖，
-#FileKit0.10.0 无MacOS专用依赖 但不加MacOS架构 MacOS用JVM依赖则没问题(推荐)，
+#FileKit0.11.0 包含：安卓/IOS/JVM/MacOS专用依赖(推荐)，
+#FileKit0.10.0 无MacOS专用依赖 但不加MacOS架构目标时 MacOS用JVM依赖则没问题，
 #0.9.8兼容Kotlin2.0 下载失败
 
 coil="3.0.4"#FileKit-Coil内部底层依赖，3.0.4兼容Kotlin2.0，3.3.0兼容Kotlin2.1/2.2
