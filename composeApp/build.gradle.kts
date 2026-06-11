@@ -173,11 +173,11 @@ kotlin{
             isStatic=true/*生成静态框架库(避免符号冲突)，加速编译*/
         }
         pod("WechatOpenSDK"){/*声明 微信OpenSDK依赖*/
-            version="2.0.4"/*2.0.4最低支持IOS12.0+*/
+            version="2.0.4"/*2.0.5最低支持IOS12.0+*/
             /*若需指定subspec，如无默认头文件可配置：moduleName="WechatOpenSDK"*/
         }
         pod("AlipaySDK-iOS"){/*声明 支付宝SDK依赖*/
-            version="15.8.2"/*15.8.2最低支持IOS12.0+*/
+//            version="15.8.30"/*15.8.30最低支持IOS12.0+*/
             /*支付宝SDK可能需添加额外链接器标志，若编译出错 可在iosMain的cinterop中配置*/
         }
     }
@@ -187,21 +187,21 @@ kotlin{
     
     jvm()/*标准JVM桌面目标(Win端安装包内置JRE)，覆盖架构(若32位不可用则启动64位)： arm(aarch) 32/64、Intel&AMD x86/x86_64/x64(早期手机芯片架构 性能差/发热)*/
 
-    macosX64{/*macOS桌面-Intel&AMD x86_64/x64芯片版*/
-        binaries{/*二进制字节码*/
-            executable{/*执行包*/
-                linkerOpts("-mmacosx-version-min=10.13")/*Intel芯片 最低macOS版本10.13(缺少低于10.13的Intel版mac必要系统API)*/
-            }
-        }
-    }
     macosArm64{/*macOS桌面-AppleSilicon arm64(aarch64)芯片版*/
-        binaries{
-            executable{
+        binaries/*二进制字节码配置*/{
+            executable/*执行包配置*/{
                 linkerOpts("-mmacosx-version-min=11.0")/*M芯片aarch64 最低macOS版本11.0(mac系统库是从11.0才提供AppleSilicon芯片arm64切片)*/
             }
         }
     }
-    /*有些库没MacOS专用依赖，打包IOS时不建议加MacOS架构(改用JVM依赖)，这样Xcode编译应用IOS框架时 不会因缺失MacOS专用依赖而报错*/
+    macosX64{/*macOS桌面-Intel&AMD x86_64/x64芯片版*/
+        binaries{
+            executable{
+                linkerOpts("-mmacosx-version-min=10.13")/*Intel芯片 最低macOS版本10.13(缺少低于10.13的Intel版mac必要系统API)*/
+            }
+        }
+    }
+    /*有些库没MacOS专用依赖，打包IOS时不建议加MacOS架构(改用JVM依赖)，这样Xcode编译应用IOS框架时 不会因缺失MacOS专用依赖而报错(其实不影响IOS框架编译)*/
 
 //    linuxX64();linuxArm64()
 //    mingwX64()
