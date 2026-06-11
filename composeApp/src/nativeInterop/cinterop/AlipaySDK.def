@@ -3,5 +3,6 @@ headers=AlipaySDK/AlipaySDK.h
 headerFilter=**/*.h
 package=com.alipay.sdk
 
-compilerOpts=-framework AlipaySDK -F/../../../iosApp/Frameworks
-linkerOpts=-framework AlipaySDK -F/../../../iosApp/Frameworks
+#compilerOpts=-framework AlipaySDK -F/../../../iosApp/Frameworks
+#linkerOpts=-framework AlipaySDK -F/../../../iosApp/Frameworks
+#def配置文件中路径无法用占位符，可能配置的路径错误
