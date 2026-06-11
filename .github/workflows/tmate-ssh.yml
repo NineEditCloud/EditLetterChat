@@ -1,4 +1,4 @@
-name: Tmate Ssh (macOS)
+name: Tmate SSH (macOS)
 
 on:
   workflow_dispatch:   # 手动触发
