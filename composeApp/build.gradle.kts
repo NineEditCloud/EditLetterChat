@@ -165,27 +165,48 @@ kotlin{
 //                    )
 //            }
         }
+
+        /*支付宝SDK是.xcframework，需在链接时指定正确路径*/
         iosTarget.binaries.all{
-            linkerOpts("-F${project.rootDir}/iosApp/Pods/AlipaySDK-iOS", "-framework", "AlipaySDK")
+            val podsDir = project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
+            val xcframeworkDir = podsDir.resolve("AlipaySDK.xcframework")
+            linkerOpts("-F${xcframeworkDir.absolutePath}", "-framework", "AlipaySDK")
         }
         /*为支付宝SDK配置手动cinterop绑定(其CocoaPod缺乏正确moduleMap导致自动cinterop失败)*/
+        /*支付宝SDK通过CocoaPods管理(iosApp/Podfile中声明)，
+        配置cinterop指向CocoaPods下载的framework(需先运行pod install)
+        (若src/nativeInterop/cinterop/AlipaySDK.def配置的手动导入framework路径错误)*/
         iosTarget.compilations.getByName("main"){
             cinterops{
                 val alipaySDK by creating{
                     defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
                     packageName("com.alipay.sdk")
 
-                    /*支付宝SDK通过CocoaPods管理(iosApp/Podfile中声明)，
-                    配置cinterop指向CocoaPods下载的framework(需先运行pod install)
-                    (若src/nativeInterop/cinterop/AlipaySDK.def配置的手动导入framework路径错误)*/
-                    val podsDir=project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
-//                    val frameworkHeaders=podsDir.resolve("AlipaySDK.framework/Headers")
-//                    compilerOpts("-I${frameworkHeaders.absolutePath}", "-F${podsDir.absolutePath}", )
-//                    linkerOpts("-F${podsDir.absolutePath}", "-framework", "AlipaySDK", )
+                    /*AlipaySDK-iOS CocoaPod安装的是.xcframework，
+                      动态查找其中的AlipaySDK.framework/Headers目录*/
+                    val podsDir = project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
+                    val xcframeworkDir = podsDir.resolve("AlipaySDK.xcframework")
 
-                    val frameworkDir = podsDir.resolve("AlipaySDK.framework")
+                    /*遍历xcframework的架构切片，找到包含AlipaySDK.framework的切片*/
+                    val frameworkDir = if (xcframeworkDir.exists()) {
+                        val slices = xcframeworkDir.listFiles { f -> f.isDirectory } ?: emptyArray()
+                        slices.firstNotNullOfOrNull { slice ->
+                            val fw = slice.resolve("AlipaySDK.framework")
+                            if (fw.exists() && fw.isDirectory) fw else null
+                        } ?: throw GradleException(
+                            "AlipaySDK.framework not found in $xcframeworkDir. " +
+                                    "Please ensure 'pod install' has been run in iosApp directory."
+                                                  )
+                    } else {
+                        /*pod install未运行时的友好提示*/
+                        logger.warn("⚠️ AlipaySDK.xcframework not found at $xcframeworkDir. " +
+                                            "Please run 'pod install' in iosApp directory before building.")
+                        podsDir /*占位，实际构建时会失败并提示*/
+                    }
+
                     val headersDir = frameworkDir.resolve("Headers")
-                    compilerOpts("-I${headersDir.absolutePath}", "-F${podsDir.absolutePath}")
+                    /*-I 指定头文件搜索路径，-F 指定framework搜索路径(指向xcframework目录)*/
+                    compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
                 }
             }
         }
