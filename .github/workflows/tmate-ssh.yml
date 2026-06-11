@@ -5,7 +5,7 @@ on:
 
 jobs:
   debug:
-    runs-on: macos-14
+    runs-on: macos-13   # macos-14 经常满载，换 macos-13 更容易排到
     timeout-minutes: 120
     steps:
       - name: 🛰️ 启动 Tmate SSH 会话
