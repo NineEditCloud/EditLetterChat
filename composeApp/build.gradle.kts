@@ -168,31 +168,32 @@ kotlin{
 
 
         iosTarget.binaries.all{
+            /*WechatOpenSDK 是静态库(.a)，需链接 .a 文件*/
             val wechatPodsDir = project.rootDir.resolve("iosApp/Pods/WechatOpenSDK/OpenSDK2.0.4")
-            linkerOpts("-F${wechatPodsDir.absolutePath}", "-framework", "WechatOpenSDK")
+            linkerOpts("-L${wechatPodsDir.absolutePath}", "-lWechatOpenSDK")
+            /* -L + -lWechatOpenSDK 用于静态库(链接libWechatOpenSDK.a)*/
 
             /*支付宝SDK是.xcframework，需在链接时指定正确路径*/
             val podsDir = project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
             val xcframeworkDir = podsDir.resolve("AlipaySDK.xcframework")
             linkerOpts("-F${xcframeworkDir.absolutePath}", "-framework", "AlipaySDK")
+            /* -F + -framework 用于 framework*/
         }
-        /*支付宝SDK其CocoaPod缺乏正确moduleMap导致自动cinterop失败*/
-        /*支付宝SDK通过CocoaPods管理(iosApp/Podfile中声明)，
+        /*微信SDK、支付宝SDK其CocoaPod缺乏正确moduleMap导致自动cinterop失败*/
+        /*微信SDK、支付宝SDK IOS依赖通过CocoaPods管理(iosApp/Podfile中声明)，
         手动配置cinterop指向CocoaPods下载的framework(需先运行pod install)
-        (若src/nativeInterop/cinterop/AlipaySDK.def配置的手动导入framework路径错误)*/
+        (若src/nativeInterop/cinterop/目录下 WechatOpenSDK.def、AlipaySDK.def配置文件的手动导入framework路径错误)*/
         iosTarget.compilations.getByName("main"){
             cinterops{
-                val wechatOpenSDK by creating{
+                val wechatOpenSDK by creating {
                     defFile(project.file("src/nativeInterop/cinterop/WechatOpenSDK.def"))
                     packageName("com.wechat.opensdk")
 
-                    /*WechatOpenSDK CocoaPod 安装后的路径*/
+                    /*WechatOpenSDK CocoaPod安装后的路径*/
                     val podsDir = project.rootDir.resolve("iosApp/Pods/WechatOpenSDK")
                     val sdkDir = podsDir.resolve("OpenSDK2.0.4")
-                    val frameworkDir = sdkDir.resolve("WechatOpenSDK.framework")
-                    val headersDir = frameworkDir.resolve("Headers")
 
-                    compilerOpts("-I${headersDir.absolutePath}", "-F${sdkDir.absolutePath}")
+                    compilerOpts("-I${sdkDir.absolutePath}")/*WechatOpenSDK 是静态库(.a)，头文件直接在 OpenSDK2.0.4 目录下*/
                 }
                 val alipaySDK by creating{
                     defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )

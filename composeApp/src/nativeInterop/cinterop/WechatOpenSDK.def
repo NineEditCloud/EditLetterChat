@@ -1,4 +1,4 @@
 language = Objective-C
-headers = WechatOpenSDK.h
+headers = WXApi.h
 headerFilter = **/*.h
 package = com.wechat.opensdk
