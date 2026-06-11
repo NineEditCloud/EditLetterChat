@@ -166,8 +166,12 @@ kotlin{
 //            }
         }
 
-        /*支付宝SDK是.xcframework，需在链接时指定正确路径*/
+
         iosTarget.binaries.all{
+            val wechatPodsDir = project.rootDir.resolve("iosApp/Pods/WechatOpenSDK/OpenSDK2.0.4")
+            linkerOpts("-F${wechatPodsDir.absolutePath}", "-framework", "WechatOpenSDK")
+
+            /*支付宝SDK是.xcframework，需在链接时指定正确路径*/
             val podsDir = project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
             val xcframeworkDir = podsDir.resolve("AlipaySDK.xcframework")
             linkerOpts("-F${xcframeworkDir.absolutePath}", "-framework", "AlipaySDK")
@@ -178,6 +182,18 @@ kotlin{
         (若src/nativeInterop/cinterop/AlipaySDK.def配置的手动导入framework路径错误)*/
         iosTarget.compilations.getByName("main"){
             cinterops{
+                val wechatOpenSDK by creating{
+                    defFile(project.file("src/nativeInterop/cinterop/WechatOpenSDK.def"))
+                    packageName("com.wechat.opensdk")
+
+                    /*WechatOpenSDK CocoaPod 安装后的路径*/
+                    val podsDir = project.rootDir.resolve("iosApp/Pods/WechatOpenSDK")
+                    val sdkDir = podsDir.resolve("OpenSDK2.0.4")
+                    val frameworkDir = sdkDir.resolve("WechatOpenSDK.framework")
+                    val headersDir = frameworkDir.resolve("Headers")
+
+                    compilerOpts("-I${headersDir.absolutePath}", "-F${sdkDir.absolutePath}")
+                }
                 val alipaySDK by creating{
                     defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
                     packageName("com.alipay.sdk")
@@ -188,16 +204,16 @@ kotlin{
                     val xcframeworkDir = podsDir.resolve("AlipaySDK.xcframework")
 
                     /*遍历xcframework的架构切片，找到包含AlipaySDK.framework的切片*/
-                    val frameworkDir = if (xcframeworkDir.exists()) {
+                    val frameworkDir=if(xcframeworkDir.exists() ){
                         val slices = xcframeworkDir.listFiles { f -> f.isDirectory } ?: emptyArray()
-                        slices.firstNotNullOfOrNull { slice ->
+                        slices.firstNotNullOfOrNull{ slice ->
                             val fw = slice.resolve("AlipaySDK.framework")
-                            if (fw.exists() && fw.isDirectory) fw else null
-                        } ?: throw GradleException(
+                            if(fw.exists() && fw.isDirectory) fw else null
+                        }?:throw GradleException(
                             "AlipaySDK.framework not found in $xcframeworkDir. " +
                                     "Please ensure 'pod install' has been run in iosApp directory."
                                                   )
-                    } else {
+                    }else{
                         /*pod install未运行时的友好提示*/
                         logger.warn("⚠️ AlipaySDK.xcframework not found at $xcframeworkDir. " +
                                             "Please run 'pod install' in iosApp directory before building.")
@@ -223,17 +239,17 @@ kotlin{
             baseName="Shared"/*框架名(将作为Pod名)*/
             isStatic=true/*生成静态框架库(避免符号冲突)，加速编译*/
         }
-        pod("WechatOpenSDK")/*声明 微信OpenSDK依赖*/{
-//            moduleName="WechatOpenSDK"
-            version="2.0.4"/*2.0.5最低支持IOS12.0+*/
-            /*若需指定subspec(如无默认头文件可配置：moduleName="WechatOpenSDK")*/
-        }
+//        pod("WechatOpenSDK")/*声明 微信OpenSDK依赖*/{
+////            moduleName="WechatOpenSDK"
+//            version="2.0.4"/*2.0.5最低支持IOS12.0+*/
+//            /*若需指定subspec，如无默认头文件可配置：moduleName="WechatOpenSDK"*/
+//        }
 //        pod("AlipaySDK-iOS")/*声明 支付宝SDK依赖*/{
 //            version="15.8.30"/*15.8.30最低支持IOS12.0+，15.2.1、15.7.11*/
             /*支付宝SDK可能需添加额外链接器标志，若编译出错 可在iosMain的cinterop中配置*/
 //        }
         /*pod()方法会自动尝试生成Kotlin绑定(让Kotlin代码能调用共享模块依赖)，
-        但支付宝SDK的CocoaPod没正确的moduleMap或头文件 导致cinterop失败，
+        但 微信SDK、支付宝SDK 的CocoaPod没正确的moduleMap或头文件 导致cinterop失败，
         改为手动cinterop配置(见上方forEach中的cinterops块)*/
     }
 
