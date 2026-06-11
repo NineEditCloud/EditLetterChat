@@ -150,7 +150,7 @@ kotlin{
             isStatic=true/*生成静态框架库(避免符号冲突)，加速编译*/
 //            linkerOpts.add("-lsqlite3")/*Required when using NativeSQLiteDriver*/
 
-            /*为从Kotlin代码中调用支付宝SDK，本地导入链接支付宝framework(需从支付宝开放平台下载支付宝SDK框架 并在“项目/iosApp/Frameworks”路径手动导入文件)*/
+            /*为从Kotlin代码中调用支付宝SDK，手动导入链接支付宝framework(需从支付宝开放平台下载支付宝SDK框架 并在“项目/iosApp/Frameworks”路径手动导入文件)*/
             linkerOpts.add("-F${projectDir}/../iosApp/Frameworks", )
             linkerOpts.add("-framework AlipaySDK")
 
@@ -171,6 +171,13 @@ kotlin{
                 val alipaySDK by creating{
                     defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
                     packageName("com.alipay.sdk")
+
+                    /*支付宝SDK通过CocoaPods管理(iosApp/Podfile中声明)，
+                    配置cinterop指向CocoaPods下载的framework(若Podfile指定的手动导入framework路径错误)*/
+//                    val podsBase=project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
+//                    val frameworkHeaders=podsBase.resolve("AlipaySDK.framework/Headers")
+//                    compilerOpts("-I${frameworkHeaders.absolutePath}", "-F${podsBase.absolutePath}")
+//                    linkerOpts("-F${podsBase.absolutePath}", "-framework", "AlipaySDK")
                 }
             }
         }
@@ -352,6 +359,7 @@ kotlin{
 
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
             implementation(files("path/to/cinterop") )
+//            implementation(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
         }
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{

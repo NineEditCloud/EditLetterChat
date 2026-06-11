@@ -9,7 +9,6 @@ Pod::Spec.new do |spec|
     spec.vendored_frameworks      = 'build/cocoapods/framework/Shared.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '12.0'
-    spec.dependency 'AlipaySDK-iOS', '15.8.2'
     spec.dependency 'WechatOpenSDK', '2.0.4'
                 
     if !Dir.exist?('build/cocoapods/framework/Shared.framework') || Dir.empty?('build/cocoapods/framework/Shared.framework')

@@ -3,5 +3,5 @@ headers = AlipaySDK/AlipaySDK.h
 headerFilter = **/*.h
 package = com.alipay.sdk
 
-compilerOpts = -framework AlipaySDK -F/Path/To/Framework
-linkerOpts = -framework AlipaySDK -F/Path/To/Framework
+compilerOpts = -framework AlipaySDK -F/../../../iosApp/Frameworks
+linkerOpts = -framework AlipaySDK -F/../../../iosApp/Frameworks
