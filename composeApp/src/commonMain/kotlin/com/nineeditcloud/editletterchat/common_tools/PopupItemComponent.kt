@@ -112,11 +112,9 @@ fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题
         Popup(alignment=Alignment.TopStart/*弹窗内容位置*/,
               onDismissRequest/*点外部关弹窗*/={ showPopup=false; onShowPopup(showPopup) },
               offset=with(density){ IntOffset(x=popupOffset.x.toInt(), y=popupOffset.y.toInt() ) },
-              properties/*弹窗属性*/=PopupProperties(focusable/*可聚焦(与其它弹窗状态聚焦) 必须！*/=false,
-                  dismissOnBackPress/*返回键关闭*/=true, dismissOnClickOutside/*按外部关闭*/=true, ),/*聚焦弹窗状态下 事件*/
+              properties/*弹窗属性*/=PopupProperties(focusable/*可聚焦(与其它弹窗状态聚焦) 必须！*/=true,
+                  dismissOnBackPress/*返回键关闭*/=true, dismissOnClickOutside/*按外部关闭*/=true, ),
               ){
-//            Row(Modifier/*.padding(end=10.dp)*/, /*horizontalArrangement=Arrangement.End*//*子项水平靠右*/){
-//            }
             val listItemWindowBackground=if(!isSystemInDarkTheme() ) Color.White else Color.Black
             val windowItemBackground=if(!isSystemInDarkTheme() ) Color.Black else Color.White
             Row(Modifier.background(listItemWindowBackground,RoundedCornerShape(8.dp) )
