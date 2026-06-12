@@ -159,8 +159,8 @@ kotlin{
                 "-Xbinary=bundleId=com.nineeditcloud.editletterchat", /*消除bundleID警告*/
                 "-memory-model", "experimental", /*新内存模型减少峰值(选项已弃用-未来会移除)*/
                 )
-//            iosTarget.compilations.all{/*Konan编译器额外参数(接口已过时-未来会移除)*/
-//                compilerOptions.options.freeCompilerArgs.addAll(
+//            iosTarget.compilations.all{
+//                compilerOptions/*Konan编译器额外参数(接口已过时-未来会移除)*/.options.freeCompilerArgs.addAll(
 //                    listOf("-opt-in=kotlin.experimental.ExperimentalNativeApi", ),
 //                    )
 //            }
@@ -261,20 +261,20 @@ kotlin{
 
     jvm()/*标准JVM桌面目标(Win端安装包内置JRE)，覆盖架构(若32位不可用则启动64位)： arm(aarch) 32/64、Intel&AMD x86/x86_64/x64(早期手机芯片架构 性能差/发热)*/
 
-    macosArm64{/*macOS桌面-AppleSilicon arm64(aarch64)芯片版*/
-        binaries/*二进制字节码配置*/{
-            executable/*执行包配置*/{
-                linkerOpts("-mmacosx-version-min=11.0")/*M芯片aarch64 最低macOS版本11.0(mac系统库是从11.0才提供AppleSilicon芯片arm64切片)*/
-            }
-        }
-    }
-    macosX64{/*macOS桌面-Intel&AMD x86_64/x64芯片版*/
-        binaries{
-            executable{
-                linkerOpts("-mmacosx-version-min=10.13")/*Intel芯片 最低macOS版本10.13(缺少低于10.13的Intel版mac必要系统API)*/
-            }
-        }
-    }
+//    macosArm64{/*macOS桌面-AppleSilicon arm64(aarch64)芯片版*/
+//        binaries/*二进制字节码配置*/{
+//            executable/*执行包配置*/{
+//                linkerOpts("-mmacosx-version-min=11.0")/*M芯片aarch64 最低macOS版本11.0(mac系统库是从11.0才提供AppleSilicon芯片arm64切片)*/
+//            }
+//        }
+//    }
+//    macosX64{/*macOS桌面-Intel&AMD x86_64/x64芯片版*/
+//        binaries{
+//            executable{
+//                linkerOpts("-mmacosx-version-min=10.13")/*Intel芯片 最低macOS版本10.13(缺少低于10.13的Intel版mac必要系统API)*/
+//            }
+//        }
+//    }
     /*有些库没MacOS专用依赖，打包IOS时不建议加MacOS架构(改用JVM依赖)，这样Xcode编译应用IOS框架时 不会因缺失MacOS专用依赖而报错(其实不影响IOS框架编译)*/
 
 //    linuxX64();linuxArm64()

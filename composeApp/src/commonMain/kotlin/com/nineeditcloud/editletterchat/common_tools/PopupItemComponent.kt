@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import editletterchat.composeapp.generated.resources.Res
 import editletterchat.composeapp.generated.resources.new_user
 import org.jetbrains.compose.resources.painterResource
@@ -60,87 +61,82 @@ fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题
     ){
 
     /*remember变量：监听到值变化时会自动重组 并向所有调用处发射新值*/
-    var isContextMenuVisible by rememberSaveable{ mutableStateOf(false) }
+//    var isContextMenuVisible by rememberSaveable{ mutableStateOf(false) }
     var showPopup by remember{ mutableStateOf(false) }
 //    var pressOffset by remember{ mutableStateOf(DpOffset.Zero) }
     var popupOffset by remember{ mutableStateOf(Offset.Zero) }/*列表子项在容器布局中的坐标，每次赋值会重组发射新位置信息*/
-    var itemHeight by remember{ mutableStateOf(0.dp) }
     val interactionSource=remember{ MutableInteractionSource() }
     val density=LocalDensity.current
-    Card(elevation=0.dp, modifier=modifier.onSizeChanged{ itemHeight=with(density){ it.height.toDp() } }
-        .background(Color.Transparent)/*背景透明*/,
-        ){
-        Box(modifier=Modifier.fillMaxWidth().padding(0.dp).background(Color.Transparent)/*背景透明*/
-                .indication(interactionSource,LocalIndication.current)
-                .pointerInput(true){/*触摸监听输入*/
-                    detectTapGestures(/*点击动作识别*/
-                        onLongPress/*长按*/={/*获取点击组件在容器组件中的位置坐标 默认赋值给it*/
-//                            pressOffset=DpOffset(it.x.toDp(), it.y.toDp() )
-                            popupOffset=it/*将长按位置坐标 赋值给弹窗位置*/
-                            showPopup=true/*打开弹窗*/
-                            onShowPopup(showPopup)/*参数回调返回值*/
-                        },
-                        onPress/*按下*/={
-                            val press=PressInteraction.Press(it)
-                            interactionSource.emit(press)
-                            tryAwaitRelease()
-                            interactionSource.emit(PressInteraction.Release(press) )
-                        },
-                        onTap/*点击*/={
-                            onTap?.invoke()/*不为空则调用*/
-                        },
-                        )
-                },
-            ){
-            Row/*水平布局*/(Modifier.fillMaxWidth()/*填充容器全部宽，否则若在Button按钮容器中会默认被放置中间*/.padding(7.dp)/*内边距*/, ){
-                Image(painter=icon, contentDescription="头像圆角图片"/*Image描述(必填此项，否则报错)*/,
-//                        rememberAsyncImagePainter(model=File("${contactMessageItem.id}.jpg") )/*Image图片资源，加载账号Id对应的头像路径*/ ,
-                      Modifier.size(45.dp)/*设置图片尺寸*/.clip(RoundedCornerShape(5.dp) )/*设置圆角半径，12.dp为圆形*/
-                          .background(Color.LightGray)/*可选：添加背景色，便于观察圆角效果*/,
-                      contentScale=ContentScale.Crop/*可选：缩放类型，如裁剪适应*/, )
-                Column/*竖直布局*/(Modifier.padding(start=10.dp)/*竖直布局外边距(因为是在Row水平布局中，所以是左边距)*/, ){
-                    /*此布局内是昵称和最新消息 控件*/
-                    Text/*昵称文本*/(title, fontSize=10.sp, lineHeight=15.sp,
-                        color=MaterialTheme.colorScheme.onSurface/*昵称黑/白色，导航图和列表里的界面必须用MaterialTheme，否则出现不会实时跟随系统深浅主题变色的Bug*/, )
-                    Text/*最新消息文本*/(msg, color=Color.Gray/*内容灰色*/, fontSize=8.sp, lineHeight=10.sp)
-                }
-
+    val backgroundColor=if(!isSystemInDarkTheme() ) Color(0xFFEEF2FD) else Color(0xFF1C1E1F)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
+    Column(modifier=Modifier.fillMaxWidth().background(backgroundColor)/*背景透明*/
+//        .indication(interactionSource,LocalIndication.current)
+        .pointerInput(true){/*触摸监听输入*/
+            detectTapGestures(/*点击动作识别*/
+                              onLongPress/*长按*/={/*获取点击组件在容器组件中的位置坐标 默认赋值给it*/
+//                                  pressOffset=DpOffset(it.x.toDp(), it.y.toDp() )
+                                  popupOffset=it/*将长按位置坐标 赋值给弹窗位置*/
+                                  showPopup=true/*打开弹窗*/
+                                  onShowPopup(showPopup)/*参数回调返回值*/
+                              },
+                              onPress/*按下*/={
+                                  val press=PressInteraction.Press(it)
+                                  interactionSource.emit(press)
+                                  tryAwaitRelease()
+                                  interactionSource.emit(PressInteraction.Release(press) )
+                              },
+                              onTap/*点击*/={
+                                  onTap?.invoke()/*不为空则调用*/
+                              },
+                             )
+        },
+          ){
+        Row/*水平布局*/(Modifier.fillMaxWidth()/*填充容器全部宽，否则若在Button按钮容器中会默认被放置中间*/.padding(7.dp)/*内边距*/, ){
+            Image(painter=icon, contentDescription="头像圆角图片"/*Image描述(必填此项，否则报错)*/,
+//                  rememberAsyncImagePainter(model=File("${contactMessageItem.id}.jpg") )/*Image图片资源，加载账号Id对应的头像路径*/ ,
+                  Modifier.size(45.dp)/*设置图片尺寸*/.clip(RoundedCornerShape(5.dp) )/*设置圆角半径，12.dp为圆形*/
+                      .background(Color.LightGray)/*可选：添加背景色，便于观察圆角效果*/,
+                  contentScale=ContentScale.Crop/*可选：缩放类型，如裁剪适应*/, )
+            Column/*竖直布局*/(Modifier.padding(start=10.dp)/*竖直布局外边距(因为是在Row水平布局中，所以是左边距)*/, ){
+                /*此布局内是昵称和最新消息 控件*/
+                Text/*昵称文本*/(title, fontSize=10.sp, lineHeight=15.sp,
+                                 color=MaterialTheme.colorScheme.onSurface/*昵称黑/白色，导航图和列表里的界面必须用MaterialTheme，否则出现不会实时跟随系统深浅主题变色的Bug*/, )
+                Text/*最新消息文本*/(msg, color=Color.Gray/*内容灰色*/, fontSize=8.sp, lineHeight=10.sp)
             }
-//            Divider(Modifier.padding(start=80.dp) )/*列表项分割线，已废弃，更名为HorizontalDivider*/
-            HorizontalDivider(Modifier.padding(start=80.dp), color=Color.LightGray)/*水平分割线*/
-        }
 
-        if(showPopup){/*若列表项弹窗状态为打开*/
-            Popup(alignment=Alignment.TopStart/*弹窗内容位置*/,
-                  onDismissRequest/*点外部关弹窗*/={ showPopup=false; onShowPopup(showPopup) },
-                  offset=with(density){ IntOffset(x=popupOffset.x.toInt(), y=popupOffset.y.toInt() ) },
-//                  properties=PopupProperties(focusable=true, dismissOnBackPress=true, dismissOnClickOutside=true),
-                  ){
-                Row(Modifier/*.padding(end=10.dp)*/, /*horizontalArrangement=Arrangement.End*//*子项水平靠右*/){
-                    val listItemWindowBackground=if(!isSystemInDarkTheme() ) Color.White else Color.Black
-                    val windowItemBackground=if(!isSystemInDarkTheme() ) Color.Black else Color.White
-                    Row(Modifier.background(listItemWindowBackground,RoundedCornerShape(8.dp) )
-                            .clip(RoundedCornerShape(8.dp) )/*裁剪内容为圆角(为使点击涟漪不超出此布局圆角范围)*/
-                       ){
-                        for(i in 0..< popupItemsTitle.size){/*遍历弹窗列表标题集合的每个索引*/
-                            val noEndIndex=i !=popupItemsTitle.size-1/*当前遍历值 不为 末尾索引*/
-                            val startPadd/*标签开头边距*/=if(i!=0)      /*若不是开头索引*/ 3.dp else 0.dp
-                            val endPadd  /*标签末尾边距*/=if(noEndIndex)/*若不是末尾索引*/ 3.dp else 0.dp
-                            Text(popupItemsTitle[i]/*标题*/, Modifier.background(windowItemBackground).padding(start=startPadd, end=endPadd)
-                                .clickable{
-                                    popupItemsUnit[i].invoke()/*点击事件*/
-                                },
-                                 color=listItemWindowBackground, fontSize=12.sp, lineHeight=12.sp, )
-                            if(noEndIndex){/*若不是最后一个索引*/
-                                VerticalDivider(Modifier.size(height=15.dp,width=2.dp), color=Color.LightGray)/*垂直分割线*/
-                            }
-                        }
+        }
+//        Divider(Modifier.padding(start=80.dp) )/*列表项分割线，已废弃，更名为HorizontalDivider*/
+        HorizontalDivider(Modifier.padding(start=80.dp), color=Color.LightGray)/*水平分割线*/
+    }
+
+    if(showPopup){/*若列表项弹窗状态为打开*/
+        Popup(alignment=Alignment.TopStart/*弹窗内容位置*/,
+              onDismissRequest/*点外部关弹窗*/={ showPopup=false; onShowPopup(showPopup) },
+              offset=with(density){ IntOffset(x=popupOffset.x.toInt(), y=popupOffset.y.toInt() ) },
+              properties/*弹窗属性*/=PopupProperties(focusable/*可聚焦(与其它弹窗状态聚焦) 必须！*/=false,
+                  dismissOnBackPress/*返回键关闭*/=true, dismissOnClickOutside/*按外部关闭*/=true, ),/*聚焦弹窗状态下 事件*/
+              ){
+//            Row(Modifier/*.padding(end=10.dp)*/, /*horizontalArrangement=Arrangement.End*//*子项水平靠右*/){
+//            }
+            val listItemWindowBackground=if(!isSystemInDarkTheme() ) Color.White else Color.Black
+            val windowItemBackground=if(!isSystemInDarkTheme() ) Color.Black else Color.White
+            Row(Modifier.background(listItemWindowBackground,RoundedCornerShape(8.dp) )
+                    .clip(RoundedCornerShape(8.dp) )/*裁剪内容为圆角(为使点击涟漪不超出此布局圆角范围)*/
+               ){
+                for(i in 0..< popupItemsTitle.size){/*遍历弹窗列表标题集合的每个索引*/
+                    val noEndIndex=i !=popupItemsTitle.size-1/*当前遍历值 不为 末尾索引*/
+                    val startPadd/*标签开头边距*/=if(i!=0)      /*若不是开头索引*/ 3.dp else 0.dp
+                    val endPadd  /*标签末尾边距*/=if(noEndIndex)/*若不是末尾索引*/ 3.dp else 0.dp
+                    Text(popupItemsTitle[i]/*标题*/, Modifier.background(windowItemBackground).padding(start=startPadd, end=endPadd)
+                        .clickable{
+                            popupItemsUnit[i].invoke()/*点击事件*/
+                        },
+                         color=listItemWindowBackground, fontSize=12.sp, lineHeight=12.sp, )
+                    if(noEndIndex){/*若不是最后一个索引*/
+                        VerticalDivider(Modifier.size(height=15.dp,width=2.dp), color=Color.LightGray)/*垂直分割线*/
                     }
-
                 }
             }
         }
-
     }
 
     BackHandler(showPopup){/*只在列表项弹窗状态为打开时 拦截返回键 并执行代码*/

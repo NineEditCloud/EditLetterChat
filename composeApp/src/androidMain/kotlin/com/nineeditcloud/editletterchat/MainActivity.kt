@@ -37,7 +37,7 @@ class MainActivity:ComponentActivity(){
                 Navigator(StartupLoading() )/*用Voyager-Navigator跨平台界面*/
             }
             /*以下设置系统导航栏 颜色透明 和 图标深浅主题*/
-            val systemUiController=rememberSystemUiController()
+            @Suppress("DEPRECATION") val systemUiController=rememberSystemUiController()
             systemUiController.setStatusBarColor/*设置状态栏颜色*/(color=Color.Transparent/*透明*/, darkIcons=!isSystemInDarkTheme()/*根据 深/浅 主题调整图标颜色*/)
             systemUiController.setNavigationBarColor/*设置导航栏颜色*/(color=Color.Transparent/*透明*/)
         }

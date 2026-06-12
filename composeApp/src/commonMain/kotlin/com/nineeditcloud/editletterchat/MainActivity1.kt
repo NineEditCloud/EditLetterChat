@@ -132,7 +132,7 @@ var accountData:UserAccountLocalData?=null/*账号数据 默认值*/
 var selectedFriend:AccountFriendLocalData?=null/*好友数据 默认值*/
 
 var imagePath:String=""
-var backgroundColor:Color=Color.Transparent/*全局背景色初始化值*/
+var backgroundColor:Color=Color.Transparent/*全局背景色初始值*/
 
 var navController:NavHostController?=null
 var currentRoute:String?=null/*当前导航页获取结果 初始值，equals(比较)扩展函数支持String?类型*/
@@ -225,10 +225,10 @@ class MainActivity1:Screen{
 //                            CompositionLocalProvider(LocalConfiguration provides fixedConfiguration){/*使用固定字体缩放大小的组件，不受系统字体大小影响*/
 //                            }
 
-                            Column(Modifier.fillMaxSize()) {
+                            Column(Modifier.fillMaxSize() ){
                                 Box/*用户卡片部分堆叠布局*/(Modifier.fillMaxWidth().padding(top=180.dp)/*顶部边距*/){
-                                    Column(Modifier.fillMaxWidth()) {
-                                        Column(Modifier.fillMaxWidth().height(40.dp)) { }/*填充Row水平布局名片外边距部分后边的上一半为透明*/
+                                    Column(Modifier.fillMaxWidth() ){
+                                        Column(Modifier.fillMaxWidth().height(40.dp) ){ }/*填充Row水平布局名片外边距部分后边的上一半为透明*/
                                         Column(Modifier.fillMaxWidth().background(drawerBackgroundColor).height(40.dp)/*填充剩余的所有空间，但不影响其它组件空间*/) { }/*填充Row名片下一半及下面的全部 为抽屉背景颜色*/
                                     }
                                     Row/*水平布局*/(Modifier.fillMaxWidth().padding(horizontal=20.dp)/*水平外边距*/.height(80.dp)

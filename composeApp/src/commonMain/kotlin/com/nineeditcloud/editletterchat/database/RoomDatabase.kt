@@ -40,7 +40,7 @@ abstract class AppDatabase/*账号数据库类*/:RoomDatabase(){
 
 /*用来Room编译器内部生成 `actual` implementations*/
 @Suppress("KotlinNoActualForExpect"/*禁用 期望函数的 无各平台actual警告(因为Room是编译时生成各平台actual)*/,
-          "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING"/*禁用 期望函数的编译警告*/)
+          "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING"/*禁用 期望函数的编译警告*/, )
 expect object AppDatabaseConstructor :RoomDatabaseConstructor<AppDatabase>{
     override fun initialize():AppDatabase
 }
