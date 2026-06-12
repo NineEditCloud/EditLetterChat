@@ -207,7 +207,6 @@ class MainActivity1:Screen{
         val drawerBackgroundColor=if(!isSystemInDarkTheme()) Color.White else Color(0xFF1C1E1F) /*抽屉背景色*/
         val topCoverBackground=painterResource(Res.drawable.cover07)
 
-        var listShowPopup/*接收 导航图代码方法-参数回调值的弹窗状态*/ by remember{ mutableStateOf(false)/*默认关闭状态*/ }/*值变化自动重组发射新值 用于判断作决定*/
         Box(Modifier.fillMaxSize().background(backgroundColor)/*.semantics(mergeDescendants=true){}*//*合并子组件语义*/
            ){
             ModalNavigationDrawer/*左侧抽屉，会自动适应系统 顶部状态栏和底部导航栏 部分的边距*/(
@@ -466,9 +465,7 @@ class MainActivity1:Screen{
                                                modifier=Modifier.padding(innerPadding).background(backgroundColor)
                                           ){
                                 /*放置导航图(内嵌界面加载)*/
-                                Nav(navController!!){
-                                    listShowPopup=it/*将导航图代码方法的 参数回调值 赋值给listShowPopup列表弹窗状态变量*/
-                                }
+                                Nav(navController!!)
 
                             }
 
@@ -610,7 +607,7 @@ class MainActivity1:Screen{
 
 
     @Composable
-    fun Nav(navController:NavHostController, onListShowPopup:(Boolean)->Unit={}/*参数回调(其实不必)*/ ){
+    fun Nav(navController:NavHostController, onListShowPopup:(Boolean)->Unit/*参数回调(其实不必)*/={}){
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigator跨平台Screen界面导航 绑定当前界面的导航控制器*/
 
         var showPopup by remember{ mutableStateOf(false) }/*列表项弹窗状态*/
@@ -628,7 +625,7 @@ class MainActivity1:Screen{
 //                    val scope=rememberCoroutineScope()/*数据变化自动重组发射新值的 协程作用域*/
                     val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
                     /*用LaunchedEffect实时监听accountData变化，加载数据*/
-                    LaunchedEffect(accountData!=null){
+                    LaunchedEffect(accountData){
                         if(accountData!=null){/*若当前账号数据不为空*/
                             lifecycleOwner.lifecycleScope.launch(Dispatchers.IO/*数据库、通信必须在输入输出流线程执行 否则切换导航界面时会崩溃*/){
                                 val currentAccount_FriendDBTableDao=getDatabase("${accountData!!.id}friend")/*获取 当前账号(不为空则调用)好友本地数据 数据库实例*/.friendDao()/*获取数据库中的 好友表Dao*/
@@ -650,21 +647,21 @@ class MainActivity1:Screen{
                                        AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
                                        AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
                                        AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
-                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
-                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
-                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
-                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
-                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
-                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
-                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
-                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
-                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
-                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
-                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
-                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
-                                       AccountFriendLocalData("11110000000", "小明", "你好", accountData!!.id+"and11110000000"),
-                                       AccountFriendLocalData("11110000001", "小张", "吃饭了吗？", accountData!!.id+"and11110000001"),
-                                       AccountFriendLocalData("11110000002", "小王", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       AccountFriendLocalData("11110000003", "小李", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000004", "小丽", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000005", "小栗", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       AccountFriendLocalData("11110000006", "小六", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000007", "小七", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000008", "小八", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       AccountFriendLocalData("11110000009", "小九", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000010", "小十", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000011", "十一", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       AccountFriendLocalData("11110000012", "十二", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000013", "十三", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000014", "十四", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
+                                       AccountFriendLocalData("11110000015", "十五", "你好", accountData!!.id+"and11110000000"),
+                                       AccountFriendLocalData("11110000016", "十六", "吃饭了吗？", accountData!!.id+"and11110000001"),
+                                       AccountFriendLocalData("11110000017", "十七", "下午去踢足球吗？", accountData!!.id+"and11110000002"),
                                       ),
                             )
                         }
@@ -678,12 +675,9 @@ class MainActivity1:Screen{
                                 PopupItem(painterResource(Res.drawable.new_user),
                                           contactMessageItem.name, contactMessageItem.newMessage,
                                           onTap={
-                                              if(!showPopup){/*若弹窗为关闭状态*/
-                                                  selectedFriend=contactMessageItem; navigator.push(Session() )/*跳转 消息会话界面*/
-                                              }else{
-                                                   showPopup=false/*关闭弹窗*/
-                                              }
+                                              selectedFriend=contactMessageItem; navigator.push(Session() )/*跳转 消息会话界面*/
                                                 },
+                                          contactMessageItem.id,
                                           listOf("标为未读","取消置顶","移除选项"),
                                           listOf(
                                               {
@@ -694,15 +688,19 @@ class MainActivity1:Screen{
 
                                               },
                                               ),
-                                         ){
-                                    showPopup=it/*将参数回调值 赋值给showPopup变量，否则无法实时监听多个列表项内最新发射的弹窗状态*/
-                                }
+                                         )
                             }
 
                         }
                     }
 
+
                 }
+//                LaunchedEffect(popupNum){
+//                    CoroutineScope/*协程*/(Dispatchers.Main/*主线程*/).launch{
+//                        println(popupNum)
+//                    }
+//                }
 
             }
             composable("contact"){//联系人界面

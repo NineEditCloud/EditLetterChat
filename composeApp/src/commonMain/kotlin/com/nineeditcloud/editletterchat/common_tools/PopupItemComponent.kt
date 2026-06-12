@@ -1,13 +1,9 @@
 package com.nineeditcloud.editletterchat.common_tools
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,15 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -41,31 +35,48 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import editletterchat.composeapp.generated.resources.Res
 import editletterchat.composeapp.generated.resources.new_user
 import org.jetbrains.compose.resources.painterResource
+import androidx.compose.ui.window.PopupProperties
+//import com.nineeditcloud.editletterchat.common_tools.Shared.popupNum
+
+var showPopups by mutableStateOf(false)/*全局实时弹窗状态(统一所有列表项弹窗状态 失败:一个列表项弹窗全都弹窗)，Composable读取它后 会在它变化时自动重组 并向所有调用处发射新值*/
+//var showPopups=mutableStateMapOf<String,Boolean>() /*全局实时弹窗状态 键值对集合(聚合每个列表项弹窗状态 成功:每个列表项弹窗可独立弹窗)，Composable读取它后 会在它变化时自动重组 并向所有调用处发射新集合值*/
+/*注意是mutableStateMapOf 不是mutableStateOf内置mutableMapOf，Composable无法追踪mutableMapOf元素的变化*/
+//object Shared{
+//    var popupNum=0/*全局弹窗数量(用于判断是否有弹窗打开)*/
+//}
 
 /*自定义组件-列表项定位弹窗视图组件 调用很方便*/
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题*/:String, msg/*消息*/:String, onTap/*点击事件*/:(()->Unit)?=null,
+fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title:String, msg:String, onTap/*点击事件*/:(()->Unit)?=null,
+              itemPopupId/*列表项弹窗ID*/:String,
               popupItemsTitle/*弹窗菜单列表项 标题*/:List<String>, popupItemsUnit /*弹窗菜单列表项 事件*/:List<()->Unit>,
-              modifier:Modifier=Modifier, onShowPopup:( (Boolean)->Unit)/*参数回调*/,
+              onShowPopup:( (Boolean)->Unit)/*参数回调*/={},
     ){
 
     /*remember变量：监听到值变化时会自动重组 并向所有调用处发射新值*/
 //    var isContextMenuVisible by rememberSaveable{ mutableStateOf(false) }
-    var showPopup by remember{ mutableStateOf(false) }
+
 //    var pressOffset by remember{ mutableStateOf(DpOffset.Zero) }
+
+    var showPopup by remember{ mutableStateOf(false) }/*实时弹窗状态，Composable读取它后 会在它变化时自动重组 并向所有调用处发射新值*/
+//    LaunchedEffect(itemPopupId){
+//        showPopups.getOrPut(itemPopupId){ false }/*安全初始化：仅在键不存在时才设为false，避免每次重组都重置状态*/
+//    }
+//    LaunchedEffect(showPopups[itemPopupId]){/*监听实时弹窗状态键值对集合中 当前列表项 弹窗状态变化时执行*/
+//        println(showPopups.values.toMutableList().toString() )/*打印全局实时弹窗状态集合，观察是一个键还是多个键 得知接收的参数是否是好友ID*/
+//    }
+
     var popupOffset by remember{ mutableStateOf(Offset.Zero) }/*列表子项在容器布局中的坐标，每次赋值会重组发射新位置信息*/
-    val interactionSource=remember{ MutableInteractionSource() }
+//    val interactionSource=remember{ MutableInteractionSource() }
     val density=LocalDensity.current
     val backgroundColor=if(!isSystemInDarkTheme() ) Color(0xFFEEF2FD) else Color(0xFF1C1E1F)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
     Column(modifier=Modifier.fillMaxWidth().background(backgroundColor)/*背景透明*/
@@ -75,17 +86,28 @@ fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题
                               onLongPress/*长按*/={/*获取点击组件在容器组件中的位置坐标 默认赋值给it*/
 //                                  pressOffset=DpOffset(it.x.toDp(), it.y.toDp() )
                                   popupOffset=it/*将长按位置坐标 赋值给弹窗位置*/
-                                  showPopup=true/*打开弹窗*/
-                                  onShowPopup(showPopup)/*参数回调返回值*/
+                                  showPopup=true
+                                  showPopups=true
+//                                  showPopups[itemPopupId]=true/*打开弹窗*/
+//                                  popupNum++/*弹窗数量+1*/
                               },
-                              onPress/*按下*/={
-                                  val press=PressInteraction.Press(it)
-                                  interactionSource.emit(press)
-                                  tryAwaitRelease()
-                                  interactionSource.emit(PressInteraction.Release(press) )
-                              },
+//                              onPress/*按下*/={
+//                                  val press=PressInteraction.Press(it)
+//                                  interactionSource.emit(press)
+//                                  tryAwaitRelease()
+//                                  interactionSource.emit(PressInteraction.Release(press) )
+//                              },
                               onTap/*点击*/={
-                                  onTap?.invoke()/*不为空则调用*/
+//                                  val isShowPopup=Snapshot.withoutReadObservation{ showPopups }/*获取当前列表项弹窗状态集合 状态*/
+                                  if(/*!isShowPopup.containsValue(true)*/ !showPopups){/*若全局实时弹窗状态集合中 无打开的弹窗*/
+                                      onTap?.invoke()/*不为空则调用*/
+                                  }else{
+//                                      val valTrueKeys=showPopups.keys.filter{ showPopups[it]==true }/*获取全局实时弹窗状态集合中 值为true的键*/
+//                                      valTrueKeys.forEach{ showPopups[it]=false }/*关闭所有已打开的弹窗*/
+                                      showPopups=false
+//                                      popupNum=0/*弹窗数量归零*/
+                                  }
+
                               },
                              )
         },
@@ -108,12 +130,13 @@ fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题
         HorizontalDivider(Modifier.padding(start=80.dp), color=Color.LightGray)/*水平分割线*/
     }
 
-    if(showPopup){/*若列表项弹窗状态为打开*/
+    if(/*showPopups[itemPopupId]==true*/showPopup){/*若列表项弹窗状态为打开*/
         Popup(alignment=Alignment.TopStart/*弹窗内容位置*/,
-              onDismissRequest/*点外部关弹窗*/={ showPopup=false; onShowPopup(showPopup) },
+              onDismissRequest/*点外部关弹窗*/={ showPopup=false;showPopups=false;/*showPopups[itemPopupId]=false; popupNum--*//*弹窗数量减1*/ },
               offset=with(density){ IntOffset(x=popupOffset.x.toInt(), y=popupOffset.y.toInt() ) },
-              properties/*弹窗属性*/=PopupProperties(focusable/*可聚焦(与其它弹窗状态聚焦) 必须！*/=true,
-                  dismissOnBackPress/*返回键关闭*/=true, dismissOnClickOutside/*按外部关闭*/=true, ),
+              properties/*弹窗属性*/=PopupProperties(focusable/*可聚焦(与其它弹窗状态聚焦 安卓端有无效Bug) 必须！*/=false,
+                  dismissOnBackPress/*返回键关闭*/=true, dismissOnClickOutside/*按外部关闭*/=true, /*已有按外部关闭和返回键关闭，注释避免冲突*/
+                                                    ),
               ){
             val listItemWindowBackground=if(!isSystemInDarkTheme() ) Color.White else Color.Black
             val windowItemBackground=if(!isSystemInDarkTheme() ) Color.Black else Color.White
@@ -137,9 +160,10 @@ fun PopupItem(icon:Painter=painterResource(Res.drawable.new_user), title/*标题
         }
     }
 
-    BackHandler(showPopup){/*只在列表项弹窗状态为打开时 拦截返回键 并执行代码*/
-        showPopup=false/*关闭列表项弹窗*/
-        onShowPopup(showPopup)/*参数回调*/
+    BackHandler(/*showPopups[itemPopupId]==true*/showPopup){/*只在列表项弹窗状态为打开时 拦截返回键 并执行代码*/
+        showPopups=false
+//        showPopups[itemPopupId]=false/*关闭列表项弹窗*/
+//        popupNum--/*弹窗数量减1*/
     }
 }
 
