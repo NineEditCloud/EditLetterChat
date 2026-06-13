@@ -23,7 +23,7 @@ var currSocket:Socket?=null
 fun tcpLongConnClient(account:String, token:String,
                       onHashMapMessage/*收到哈希表字符串键值对消息回调*/:(HashMap<String,String>)->Unit={},
                       onBytesMessage/*收到字节串键值对消息回调*/:(HashMap<String,ByteArray>)->Unit={})=runBlocking{
-    CoroutineScope(Dispatchers.IO).launch{
+    CoroutineScope(Dispatchers.Default/*后台线程(防止掉线)*/).launch{/*在协程作用域中执行*/
         val host="192.168.1.47";val port=9000
         while(coroutineContext.isActive){
             try{
