@@ -9,11 +9,13 @@ import com.nineeditcloud.editletterchat.common_tools.toHashMap
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
+import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.*
 import kotlinx.coroutines.CancellationException
 
 var input: ByteReadChannel?=null/*输入流通道(接收)*/
 var output:ByteWriteChannel?=null/*输出流通道(发送)*/
+var currSocket:Socket?=null
 /**自动重连的 TCP长连接客户端(简化版)
  * @param account 认证账号
  * @param token 认证令牌
@@ -21,7 +23,6 @@ var output:ByteWriteChannel?=null/*输出流通道(发送)*/
 fun tcpLongConnClient(account:String, token:String,
                       onHashMapMessage/*收到哈希表字符串键值对消息回调*/:(HashMap<String,String>)->Unit={},
                       onBytesMessage/*收到字节串键值对消息回调*/:(HashMap<String,ByteArray>)->Unit={})=runBlocking{
-
     CoroutineScope(Dispatchers.IO).launch{
         val host="192.168.1.47";val port=9000
         while(coroutineContext.isActive){
@@ -35,9 +36,20 @@ fun tcpLongConnClient(account:String, token:String,
                     两者最终都会触发一次系统调用(writev) 带宽利用率、CPU 开销、内存拷贝次数相同，autoFlush=true的channel写完后也会立即flush，和write的行为一致
                     若场景是 构建完整消息帧 → 一次性发出，用socket.write(frame)完全足够 代码最少，两者 性能几乎无区别 接收端处理上完全一样 毫无差异，
                     Ktor3.x中无socket.write(字节串数组对象)方法*/
+                    currSocket=socket
 
                     val authMsg/*账号认证消息*/=OnlineAccountAuthRequest(account,token,deviceType() ).toData()/*自定义键值对 认证消息*/
-                    output?.writeStringUtf8(authMsg)/*发送认证消息*/
+//                        .toByteArray()/*转为字节数组*/
+                    output?.writeStringUtf8(authMsg)/*发送字符串 认证消息*/
+                    /*方式二：用字节流认证*/
+//                    val headerBytes=ByteArray(4).apply{
+//                        this[0]=(authMsg.size shr 24).toByte()
+//                        this[1]=(authMsg.size shr 16).toByte()
+//                        this[2]=(authMsg.size shr  8).toByte()
+//                        this[3]=authMsg.size.toByte()
+//                    }
+//                    output?.writeByteArray(headerBytes)/*发送字节串 认证消息长度头*/
+//                    output?.writeByteArray(authMsg)/*发送字节串 认证消息*/
                     val authResponse=input?.readUTF8Line()/*读取字符串认证响应*/ ?:throw Exception("认证响应为空")/*若读取响应为空，抛出异常触发自动重连*/
 //                    require/*监听情况抛出异常*/(authResponse.contains("\"auth_ok\"")/*正常条件*/ ){/*若不达成正常条件 则接收此块内异常信息并抛出异常*/
 //                        "认证失败: $authResponse"/*异常信息*/
@@ -85,6 +97,10 @@ fun tcpLongConnClient(account:String, token:String,
                     Log.e("Ktor-TCP长连接", e.message.toString(), e)
                 }else Log.e("Ktor-TCP长连接", "连接异常", e)
                 if(coroutineContext.isActive) delay(5_000)/*连接异常、读写异常等，等5秒自动重连(防止连续异常时 重连太频繁造成服务端压力)*/
+            }finally{/*无论是否异常，最终结束进程时都执行*/
+//                input?.close()/*关闭输入流通道*/
+//                output?.flushAndClose()/*关闭输出流通道*/
+                currSocket?.close()/*关闭当前socket*/
             }
             /*连接异常通常是与服务端未连接成功(或服务端未启动)、连接断开*/
         }
@@ -112,7 +128,7 @@ fun main(){
 }
 
 data class OnlineAccountAuthRequest/*上线账号认证请求-结构模型数据类*/(
-    val account:String,/*账号*/
+    val id:String,/*账号*/
     val token:String,/*Token令牌*/
     val authDeviceType:String,/*认证客户端设备平台类型*/
     )

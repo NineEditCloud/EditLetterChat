@@ -4,11 +4,15 @@ package com.nineeditcloud.editletterchat.common_tools
 
 const val delimiter="`"/*分隔符，`(反引号) 并非英文句子中常用的'(单引号)*/
 fun <T:Any>/*可调用处 泛型*/ T.toData/*对象模型转数据(序列化) 定义数据类的扩展函数*/():String{
-    val str=this::class.toString()/*this代表调用当前扩展函数的对象，获取数据类对象模型实例的KClass，并转为String*/
+    val str=this.toString()/*this代表调用当前扩展函数的对象，并转为String*/
+    /*不反射无需获取数据类对象模型实例的KClass(会使类型变化为泛型 导致无法识别数据类内容)*/
+//    print("数据类转为字符串结果：$str")
     val left=str.indexOf('(')/*获取字符串中从头开始第一个(字符的索引，若获取失败返回-1*/
-    return str.substring(left+1, str.length-1)/*截取字符串中 第一个(字符和最后一个字符 之间的字符串，索引从0开始 含索引对应的字符*/
+    val strKV=str.substring(left+1, str.length-1)/*截取字符串中 第一个(字符和最后一个字符 之间的字符串，索引从0开始 含索引对应的字符*/
 //        .replace(Regex("\\s+"), "")/*将空格、制表符、换行等所有空白字符 替换为不存在*/
         .replace(", ",delimiter)/*将", "替换为更简略的"`"分隔符*/ + "\n"/*追加换行符以作为一条消息结束*/
+    print("字符串键值对：$strKV")
+    return strKV
     /*writeStringUtf8本身不添加换行符
     常见需要添加 \n 的场景：
     基于行的协议(Line-based protocols)，很多 TCP 文本协议(如 IRC、SMTP、简单的聊天协议)都规定：一条消息=一行文本，以\n或\r\n结束，若不加\n，接收方就会一直等待后续字节，直到超时或连接关闭，无法判断当前消息是否完整
@@ -23,7 +27,7 @@ fun String?.toHashMap/*数据转哈希表键值对 定义String的扩展函数*/
     val map=hashMapOf<String/*键*/,String/*值*/>()/*hashMapOf集合对象中存在一个HashMap，创建集合操作对象时声明val常量 依旧能更改其对应HashMap的元素*/
     strs?.forEach{ str -> /*遍历strs数组*/
         val key=str.substringBefore('=')/*截取 =字符前的 字符串*/
-        val value=str.substringAfter('=')/*截取 =字符后的 字符串*/
+        val value=str.substringAfter('=')/*截取 =字符后的 字符串*/.replace("\n","")/*去除可能携带的换行符*/
         map[key]=value/*map[键]=赋值，若键不存在则添加新键值对元素*/
     }
     return map

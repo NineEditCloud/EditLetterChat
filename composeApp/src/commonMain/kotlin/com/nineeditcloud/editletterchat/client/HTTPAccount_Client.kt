@@ -1,5 +1,6 @@
 package com.nineeditcloud.editletterchat.client
 import com.nineeditcloud.editletterchat.common_tools.Log
+import com.nineeditcloud.editletterchat.common_tools.deviceType
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
@@ -74,9 +75,10 @@ object HTTPAccount_Client{
     }
 
     suspend fun signIn/*登录*/(id:String, password:String):Result{
-        val jsonStr/*Json数据*/ = json.encodeToString(serializer(), mapOf(
+        val jsonStr/*Json数据*/=json.encodeToString(serializer(), mapOf(
             "id" to id,
             "password" to password,
+            "authDeviceType" to deviceType()/*设备平台类型*/
             ) ) /*转为请求主体*/
         return post("/signin", jsonStr)
     }
