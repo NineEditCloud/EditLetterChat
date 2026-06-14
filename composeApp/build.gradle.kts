@@ -223,7 +223,7 @@ kotlin{
                     compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
                 }
 
-                val oneSignal by creating{
+                val oneSignal by creating{/*OneSignal接收推送唤醒进程SDK与Kotlin绑定失败，可能IOS端只能用Swift调用*/
                     defFile(project.file("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
                     packageName("com.onesignal")
 
@@ -256,7 +256,7 @@ kotlin{
         version="1.0.0"/*Pod版本*/
         summary="KMP 共享模块：登录 + 支付"/*摘要 简介？*/
         homepage="https://github.com/NineEditCloud/EditLetterChat"/*应用主页，项目Git仓库链接也行*/
-        ios.deploymentTarget="12.0"/*IOS目标最低版本要求，微信/支付宝 支付接口SDK最低兼容iOS12.0+，IOS12.2系统已内置Swift*/
+        ios.deploymentTarget="13.0"/*IOS目标最低版本要求，微信/支付宝 支付接口SDK最低兼容iOS12.0+，IOS12.2系统已内置Swift*/
         podfile=project.file("../iosApp/Podfile")/*iOS项目Podfile配置文件路径*/
         framework{
             baseName="Shared"/*框架名(将作为Pod名)*/

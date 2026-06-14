@@ -170,18 +170,19 @@ jobs:
             echo "ℹ️ 无Podfile，跳过"
           fi
           
-      - name: Debug OneSignal Pod structure
-        run: |
-          echo "=== OneSignal Pod 目录 ==="
-          ls -la iosApp/Pods/OneSignal/ || echo "目录不存在"
-          echo "=== 查找 .xcframework ==="
-          find iosApp/Pods/OneSignal -name "*.xcframework" -type d 2>/dev/null || echo "未找到 xcframework"
-          echo "=== 查找头文件 ==="
-          find iosApp/Pods/OneSignal -name "*.h" 2>/dev/null | head -20 || echo "未找到头文件"
-      - name: Debug OneSignalFramework headers
-        run: |
-          echo "=== OneSignalFramework Headers ==="
-          find iosApp/Pods/OneSignal/iOS_SDK/OneSignalSDK/OneSignal_XCFramework/OneSignalFramework.xcframework -name "*.h" 2>/dev/null
+#      - name: Debug OneSignal Pod structure
+#        run: |
+#          echo "=== OneSignal Pod 目录 ==="
+#          ls -la iosApp/Pods/OneSignal/ || echo "目录不存在"
+#          echo "=== 查找 .xcframework ==="
+#          find iosApp/Pods/OneSignal -name "*.xcframework" -type d 2>/dev/null || echo "未找到 xcframework"
+#          echo "=== 查找头文件 ==="
+#          find iosApp/Pods/OneSignal -name "*.h" 2>/dev/null | head -20 || echo "未找到头文件"
+#      - name: Debug OneSignalFramework headers
+#        run: |
+#          echo "=== OneSignalFramework Headers ==="
+#          find iosApp/Pods/OneSignal/iOS_SDK/OneSignalSDK/OneSignal_XCFramework/OneSignalFramework.xcframework -name "*.h" 2>/dev/null
+      
       # ---- 编译 iOS Framework (逐个编译便于定位错误) ----
       - name: 🔨 Build iOS - iosArm64 (真机)
         id: build-ios-arm64
