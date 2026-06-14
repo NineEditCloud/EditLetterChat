@@ -180,7 +180,8 @@ kotlin{
             linkerOpts("-F${xcframeworkDir.absolutePath}", "-framework", "AlipaySDK")
             /* -F + -framework 用于 framework*/
 
-            linkerOpts("-F${project.rootDir.resolve("iosApp/Pods/OneSignal").absolutePath}", "-framework", "OneSignal")
+            /*OneSignal接收推送唤醒进程SDK 是.xcframework，需在链接时指定正确路径*/
+//            linkerOpts("-F${project.rootDir.resolve("iosApp/Pods/OneSignal").absolutePath}", "-framework", "OneSignal")
         }
         /*微信SDK、支付宝SDK其CocoaPod缺乏正确moduleMap导致自动cinterop失败*/
         /*微信SDK、支付宝SDK IOS依赖通过CocoaPods管理(iosApp/Podfile中声明)，
