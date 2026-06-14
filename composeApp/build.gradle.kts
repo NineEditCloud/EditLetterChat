@@ -612,19 +612,19 @@ android/*安卓目标配置*/{
 2.添加Compose跨端二进制产物，将前步骤3中生成两个文件复制到harmonyApp项目下 其中：
 libkn.so复制到 entry/libs/arm64-v8a/目录下，libkn_api.h复制到 entry/src/main/cpp/include/目录下，
 为了简化这个步骤，可在跨端Compose项目中创建一个GradleTask执行这个复制任务。这样只需执行 publishDebugBinariesToHarmonyApp 或者 publishReleaseBinariesToHarmonyApp 即可编译 Compose 跨端代码并复制产物到鸿蒙项目。*/
-arrayOf("debug", "release").forEach{ type ->
-    tasks.register<Copy>("publish${type.capitalizeUS()}BinariesToHarmonyApp"){
-        group="harmony"
-        dependsOn("link${type.capitalizeUS()}SharedOhosArm64")
-        into(rootProject.file("harmonyApp") )
-        from("build/bin/ohosArm64/${type}Shared/libkn_api.h"){
-            into("entry/src/main/cpp/include/")
-        }
-        from(project.file("build/bin/ohosArm64/${type}Shared/libkn.so") ){
-            into("/entry/libs/arm64-v8a/")
-        }
-    }
-}
+//arrayOf("debug", "release").forEach{ type ->
+//    tasks.register<Copy>("publish${type.capitalizeUS()}BinariesToHarmonyApp"){
+//        group="harmony"
+//        dependsOn("link${type.capitalizeUS()}SharedOhosArm64")
+//        into(rootProject.file("harmonyApp") )
+//        from("build/bin/ohosArm64/${type}Shared/libkn_api.h"){
+//            into("entry/src/main/cpp/include/")
+//        }
+//        from(project.file("build/bin/ohosArm64/${type}Shared/libkn.so") ){
+//            into("/entry/libs/arm64-v8a/")
+//        }
+//    }
+//}
 /*3.添加 skikobridge.har 和 compose.har 依赖
 将skikobridge.har复制到 entry/libs/目录下，其中：skikobridge.har 可以从 ovCompose-sample/harmonyApp 项目下获取，
 将compose.har复制到 entry/libs目录下，其中 compose.har 是从 compose-multiplatform-core/ui-arkui 模块发布出来的，请参考文档中的编译发布板块里的第三部分内容
