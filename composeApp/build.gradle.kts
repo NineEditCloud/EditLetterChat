@@ -188,26 +188,24 @@ kotlin{
             cinterops{
                 val wechatOpenSDK by creating{
                     defFile(project.file("src/nativeInterop/cinterop/WechatOpenSDK.def") )/*导入cinterop 微信SDK依赖配置*/
+//                    defFile(files("src/nativeInterop/cinterop/WechatOpenSDK.def") )/*导入cinterop 微信SDK依赖配置*/
                     packageName("com.wechat.opensdk")
-
-                    /*WechatOpenSDK CocoaPod安装后的路径*/
+                    /* ↓ WechatOpenSDK CocoaPod安装后的路径*/
                     val podsDir=project.rootDir.resolve("iosApp/Pods/WechatOpenSDK")
                     val sdkDir=podsDir.resolve("OpenSDK2.0.4")
-
                     compilerOpts("-I${sdkDir.absolutePath}")/*WechatOpenSDK 是静态库(.a)，头文件直接在 OpenSDK2.0.4 目录下*/
                 }
                 val alipaySDK by creating{
                     defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
+//                    defFile(files("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
                     packageName("com.alipay.sdk")
-
-                    /*AlipaySDK-iOS CocoaPod安装的是.xcframework，
+                    /* ↓ AlipaySDK-iOS CocoaPod安装的是.xcframework，
                       动态查找其中的AlipaySDK.framework/Headers目录*/
-                    val podsDir = project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
-                    val xcframeworkDir = podsDir.resolve("AlipaySDK.xcframework")
-
-                    /*遍历xcframework的架构切片，找到包含AlipaySDK.framework的切片*/
+                    val podsDir=project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
+                    val xcframeworkDir=podsDir.resolve("AlipaySDK.xcframework")
+                    /* ↓ 遍历xcframework的架构切片，找到包含AlipaySDK.framework的切片*/
                     val frameworkDir=if(xcframeworkDir.exists() ){
-                        val slices=xcframeworkDir.listFiles{ f -> f.isDirectory } ?: emptyArray()
+                        val slices=xcframeworkDir.listFiles{ f -> f.isDirectory }?:emptyArray()
                         slices.firstNotNullOfOrNull{ slice ->
                             val fw=slice.resolve("AlipaySDK.framework")
                             if(fw.exists() && fw.isDirectory) fw else null
@@ -219,7 +217,6 @@ kotlin{
                                             "Please run 'pod install' in iosApp directory before building.", )
                         podsDir /*占位，实际构建时会失败并提示*/
                     }
-
                     val headersDir=frameworkDir.resolve("Headers")
                     /*-I 指定头文件搜索路径，-F 指定framework搜索路径(指向xcframework目录)*/
                     compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
@@ -227,9 +224,9 @@ kotlin{
 
                 val oneSignal by creating{
                     defFile(project.file("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
+//                    defFile(files("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
                     packageName("com.onesignal")
-
-                    /*OneSignal CocoaPod安装后的路径*/
+                    /* ↓ OneSignal CocoaPod安装后的路径*/
                     val podsDir=project.rootDir.resolve("iosApp/Pods/OneSignal")
                     val xcframeworkDir=podsDir.resolve("OneSignal.xcframework")
                     val frameworkDir=if(xcframeworkDir.exists() ){
@@ -443,10 +440,7 @@ kotlin{
 
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
 
-//            implementation(files("src/nativeInterop/cinterop/WechatOpenSDK.def") )/*导入cinterop 微信SDK依赖配置*/
-//            implementation(files("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
-//            implementation(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
-//            implementation(files("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
+
         }
 //        ohosMain.dependencies/*HarmonyOS依赖*/{
 //            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-harmony:${libs.versions.kotlinx.get()}")/*Kotlin协程-HarmonyOS，Room内部依赖需要*/
