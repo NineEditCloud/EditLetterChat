@@ -131,7 +131,7 @@ jobs:
   
   # ==================== 任务2: iOS Framework准备 ====================
   build-ios-framework:
-    name: 📱 Build iOS Framework 准备
+    name: 📱 Build iOS Framework
     runs-on: macos-14
     timeout-minutes: 90
     
