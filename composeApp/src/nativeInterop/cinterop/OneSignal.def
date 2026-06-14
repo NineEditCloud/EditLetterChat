@@ -1,5 +1,6 @@
 language = Objective-C
-headers = OneSignalFramework.h,OneSignalLiveActivityController.h
+headers = OneSignalFramework.h
+#,OneSignalLiveActivityController.h
 headerFilter = **/*.h
 #过滤头文件(找要用的Objective-C共享头文件)
 
