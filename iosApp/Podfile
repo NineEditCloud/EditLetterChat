@@ -5,6 +5,6 @@ target 'iosApp' do
    pod 'WechatOpenSDK', '2.0.4'   #添加微信SDK
 #    pod 'TencentOpenAPI', '3.4.18.1' #添加QQSDK
    pod 'AlipaySDK-iOS', '15.8.30' #添加支付宝SDK
-   pod 'OneSignal', '~>5.5.3'#OneSignal实时接收推送唤醒已冻结进程-IOS版(支持国内外苹果APNs推送)，兼容IOS11.0+ Kotlin绑定失败(可能IOS端只能用Swift调用)
+   pod 'OneSignal', '5.5.3'#OneSignal实时接收推送唤醒已冻结进程-IOS版(支持国内外苹果APNs推送)，兼容IOS11.0+ Kotlin绑定失败(可能IOS端只能用Swift调用)
    #5.2.16修复Objective-C++兼容性，5.5.3和5.4.x也修复了一些功能
 end

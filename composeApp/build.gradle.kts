@@ -225,27 +225,27 @@ kotlin{
                 }
 
                 val oneSignal by creating{/*OneSignal接收推送唤醒进程SDK与Kotlin绑定失败，可能IOS端只能用Swift调用*/
-                    defFile(project.file("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
+//                    defFile(project.file("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
                     packageName("com.onesignal")
-
-                    val podsDir=project.rootDir.resolve("iosApp/Pods/OneSignal")
-                    // 找 OneSignalFramework.xcframework(主framework)
-                    val xcframeworkDir = podsDir.resolve("iOS_SDK/OneSignalSDK/OneSignal_XCFramework/OneSignalFramework.xcframework")
-                    if(!xcframeworkDir.exists() ){
-                        throw GradleException("OneSignalFramework.xcframework not found at ${xcframeworkDir.absolutePath}")
-                    }
-                    // 找当前架构对应的 slice(ios-arm64)
-                    val frameworkDir = xcframeworkDir.listFiles { it -> it.isDirectory }?.firstOrNull { slice ->
-                        slice.resolve("OneSignalFramework.framework/Headers").exists()
-                    } ?: throw GradleException("OneSignalFramework.framework/Headers not found in ${xcframeworkDir.absolutePath}")
-
-                    val headersDir = frameworkDir.resolve("OneSignalFramework.framework/Headers")
-
-                    println("✅ OneSignal headers: ${headersDir.absolutePath}")
-                    println("   Files: ${headersDir.listFiles()?.joinToString { it.name }}")
-
-                    compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
-                    /*linkerOpts 不支持在 cinterop 中设置，移到 binaries 配置中*/
+//
+//                    val podsDir=project.rootDir.resolve("iosApp/Pods/OneSignal")
+//                    // 找 OneSignalFramework.xcframework(主framework)
+//                    val xcframeworkDir = podsDir.resolve("iOS_SDK/OneSignalSDK/OneSignal_XCFramework/OneSignalFramework.xcframework")
+//                    if(!xcframeworkDir.exists() ){
+//                        throw GradleException("OneSignalFramework.xcframework not found at ${xcframeworkDir.absolutePath}")
+//                    }
+//                    // 找当前架构对应的 slice(ios-arm64)
+//                    val frameworkDir = xcframeworkDir.listFiles { it -> it.isDirectory }?.firstOrNull { slice ->
+//                        slice.resolve("OneSignalFramework.framework/Headers").exists()
+//                    } ?: throw GradleException("OneSignalFramework.framework/Headers not found in ${xcframeworkDir.absolutePath}")
+//
+//                    val headersDir = frameworkDir.resolve("OneSignalFramework.framework/Headers")
+//
+//                    println("✅ OneSignal headers: ${headersDir.absolutePath}")
+//                    println("   Files: ${headersDir.listFiles()?.joinToString { it.name }}")
+//
+//                    compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
+//                    /*linkerOpts 不支持在 cinterop 中设置，移到 binaries 配置中*/
                 }
 
             }
@@ -257,7 +257,7 @@ kotlin{
         version="1.0.0"/*Pod版本*/
         summary="KMP 共享模块：登录 + 支付"/*摘要 简介？*/
         homepage="https://github.com/NineEditCloud/EditLetterChat"/*应用主页，项目Git仓库链接也行*/
-        ios.deploymentTarget="13.0"/*IOS目标最低版本要求，微信/支付宝 支付接口SDK最低兼容iOS12.0+，*/
+        ios.deploymentTarget="12.0"/*IOS目标最低版本要求，微信/支付宝 支付接口SDK最低兼容iOS12.0+，*/
         podfile=project.file("../iosApp/Podfile")/*iOS项目Podfile配置文件路径*/
         framework{
             baseName="Shared"/*框架名(将作为Pod名)*/
