@@ -228,34 +228,23 @@ kotlin{
 //                    defFile(files("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
                     packageName("com.onesignal")
 
-
-                    val podsDir=project.rootDir.resolve("iosApp/Pods/OneSignal")/*OneSignal CocoaPod安装后的路径*/
-                    if(!podsDir.exists() ){
-                        throw GradleException("OneSignal Pods dir not found: ${podsDir.absolutePath}\n" +
-                                    "Please run 'pod install' in iosApp directory.", )
+                    val podsDir = project.rootDir.resolve("iosApp/Pods/OneSignal")
+                    // 找 OneSignalFramework.xcframework（主 framework）
+                    val xcframeworkDir = podsDir.resolve("iOS_SDK/OneSignalSDK/OneSignal_XCFramework/OneSignalFramework.xcframework")
+                    if(!xcframeworkDir.exists() ){
+                        throw GradleException("OneSignalFramework.xcframework not found at ${xcframeworkDir.absolutePath}")
                     }
-                    val sdkDir=podsDir.resolve("iOS_SDK/OneSignalSDK")/*OneSignal 头文件在 iOS_SDK/OneSignalSDK/ 下各个子目录中*/
-                    if(!sdkDir.exists() ){
-                        throw GradleException("OneSignal SDK dir not found: ${sdkDir.absolutePath}")
-                    }
+                    // 找当前架构对应的 slice（ios-arm64）
+                    val frameworkDir = xcframeworkDir.listFiles { it -> it.isDirectory }?.firstOrNull { slice ->
+                        slice.resolve("OneSignalFramework.framework/Headers").exists()
+                    } ?: throw GradleException("OneSignalFramework.framework/Headers not found in ${xcframeworkDir.absolutePath}")
 
-                    // 收集所有子目录作为头文件搜索路径
-                    val allHeaderDirs = sdkDir.listFiles { it -> it.isDirectory }
-                        ?.flatMap { subDir ->/*递归查找所有包含 .h 文件的目录*/
-                            subDir.walkTopDown().filter{ it.isDirectory }.toList()
-                        }?.distinct()
-                        ?: emptyList()
+                    val headersDir = frameworkDir.resolve("OneSignalFramework.framework/Headers")
 
-                    println("🔍 OneSignal SDK dirs: ${allHeaderDirs.joinToString { it.name }}")
+                    println("✅ OneSignal headers: ${headersDir.absolutePath}")
+                    println("   Files: ${headersDir.listFiles()?.joinToString { it.name }}")
 
-                    allHeaderDirs.forEach{ compilerOpts("-I${it.absolutePath}") }/*将所有头文件目录加入 -I 搜索路径*/
-
-                    // 同时查找 .xcframework(若有)作为 -F 路径
-                    val xcframework=sdkDir.walkTopDown().filter{ it.isDirectory && it.name.endsWith(".xcframework") }.firstOrNull()
-                    if (xcframework!=null){
-                        println("🔍 Found XCFramework: ${xcframework.absolutePath}")
-                        compilerOpts("-F${xcframework.absolutePath}")
-                    }
+                    compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
                     /*linkerOpts 不支持在 cinterop 中设置，移到 binaries 配置中*/
                 }
 
