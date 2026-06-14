@@ -262,6 +262,10 @@ kotlin{
             baseName="Shared"/*框架名(将作为Pod名)*/
             isStatic=true/*生成静态框架库(避免符号冲突)，加速编译*/
         }
+        /*pod()方法会自动尝试生成Kotlin绑定(让Kotlin代码能调用共享模块依赖)，
+        但 微信SDK、支付宝SDK、OneSignal 等 的CocoaPod没正确的moduleMap或头文件 导致cinterop失败，
+        改为手动cinterop配置(见上方forEach中的cinterops块)*/
+
 //        pod("WechatOpenSDK")/*声明 微信OpenSDK依赖*/{
 ////            moduleName="WechatOpenSDK"
 //            version="2.0.4"/*2.0.5最低支持IOS12.0+*/
@@ -271,13 +275,10 @@ kotlin{
 //            version="15.8.30"/*15.8.30最低支持IOS12.0+，15.2.1、15.7.11*/
             /*支付宝SDK可能需添加额外链接器标志，若编译出错 可在iosMain的cinterop中配置*/
 //        }
-        /*pod()方法会自动尝试生成Kotlin绑定(让Kotlin代码能调用共享模块依赖)，
-        但 微信SDK、支付宝SDK 的CocoaPod没正确的moduleMap或头文件 导致cinterop失败，
-        改为手动cinterop配置(见上方forEach中的cinterops块)*/
 
-        pod("OneSignal"){/*OneSignal实时接收推送唤醒已冻结进程-IOS版(支持国内外苹果APNs推送)*/
-            version="5.0.0"
-        }
+//        pod("OneSignal"){/*OneSignal实时接收推送唤醒已冻结进程-IOS版(支持国内外苹果APNs推送)*/
+//            version="5.0.0"
+//        }
     }
 
 //    ohosArm64{/*HarmonyOSNext(纯血鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
@@ -442,8 +443,10 @@ kotlin{
 
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
 
+            implementation(files("src/nativeInterop/cinterop/WechatOpenSDK.def") )/*导入cinterop 微信SDK依赖配置*/
             implementation(files("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
 //            implementation(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
+            implementation(files("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
         }
 //        ohosMain.dependencies/*HarmonyOS依赖*/{
 //            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-harmony:${libs.versions.kotlinx.get()}")/*Kotlin协程-HarmonyOS，Room内部依赖需要*/
