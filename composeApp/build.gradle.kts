@@ -256,7 +256,7 @@ kotlin{
         version="1.0.0"/*Pod版本*/
         summary="KMP 共享模块：登录 + 支付"/*摘要 简介？*/
         homepage="https://github.com/NineEditCloud/EditLetterChat"/*应用主页，项目Git仓库链接也行*/
-        ios.deploymentTarget="13.0"/*IOS目标最低版本要求，微信/支付宝 支付接口SDK最低兼容iOS12.0+，IOS12.2系统已内置Swift*/
+        ios.deploymentTarget="13.0"/*IOS目标最低版本要求，微信/支付宝 支付接口SDK最低兼容iOS12.0+，*/
         podfile=project.file("../iosApp/Podfile")/*iOS项目Podfile配置文件路径*/
         framework{
             baseName="Shared"/*框架名(将作为Pod名)*/
