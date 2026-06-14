@@ -154,8 +154,8 @@ kotlin{
 //            linkerOpts.add("-lsqlite3")/*Required when using NativeSQLiteDriver*/
 
             /*为从Kotlin代码中调用支付宝SDK，手动导入链接支付宝framework(需从支付宝开放平台下载支付宝SDK框架 并在“项目/iosApp/Frameworks”路径手动导入文件)*/
-            linkerOpts.add("-F${projectDir}/../iosApp/Frameworks", )
-            linkerOpts.add("-framework AlipaySDK")
+//            linkerOpts.add("-F${projectDir}/../iosApp/Frameworks", )
+//            linkerOpts.add("-framework AlipaySDK")
 
 //            export(libs.androidx.lifecycle.viewmodelCompose)/*导出 ViewModel依赖代码接口，以便从Swift进行访问*/
             freeCompilerArgs += listOf(/*为Link阶段分配更多内存*/
