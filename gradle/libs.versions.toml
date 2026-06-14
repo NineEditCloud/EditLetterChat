@@ -1,30 +1,33 @@
 [versions]#版本变量
-agp="8.13.0"#安卓Gradle插件 版本，8.13.0兼容Gradle9.0.0，8.5.0兼容Gradle8.7
+agp="8.13.0"#安卓Gradle(应用构建和Lib包) 插件 版本，8.13.0兼容Gradle9.0.0，8.5.0兼容Gradle8.7
 android-compileSdk="36"#编译版本要兼容依赖库(包括Kotlin版本)，否则报错> Task :composeApp:checkDebugAarMetadata FAILED
 #android-compileSDK 34兼容Kotlin2.0，36兼容Kotlin2.1/2.2，
-android-minSdk="21"
+android-minSdk="21"#安卓最低兼容系统接口SDK，21为安卓5.0
 android-targetSdk="36"
-androidx-activity="1.11.0"
-androidx-appcompat="1.7.1"
-androidx-core="1.17.0"
-androidx-espresso="3.7.0"
+androidx-activity="1.11.0"#1.11.0兼容安卓5.0
+androidx-appcompat="1.7.1"#1.7.1兼容安卓5.0
+androidx-core="1.17.0"#1.17.0兼容安卓5.0
+androidx-espresso="3.7.0"#3.7.0兼容安卓5.0
 androidx-lifecycle="2.9.4"#2.9.4兼容安卓5.0、KMP，2.8.0+都支持KMP
-androidx-testExt="1.3.0"
-composeHotReload="1.1.0"#ComposeHotReload，仅Kotlin2.1.x+支持的插件
-composeMultiplatform="1.9.0"#CMP插件和JetpackCompose依赖版本，最高1.9.0-rc01(预览版-不完整)/1.9.0 兼容安卓5.0且有CMP插件，
+androidx-testExt="1.3.0"#1.3.0兼容安卓5.0
+composeHotReload="1.1.0"#ComposeHotReload，仅Kotlin2.1.x+支持的插件，一般不需要
+composeMultiplatform="1.9.0"#JetBrains跨平台Compose插件，1.6.1-KBA-007是支持鸿蒙版
+compose="1.9.0"#JetBrains跨平台JetpackCompose界面库，最高1.9.0-rc01(早期预览版-不完整)/1.9.0 兼容安卓5.0且有CMP插件
 #1.7+兼容Kotlin2.1/2.2，   1.6.11兼容Kotlin2.0.x
-
+material3="1.9.0"#Compose基础Material包控件、组件，JetBrains跨平台Compose定位已包含，1.4.0兼容安卓5.0，但不支持wasmJS，1.6.0兼容安卓5.0
+material="1.7.3"#1.7.3
 kuiklyCompose="2.0.0"#KuiklyCompose跨平台适应原生界面框架，2.0.0兼容Kotlin2.1.x、安卓5.0、IOS12
-junit="4.13.2"
-junitJupiter = "5.14.0"
-logback="1.5.32"
-material3="1.9.0"#Compose基础Material包控件、组件，最高1.4.0兼容安卓5.0，但不支持wasmJS，1.6.0兼容安卓5.0
-material="1.7.3"
 
-kotlin="2.2.20"#1.9.23兼容Realm1.16.0，2.0.20兼容Realm2.3.0，
+kotlinMultiplatform="2.0.21-KBA-010"
+kotlin="2.2.20"#JetBrains跨平台Kotlin插件和库，1.9.23兼容Realm1.16.0，2.0.20兼容Realm2.3.0，  2.0.21-KBA-010是支持鸿蒙版
 #2.1.21兼容Krdb，2.3.21新版，
 #2.2.10+(2.2.20)兼容composeToast2.0.0
-kotlinx="1.8.1"#1.8.1兼容Kotlin2.0/2.1/2.2，1.9兼容Kotlin2.1/2.2/2.3，1.11.0兼容Kotlin2.3
+kotlinx="1.8.0-KBA-001"#1.8.1兼容Kotlin2.0/2.1/2.2，1.9兼容Kotlin2.1/2.2/2.3，1.11.0兼容Kotlin2.3，KBA-00为支持纯血鸿蒙版
+
+
+
+
+
 
 ktor="3.2.3"#Ktor2.3.7/2.3.12/3.0.1兼容Kotlin2.0、Kotlinx-IO0.6.0，3.2.3兼容Kotlin2.1.21、Netty4.2.10.Final，   3.4.3兼容Kotlin2.3
 #Ktor3可能与Kotlinx-IO旧版不兼容，3.0.3
@@ -68,6 +71,9 @@ okio="3.9.1"#OkIO3.9.1兼容Kotlin2.0、安卓5.0，3.10.2兼容Kotlin2.1，4.x�
 kmpFile="0.8.0"
 material3Android = "1.4.0"#KMP0.8.0兼容Kotlin2.0、安卓5.0
 
+junit="4.13.2"
+junitJupiter = "5.14.0"
+logback="1.5.32"
 
 
 [libraries]#依赖库，若指定的版本变量不存在或已改名，则会引起异常：Problem: In version catalog libs, version reference '不存在的那个变量名' doesn't exist，如：Reason: Dependency 'org.jetbrains.kotlinx:kotlinx-coroutines-swing' references version 'kotlinx.coroutines' which doesn't exist.
@@ -79,15 +85,15 @@ androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "an
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-espresso" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
-compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
+compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
-compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
-compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
+compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 ktor-serverCore = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
@@ -97,6 +103,7 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-room-sqlite-wrapper = { module = "androidx.room:room-sqlite-wrapper", version.ref = "room" }# 可选：Room SQLite Wrapper (v2.8.0+)
+compose-multiplatform-export= { module = "org.jetbrains.compose.export:export", version.ref = "composeMultiplatform" }
 
 
 
@@ -106,8 +113,8 @@ androidLibrary = { id = "com.android.library", version.ref = "agp" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }#仅支持Kotlin2.1.20+，在2.0.x版本不兼容，会自动注入参数：androidx.compose.compiler.plugins.kotlin:generateFunctionKeyMetaAnnotations=true
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }#Kotlin2.0.21版的ComposeCompiler插件有Bug
-kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinMultiplatform" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlinMultiplatform" }
 kuiklyCompose={id="com.tencent.kuikly", version.ref="kuiklyCompose"}#KuiklyCompose跨平台适应原生界面插件-支持小程序端必须
 
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
@@ -115,7 +122,7 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 androidx-room = { id = "androidx.room", version.ref = "room" }
 realm={ id="io.realm.kotlin", version.ref="realm" }#Realm插件
 krdb={id="io.github.xilinjia.krdb.gradle-plugin", version.ref="krdb"}#Krdb插件 Realm的新版 支持Kotlin2.1+
-serialization={id="plugin.serialization", version.ref="kotlin"}
+serialization={id="plugin.serialization", version.ref="kotlin"}#serialization序列化插件
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }#kotlin-serialization序列化插件
 exoquery={id="io.exoquery.exoquery-plugin", version.ref="exoquery"}#ExoQuery插件
 exoqueryRun={id="io.exoquery.exoquery-runner-jdbc", version.ref="exoqueryRun"}#ExoQuery需要的平台运行器

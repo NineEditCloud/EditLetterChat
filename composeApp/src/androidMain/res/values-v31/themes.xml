@@ -2,7 +2,7 @@
 <resources>
     <!--安卓12+ 无默认启动图的主题-->
     <style name="Theme.AppLauncher" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@android:color/transparent</item><!--启动背景色 设为透明(transparent) 或白色(white)-->
+        <item name="windowSplashScreenBackground">@android:color/white</item><!--启动背景色 设为透明(transparent) 或白色(white)-->
         <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item><!--启动图标 设为透明 或全透明drawable资源)-->
         <!--        <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>&lt;!&ndash;图标背景色 设为透明(可选)，图标背景色默认无，除非你想设成别的颜色&ndash;&gt;-->
         <item name="android:windowSplashScreenBrandingImage">@android:color/transparent</item><!--底部品牌图-->

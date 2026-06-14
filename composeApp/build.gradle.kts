@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
+import android.databinding.tool.ext.capitalizeUS
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -7,9 +8,9 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 /*若用了shared区分模块，composeApp部分负责共享应用GUI(不包括将Compose用于HTML)，若未用shared模块 则composeApp模块包括KMP项目全部内容*/
 plugins{
-    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinMultiplatform)/*KMP-JetBrains跨平台Kotlin插件*/
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeMultiplatform)/*CMP-JetBrains跨平台Compose插件*/
     alias(libs.plugins.composeCompiler)/*Kotlin2.0.21版的ComposeCompiler插件有Bug*/
 //    alias(libs.plugins.composeHotReload)/*仅支持Kotlin2.1.20+，在2.0.x版本不兼容，会自动注入参数：androidx.compose.compiler.plugins.kotlin:generateFunctionKeyMetaAnnotations=true*/
 //    kotlin("jvm") version libs.versions.kotlin.get()
@@ -28,7 +29,9 @@ plugins{
 
     id("org.jetbrains.kotlin.native.cocoapods")/*iOS CocoaPods插件，方便集成，IOS端调起微信/支付宝支付接口SDK需要*/
 }
-/*若依赖丢失导致项目报错，请先连接VPN，点击 Gradle -> 重新加载所有Gradle项目，等待依赖下载完成，
+/*
+AndroidStudio快捷键：Alt+<(Shift+,)缩小字体 Alt+>(Shift+.)放大字体
+若依赖丢失导致项目报错，请先连接VPN，点击 Gradle -> 重新加载所有Gradle项目，等待依赖下载完成，
 在顶部菜单点击 文件 -> 从磁盘全部重新加载 (或快捷键Ctrl+Alt+Y)
 
 若Gradle丢失，先完全退出AndroidStudio(确保Gradle守护进程已停止)，将C:\Users\Administrator\.gradle\caches 路径下的对应版本gradle文件夹删除，
@@ -129,7 +132,7 @@ GenerateSigned(自定义签名 会下载签名工具)：项目路径\composeApp\
 kotlin{
     androidTarget/*安卓目标，覆盖架构(若32位不可用则启动64位)：arm(aarch) 32/64、Intel&AMD x86/x86_64/x64(早期手机芯片架构 性能差/发热)*/{
         compilerOptions/*编译选项*/{
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget.set(JvmTarget.JVM_21)/*安卓目标运行环境 JVM虚拟机版本*/
             freeCompilerArgs.addAll(listOf("-Xjvm-default=all", "-Xcontext-receivers") )
 //            optIn.add("kotlin.RequiresOptIn")
         }
@@ -165,16 +168,14 @@ kotlin{
 //                    )
 //            }
         }
-
-
         iosTarget.binaries.all{
             /*WechatOpenSDK 是静态库(.a)，需链接 .a 文件*/
-            val wechatPodsDir = project.rootDir.resolve("iosApp/Pods/WechatOpenSDK/OpenSDK2.0.4")
+            val wechatPodsDir=project.rootDir.resolve("iosApp/Pods/WechatOpenSDK/OpenSDK2.0.4")
             linkerOpts("-L${wechatPodsDir.absolutePath}", "-lWechatOpenSDK")
             /* -L + -lWechatOpenSDK 用于静态库(链接libWechatOpenSDK.a)*/
 
             /*支付宝SDK是.xcframework，需在链接时指定正确路径*/
-            val podsDir = project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
+            val podsDir=project.rootDir.resolve("iosApp/Pods/AlipaySDK-iOS")
             val xcframeworkDir = podsDir.resolve("AlipaySDK.xcframework")
             linkerOpts("-F${xcframeworkDir.absolutePath}", "-framework", "AlipaySDK")
             /* -F + -framework 用于 framework*/
@@ -185,13 +186,13 @@ kotlin{
         (若src/nativeInterop/cinterop/目录下 WechatOpenSDK.def、AlipaySDK.def配置文件的手动导入framework路径错误)*/
         iosTarget.compilations.getByName("main"){
             cinterops{
-                val wechatOpenSDK by creating {
+                val wechatOpenSDK by creating{
                     defFile(project.file("src/nativeInterop/cinterop/WechatOpenSDK.def"))
                     packageName("com.wechat.opensdk")
 
                     /*WechatOpenSDK CocoaPod安装后的路径*/
-                    val podsDir = project.rootDir.resolve("iosApp/Pods/WechatOpenSDK")
-                    val sdkDir = podsDir.resolve("OpenSDK2.0.4")
+                    val podsDir=project.rootDir.resolve("iosApp/Pods/WechatOpenSDK")
+                    val sdkDir=podsDir.resolve("OpenSDK2.0.4")
 
                     compilerOpts("-I${sdkDir.absolutePath}")/*WechatOpenSDK 是静态库(.a)，头文件直接在 OpenSDK2.0.4 目录下*/
                 }
@@ -206,22 +207,20 @@ kotlin{
 
                     /*遍历xcframework的架构切片，找到包含AlipaySDK.framework的切片*/
                     val frameworkDir=if(xcframeworkDir.exists() ){
-                        val slices = xcframeworkDir.listFiles { f -> f.isDirectory } ?: emptyArray()
+                        val slices=xcframeworkDir.listFiles{ f -> f.isDirectory } ?: emptyArray()
                         slices.firstNotNullOfOrNull{ slice ->
-                            val fw = slice.resolve("AlipaySDK.framework")
+                            val fw=slice.resolve("AlipaySDK.framework")
                             if(fw.exists() && fw.isDirectory) fw else null
-                        }?:throw GradleException(
-                            "AlipaySDK.framework not found in $xcframeworkDir. " +
-                                    "Please ensure 'pod install' has been run in iosApp directory."
-                                                  )
+                        }?:throw GradleException("AlipaySDK.framework not found in $xcframeworkDir. " +
+                                    "Please ensure 'pod install' has been run in iosApp directory.", )
                     }else{
                         /*pod install未运行时的友好提示*/
                         logger.warn("⚠️ AlipaySDK.xcframework not found at $xcframeworkDir. " +
-                                            "Please run 'pod install' in iosApp directory before building.")
+                                            "Please run 'pod install' in iosApp directory before building.", )
                         podsDir /*占位，实际构建时会失败并提示*/
                     }
 
-                    val headersDir = frameworkDir.resolve("Headers")
+                    val headersDir=frameworkDir.resolve("Headers")
                     /*-I 指定头文件搜索路径，-F 指定framework搜索路径(指向xcframework目录)*/
                     compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
                 }
@@ -254,7 +253,12 @@ kotlin{
         改为手动cinterop配置(见上方forEach中的cinterops块)*/
     }
 
-//    ohosArm64{/*HarmonyOSNext(华为独立鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
+//    ohosArm64{/*HarmonyOSNext(纯血鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
+//        binaries.sharedLib{
+//            baseName="kn"/*指定二进制产物名称*/
+//            linkerOpts("-L${projectDir}/libs/", "-lskia")/*链接 skia库*/
+//            export(libs.compose.multiplatform.export)/*导出 compose.export*/
+//        }
 //    }
 
 
@@ -304,15 +308,20 @@ kotlin{
         commonMain.dependencies/*常规共享依赖*/{
 //            implementation(projects.shared)/*应用 shared(非UI共享代码) 模块*/
 
-            implementation("org.jetbrains.compose.runtime:runtime:${libs.versions.composeMultiplatform.get()}")
-            implementation("org.jetbrains.compose.foundation:foundation:${libs.versions.composeMultiplatform.get()}")
-            implementation("org.jetbrains.compose.ui:ui:${libs.versions.composeMultiplatform.get()}")
-            implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.composeMultiplatform.get()}")/*CMP跨平台JetpackCompose 返回键事件库*/
-            implementation("org.jetbrains.compose.components:components-resources:${libs.versions.composeMultiplatform.get()}")
+            implementation("org.jetbrains.compose.runtime:runtime:${libs.versions.compose.get()}")
+            implementation("org.jetbrains.compose.foundation:foundation:${libs.versions.compose.get()}")
+            implementation("org.jetbrains.compose.ui:ui:${libs.versions.compose.get()}")
+            implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.compose.get()}")/*CMP跨平台JetpackCompose 返回键事件库*/
+            implementation("org.jetbrains.compose.components:components-resources:${libs.versions.compose.get()}")
             implementation("org.jetbrains.compose.material:material:${libs.versions.material.get()}")/*Material组件与主题属性，跨平台版，最高1.7.0*/
-//            implementation("org.jetbrains.compose.material:material-icons-extended:${libs.versions.material.get()}")/*MaterialIcons图标库 跨平台通用版*/
-            implementation("org.jetbrains.compose.material3:material3:1.9.0")/*ComposeMP基础Material包控件、组件，最高1.4.0兼容安卓5.0，但不支持wasmJS，1.6.0兼容安卓5.0*/
+            implementation("org.jetbrains.compose.material3:material3:${libs.versions.compose.get()}")/*ComposeMP基础Material包控件、组件，最高1.4.0兼容安卓5.0，但不支持wasmJS，1.6.0兼容安卓5.0*/
 //            implementation("org.jetbrains.compose.animation:animation")
+
+            implementation("org.jetbrains.compose.material:material-icons-extended:${libs.versions.material.get()}")/*MaterialIcons图标库 跨平台通用版*/
+//            implementation(compose.materialIconsExtended)/*MaterialIcons图标库 跨平台通用版-自动根据版本导入，自动根据项目配置 为所有目标平台解析正确依赖，该库包含所有Material图标，体积庞大，务必启用 R8/ProGuard 以缩减包体积*/
+//            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)/*声明用实验性Compose库*/
+//            implementation("org.jetbrains.compose.components.resources:resources:${libs.versions.compose.get()}")/*compose通用资源*/
+            implementation(compose.components.resources)/*compose通用资源 自动根据版本导入，可能含painterResource用的composeResources资源、Res类 和 @Preview预览注解等(但Android端会被 actual 绕过)*/
 
 //            implementation("com.tencent.kuikly-open:core:${libs.versions.kuiklyCompose.get()}")/*KuiklyCompose跨平台适应原生界面框架 共享核心库*/
 //            implementation("com.tencent.kuikly-open:core-annotations:${libs.versions.kuiklyCompose.get()}")
@@ -336,9 +345,6 @@ kotlin{
             implementation("cafe.adriel.voyager:voyager-screenmodel:${libs.versions.voyager.get()}")/*Voyager-Screen界面模块*/
             implementation("cafe.adriel.voyager:voyager-transitions:${libs.versions.voyager.get()}")
 
-            implementation(compose.materialIconsExtended)/*MaterialIcons图标库 跨平台通用版，自动根据项目配置 为所有目标平台解析正确依赖，该库包含所有Material图标，体积庞大，务必启用 R8/ProGuard 以缩减包体积*/
-//            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)/*OptIn选项可能引发报错？*/
-            implementation(compose.components.resources)/*compose通用资源，可能含painterResource用的composeResources资源、Res类 和 @Preview预览注解等(但Android端会被 actual 绕过)*/
 //            implementation("io.github.rabehx:iconsax-compose:2.1.1")/*Iconsax-Compose，imageVector用的超千款图标*/
 //            implementation("br.com.devsrsouza.compose.icons:simple-icons:${libs.versions.composeIcons.get()}")/*Compose-Icons Simple简易图标库*/
 //            implementation("br.com.devsrsouza.compose.icons:tabler-icons:${libs.versions.composeIcons.get()}")/*Compose-Icons Tabler图标包*/
@@ -386,7 +392,7 @@ kotlin{
         }
 
         androidMain.dependencies/*安卓依赖*/{
-            implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.composeMultiplatform.get()}")/*JetpackCompose 1.9.0-rc01版本兼容安卓5.0，但不兼容IOS*/
+//            implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.compose.get()}")/*Compose界面预览 1.9.0-rc01/1.9.0版本兼容安卓5.0，但不兼容IOS*/
             implementation("androidx.activity:activity-compose:1.11.0")/*安卓专用工具库，1.11.0版本兼容安卓5.0，绝对不可更改为更高版本！！！*/
             implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")/*安卓系统栏透明库，0.36.0兼容安卓5.0*/
             implementation("androidx.core:core-splashscreen:1.0.1")/*为解决 安卓12+启动背景图*/
@@ -403,17 +409,20 @@ kotlin{
             /*客户端无银联云闪付SDK等，绑卡支付功能是放在服务端执行*/
         }
         iosMain.dependencies/*IOS端依赖*/{
-//            implementation("org.jetbrains.compose.window:window:${libs.versions.composeMultiplatform.get()}")/*Compose1.6.x及以下-IOS端依赖，1.7.x+版org.jetbrains.compose.ui库已自动包含 手补以防万一切换到旧版*/
+//            implementation("org.jetbrains.compose.window:window:${libs.versions.compose.get()}")/*Compose1.6.x及以下-IOS端依赖，1.7.x+版org.jetbrains.compose.ui库已自动包含 手补以防万一切换到旧版*/
 
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
 
             implementation(files("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
 //            implementation(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
         }
+//        ohosMain.dependencies/*HarmonyOS依赖*/{
+//            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-harmony:${libs.versions.kotlinx.get()}")/*Kotlin协程-HarmonyOS，Room内部依赖需要*/
+//        }
 
         jvmMain.dependencies/*JVM桌面运行依赖*/{
             implementation(compose.desktop.currentOs)/*桌面端GUI预览引擎依赖，1.7.x+已自动包含，手补以防万一*/
-//            implementation("org.jetbrains.compose.desktop:desktop:1.6.2")
+//            implementation("org.jetbrains.compose.desktop:desktop:${libs.versions.compose.get()}")/*桌面端GUI预览引擎依赖，1.7.x+已自动包含，手补以防万一，1.6.2*/
 //            implementation("androidx.compose.material3.adaptive:adaptive:${libs.versions.composeMultiplatform.get()}")/*依赖下载失败*/
 //            implementation("androidx.compose.material3.adaptive:adaptive-layout:${libs.versions.composeMultiplatform.get()}")
 //            implementation("androidx.compose.material3.adaptive:adaptive-navigation:${libs.versions.composeMultiplatform.get()}")
@@ -455,7 +464,7 @@ kotlin{
 }
 dependencies/*可用于部分平台调用的共享依赖*/{
 //    implementation(platform("androidx.compose:compose-bom:2024.09.00"))/*Compose-Bom物料清单(必备，否则下载包不全)，最高2024.09.00支持安卓5.0，改了更高版本会有内容缺失*/
-    debugImplementation("org.jetbrains.compose.ui:ui-tooling:${libs.versions.composeMultiplatform.get()}")
+    debugImplementation("org.jetbrains.compose.ui:ui-tooling:${libs.versions.compose.get()}")/*包含界面预览等*/
 
 //    implementation("org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}")/*Kotlin标准库*/
 //    implementation("org.jetbrains.kotlin:kotlin-reflect:${libs.versions.kotlin.get()}")/*Kotlin反射依赖，KSP必须！！！*/
@@ -506,6 +515,9 @@ configurations.all{/*全部配置*/
         }
         if(requested.name.contains("kotlinx-io-bytestring")||requested.name.contains("kotlinx-io-core") ){
             useVersion(libs.versions.kotlinxIo.get() )/*强制更改Kotlin-IO版本*/
+        }
+        if(requested.name.contains("ui-tooling") ){
+            useVersion(libs.versions.compose.get() )/*强制更改compose-ui-tooling为统一版本*/
         }
     }
 }
@@ -566,6 +578,32 @@ android/*安卓目标配置*/{
 //        }
 //    }
 }
+/*创建鸿蒙 harmonyApp 项目
+1.创建项目：用DevEco-Studio在跨端项目下创建harmonyApp项目，在CreateProject选择“Native C++”创建带有Native代码的项目。
+2.添加Compose跨端二进制产物，将前步骤3中生成两个文件复制到harmonyApp项目下 其中：
+libkn.so复制到 entry/libs/arm64-v8a/目录下，libkn_api.h复制到 entry/src/main/cpp/include/目录下，
+为了简化这个步骤，可在跨端Compose项目中创建一个GradleTask执行这个复制任务。这样只需执行 publishDebugBinariesToHarmonyApp 或者 publishReleaseBinariesToHarmonyApp 即可编译 Compose 跨端代码并复制产物到鸿蒙项目。*/
+arrayOf("debug", "release").forEach{ type ->
+    tasks.register<Copy>("publish${type.capitalizeUS()}BinariesToHarmonyApp"){
+        group="harmony"
+        dependsOn("link${type.capitalizeUS()}SharedOhosArm64")
+        into(rootProject.file("harmonyApp") )
+        from("build/bin/ohosArm64/${type}Shared/libkn_api.h"){
+            into("entry/src/main/cpp/include/")
+        }
+        from(project.file("build/bin/ohosArm64/${type}Shared/libkn.so") ){
+            into("/entry/libs/arm64-v8a/")
+        }
+    }
+}
+/*3.添加 skikobridge.har 和 compose.har 依赖
+将skikobridge.har复制到 entry/libs/目录下，其中：skikobridge.har 可以从 ovCompose-sample/harmonyApp 项目下获取，
+将compose.har复制到 entry/libs目录下，其中 compose.har 是从 compose-multiplatform-core/ui-arkui 模块发布出来的，请参考文档中的编译发布板块里的第三部分内容
+后续Compose跨鸿蒙步骤：https://github.com/Tencent-TDS/ovCompose-sample/blob/main/README-zh_CN.md
+KNOI-KotlinNative & ArkTS 互相调用：https://github.com/Tencent-TDS/KuiklyBase-components/blob/master/knoi/README-zh.md
+*/
+
+
 compose.desktop/*Compose桌面目标配置 桌面端建议JBR用17*/{
     application/*应用*/{
         mainClass="com.nineeditcloud.editletterchat.MainKt"/*主类*/

@@ -23,11 +23,11 @@ var currSocket:Socket?=null
 fun tcpLongConnClient(account:String, token:String,
                       onHashMapMessage/*收到哈希表字符串键值对消息回调*/:(HashMap<String,String>)->Unit={},
                       onBytesMessage/*收到字节串键值对消息回调*/:(HashMap<String,ByteArray>)->Unit={})=runBlocking{
-    CoroutineScope(Dispatchers.Default/*后台线程(防止掉线)*/).launch{/*在协程作用域中执行*/
+    CoroutineScope(Dispatchers.Default/*后台线程(防止掉线)*/).launch{/*在新线程协程作用域中执行*/
         val host="192.168.1.47";val port=9000
         while(coroutineContext.isActive){
             try{
-                aSocket(SelectorManager(Dispatchers.IO) ).tcp().connect(host, port).use{ socket ->
+                aSocket(SelectorManager(Dispatchers.IO) ).tcp().connect(host,port).use{ socket ->
                     /*.use是个扩展函数，它会自动关闭资源(类似Java的try-with-resources)，所以即使内部抛出异常，use块结束后、退出作用域时 socket都会被关闭，对应的输入输出通道也会关闭。因此不会有多余遗留内容，资源会自动清理*/
                     Log.msg("Ktor已连接TCP长连接服务器：", "$host:$port")
                     input =socket.openReadChannel()               /*输入流通道(接收)*/
