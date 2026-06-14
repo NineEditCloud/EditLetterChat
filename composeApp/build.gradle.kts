@@ -228,18 +228,14 @@ kotlin{
 //                    defFile(files("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
                     packageName("com.onesignal")
 
-                    /* ↓ OneSignal CocoaPod安装后的路径*/
-                    val podsDir = project.rootDir.resolve("iosApp/Pods/OneSignal")
-                    if (!podsDir.exists()) {
-                        throw GradleException(
-                            "OneSignal Pods dir not found: ${podsDir.absolutePath}\n" +
-                                    "Please run 'pod install' in iosApp directory."
-                                             )
-                    }
 
-                    // OneSignal 头文件在 iOS_SDK/OneSignalSDK/ 下各个子目录中
-                    val sdkDir = podsDir.resolve("iOS_SDK/OneSignalSDK")
-                    if (!sdkDir.exists()) {
+                    val podsDir=project.rootDir.resolve("iosApp/Pods/OneSignal")/*OneSignal CocoaPod安装后的路径*/
+                    if(!podsDir.exists() ){
+                        throw GradleException("OneSignal Pods dir not found: ${podsDir.absolutePath}\n" +
+                                    "Please run 'pod install' in iosApp directory.", )
+                    }
+                    val sdkDir=podsDir.resolve("iOS_SDK/OneSignalSDK")/*OneSignal 头文件在 iOS_SDK/OneSignalSDK/ 下各个子目录中*/
+                    if(!sdkDir.exists() ){
                         throw GradleException("OneSignal SDK dir not found: ${sdkDir.absolutePath}")
                     }
 
@@ -255,7 +251,7 @@ kotlin{
                     allHeaderDirs.forEach{ compilerOpts("-I${it.absolutePath}") }/*将所有头文件目录加入 -I 搜索路径*/
 
                     // 同时查找 .xcframework(若有)作为 -F 路径
-                    val xcframework=sdkDir.walkTopDown().filter { it.isDirectory && it.name.endsWith(".xcframework") }.firstOrNull()
+                    val xcframework=sdkDir.walkTopDown().filter{ it.isDirectory && it.name.endsWith(".xcframework") }.firstOrNull()
                     if (xcframework!=null){
                         println("🔍 Found XCFramework: ${xcframework.absolutePath}")
                         compilerOpts("-F${xcframework.absolutePath}")

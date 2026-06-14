@@ -178,7 +178,14 @@ jobs:
           find iosApp/Pods/OneSignal -name "*.xcframework" -type d 2>/dev/null || echo "未找到 xcframework"
           echo "=== 查找头文件 ==="
           find iosApp/Pods/OneSignal -name "*.h" 2>/dev/null | head -20 || echo "未找到头文件"
-      
+      - name: Debug OneSignal headers
+        run: |
+          echo "=== OneSignal_Core Headers ==="
+          ls iosApp/Pods/OneSignal/iOS_SDK/OneSignalSDK/OneSignal_Core/Headers/ 2>/dev/null
+          echo "=== OneSignalFramework Headers ==="
+          ls iosApp/Pods/OneSignal/iOS_SDK/OneSignalSDK/OneSignal_XCFramework/OneSignalFramework.xcframework/ios-arm64/OneSignalFramework.framework/Headers/ 2>/dev/null
+    
+    
       # ---- 编译 iOS Framework (逐个编译便于定位错误) ----
       - name: 🔨 Build iOS - iosArm64 (真机)
         id: build-ios-arm64
