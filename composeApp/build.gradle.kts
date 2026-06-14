@@ -199,7 +199,6 @@ kotlin{
                 }
                 val alipaySDK by creating{
                     defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
-//                    defFile(files("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
                     packageName("com.alipay.sdk")
                     /* ↓ AlipaySDK-iOS CocoaPod安装的是.xcframework，
                       动态查找其中的AlipaySDK.framework/Headers目录*/
@@ -231,37 +230,38 @@ kotlin{
 
                     /* ↓ OneSignal CocoaPod安装后的路径*/
                     val podsDir = project.rootDir.resolve("iosApp/Pods/OneSignal")
-                    println("🔍 OneSignal podsDir: ${podsDir.absolutePath}, exists=${podsDir.exists()}")/*先打印调试信息*/
-                    // 查找 .xcframework 或 .framework
-                    val frameworkDir=if(podsDir.exists() ){
-                        // 方式一：查找 .xcframework
-                        val xcframework = podsDir.listFiles { f -> f.name.endsWith(".xcframework") }?.firstOrNull()
-                        if (xcframework != null) {
-                            println("🔍 Found xcframework: ${xcframework.name}")
-                            // 找当前架构对应的切片
-                            val slices = xcframework.listFiles { f -> f.isDirectory } ?: emptyArray()
-                            slices.firstNotNullOfOrNull { slice ->
-                                val fw = slice.resolve("OneSignal.framework")
-                                if (fw.exists() && fw.isDirectory) fw else null
-                            }
-                        } else {
-                            // 方式二：直接查找 .framework
-                            podsDir.listFiles { f -> f.name.endsWith(".framework") }?.firstOrNull()?.let {
-                                println("🔍 Found framework: ${it.name}")
-                                it
-                            }
-                        } ?: throw GradleException("OneSignal.framework not found in $podsDir")
-                    } else {
-                        throw GradleException("OneSignal Pods dir not found: ${podsDir.absolutePath}. Please run 'pod install' in iosApp directory.")
+
+                    if (!podsDir.exists()) {
+                        throw GradleException(
+                            "OneSignal Pods dir not found: ${podsDir.absolutePath}\n" +
+                                    "Please run 'pod install' in iosApp directory.\n" +
+                                    "CI: Check if 'pod install' step succeeded in the workflow."
+                                             )
                     }
 
+                    println("🔍 OneSignal podsDir contents:")
+                    podsDir.listFiles()?.forEach { println("  ${it.name}") }
+
+                    // 查找 framework：先找 .framework，再找 .xcframework 内的
+                    val frameworkDir = podsDir.listFiles()
+                        ?.firstOrNull { it.isDirectory && it.name == "OneSignal.framework" }
+                        ?: podsDir.listFiles()
+                            ?.firstOrNull { it.isDirectory && it.name.endsWith(".xcframework") }
+                            ?.let { xcf ->
+                                xcf.listFiles()?.firstNotNullOfOrNull { slice ->
+                                    slice.resolve("OneSignal.framework").takeIf { it.exists() && it.isDirectory }
+                                }
+                            }
+                        ?: throw GradleException(
+                            "OneSignal.framework not found in ${podsDir.absolutePath}\n" +
+                                    "Contents: ${podsDir.listFiles()?.joinToString { it.name }}"
+                                                )
+
+                    println("🔍 Found OneSignal framework: ${frameworkDir.absolutePath}")
                     val headersDir = frameworkDir.resolve("Headers")
-                    println("🔍 OneSignal headersDir: ${headersDir.absolutePath}, exists=${headersDir.exists()}")
-                    println("🔍 Headers: ${headersDir.listFiles()?.joinToString { it.name }}")
-
-                    compilerOpts("-I${headersDir.absolutePath}", "-F${frameworkDir.parentFile?.absolutePath ?: frameworkDir.absolutePath}")
-
-                    // linkerOpts 不支持在 cinterop 中设置，移到 binaries 配置中
+                    println("🔍 OneSignal headersDir exists: ${headersDir.exists()}")
+                    compilerOpts("-I${headersDir.absolutePath}", "-F${frameworkDir.parentFile?.absolutePath ?: podsDir.absolutePath}")
+                    /*linkerOpts 不支持在 cinterop 中设置，移到 binaries 配置中*/
                 }
 
             }

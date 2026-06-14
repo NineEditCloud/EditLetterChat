@@ -165,6 +165,7 @@ jobs:
             ls -la Pods/WechatOpenSDK/OpenSDK2.0.4/ 2>/dev/null || echo "⚠️ WechatOpenSDK 目录不存在"
             ls -la Pods/WechatOpenSDK/ 2>/dev/null || echo "⚠️ WechatOpenSDK 目录不存在"
             ls -la Pods/AlipaySDK-iOS/ 2>/dev/null || echo "⚠️ AlipaySDK-iOS 目录不存在"
+            ls -laR Pods/OneSignal/ 2>/dev/null | head -30 || (echo "❌ OneSignal Pod 未安装！" && exit 1)
           else
             echo "ℹ️ 无Podfile，跳过"
           fi
