@@ -179,6 +179,8 @@ kotlin{
             val xcframeworkDir = podsDir.resolve("AlipaySDK.xcframework")
             linkerOpts("-F${xcframeworkDir.absolutePath}", "-framework", "AlipaySDK")
             /* -F + -framework 用于 framework*/
+
+            linkerOpts("-F${project.rootDir.resolve("iosApp/Pods/OneSignal").absolutePath}", "-framework", "OneSignal")
         }
         /*微信SDK、支付宝SDK其CocoaPod缺乏正确moduleMap导致自动cinterop失败*/
         /*微信SDK、支付宝SDK IOS依赖通过CocoaPods管理(iosApp/Podfile中声明)，
@@ -226,22 +228,40 @@ kotlin{
                     defFile(project.file("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
 //                    defFile(files("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
                     packageName("com.onesignal")
+
                     /* ↓ OneSignal CocoaPod安装后的路径*/
-                    val podsDir=project.rootDir.resolve("iosApp/Pods/OneSignal")
-                    val xcframeworkDir=podsDir.resolve("OneSignal.xcframework")
-                    val frameworkDir=if(xcframeworkDir.exists() ){
-                        val slices=xcframeworkDir.listFiles{ f-> f.isDirectory }?:emptyArray()
-                        slices.firstNotNullOfOrNull{ slice->
-                            val fw=slice.resolve("OneSignal.framework")
-                            if(fw.exists() && fw.isDirectory) fw else null
-                        }?:throw GradleException("OneSignal.framework not found")
-                    }else{
-                        logger.warn("⚠️ OneSignal.xcframework not found. Please run 'pod install' in iosApp directory.")
-                        podsDir
+                    val podsDir = project.rootDir.resolve("iosApp/Pods/OneSignal")
+                    println("🔍 OneSignal podsDir: ${podsDir.absolutePath}, exists=${podsDir.exists()}")/*先打印调试信息*/
+                    // 查找 .xcframework 或 .framework
+                    val frameworkDir=if(podsDir.exists() ){
+                        // 方式一：查找 .xcframework
+                        val xcframework = podsDir.listFiles { f -> f.name.endsWith(".xcframework") }?.firstOrNull()
+                        if (xcframework != null) {
+                            println("🔍 Found xcframework: ${xcframework.name}")
+                            // 找当前架构对应的切片
+                            val slices = xcframework.listFiles { f -> f.isDirectory } ?: emptyArray()
+                            slices.firstNotNullOfOrNull { slice ->
+                                val fw = slice.resolve("OneSignal.framework")
+                                if (fw.exists() && fw.isDirectory) fw else null
+                            }
+                        } else {
+                            // 方式二：直接查找 .framework
+                            podsDir.listFiles { f -> f.name.endsWith(".framework") }?.firstOrNull()?.let {
+                                println("🔍 Found framework: ${it.name}")
+                                it
+                            }
+                        } ?: throw GradleException("OneSignal.framework not found in $podsDir")
+                    } else {
+                        throw GradleException("OneSignal Pods dir not found: ${podsDir.absolutePath}. Please run 'pod install' in iosApp directory.")
                     }
-                    val headersDir=frameworkDir.resolve("Headers")
-                    compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
-                    linkerOpts("-F${xcframeworkDir.absolutePath}", "-framework", "OneSignal")
+
+                    val headersDir = frameworkDir.resolve("Headers")
+                    println("🔍 OneSignal headersDir: ${headersDir.absolutePath}, exists=${headersDir.exists()}")
+                    println("🔍 Headers: ${headersDir.listFiles()?.joinToString { it.name }}")
+
+                    compilerOpts("-I${headersDir.absolutePath}", "-F${frameworkDir.parentFile?.absolutePath ?: frameworkDir.absolutePath}")
+
+                    // linkerOpts 不支持在 cinterop 中设置，移到 binaries 配置中
                 }
 
             }
