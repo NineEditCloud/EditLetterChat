@@ -187,7 +187,7 @@ kotlin{
         iosTarget.compilations.getByName("main"){
             cinterops{
                 val wechatOpenSDK by creating{
-                    defFile(project.file("src/nativeInterop/cinterop/WechatOpenSDK.def"))
+                    defFile(project.file("src/nativeInterop/cinterop/WechatOpenSDK.def") )/*导入cinterop 微信SDK依赖配置*/
                     packageName("com.wechat.opensdk")
 
                     /*WechatOpenSDK CocoaPod安装后的路径*/
@@ -197,7 +197,7 @@ kotlin{
                     compilerOpts("-I${sdkDir.absolutePath}")/*WechatOpenSDK 是静态库(.a)，头文件直接在 OpenSDK2.0.4 目录下*/
                 }
                 val alipaySDK by creating{
-                    defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )
+                    defFile(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
                     packageName("com.alipay.sdk")
 
                     /*AlipaySDK-iOS CocoaPod安装的是.xcframework，
@@ -226,7 +226,7 @@ kotlin{
                 }
 
                 val oneSignal by creating{
-                    defFile(project.file("src/nativeInterop/cinterop/OneSignal.def"))
+                    defFile(project.file("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
                     packageName("com.onesignal")
 
                     /*OneSignal CocoaPod安装后的路径*/
@@ -443,10 +443,10 @@ kotlin{
 
             implementation("io.ktor:ktor-client-darwin:${libs.versions.ktor.get()}")/*Ktor-IOS端底层Darwin引擎*/
 
-            implementation(files("src/nativeInterop/cinterop/WechatOpenSDK.def") )/*导入cinterop 微信SDK依赖配置*/
-            implementation(files("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
+//            implementation(files("src/nativeInterop/cinterop/WechatOpenSDK.def") )/*导入cinterop 微信SDK依赖配置*/
+//            implementation(files("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
 //            implementation(project.file("src/nativeInterop/cinterop/AlipaySDK.def") )/*导入cinterop 支付宝SDK依赖配置*/
-            implementation(files("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
+//            implementation(files("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
         }
 //        ohosMain.dependencies/*HarmonyOS依赖*/{
 //            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-harmony:${libs.versions.kotlinx.get()}")/*Kotlin协程-HarmonyOS，Room内部依赖需要*/
