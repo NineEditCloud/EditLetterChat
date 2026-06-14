@@ -225,16 +225,15 @@ kotlin{
 
                 val oneSignal by creating{
                     defFile(project.file("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
-//                    defFile(files("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
                     packageName("com.onesignal")
 
-                    val podsDir = project.rootDir.resolve("iosApp/Pods/OneSignal")
-                    // 找 OneSignalFramework.xcframework（主 framework）
+                    val podsDir=project.rootDir.resolve("iosApp/Pods/OneSignal")
+                    // 找 OneSignalFramework.xcframework(主framework)
                     val xcframeworkDir = podsDir.resolve("iOS_SDK/OneSignalSDK/OneSignal_XCFramework/OneSignalFramework.xcframework")
                     if(!xcframeworkDir.exists() ){
                         throw GradleException("OneSignalFramework.xcframework not found at ${xcframeworkDir.absolutePath}")
                     }
-                    // 找当前架构对应的 slice（ios-arm64）
+                    // 找当前架构对应的 slice(ios-arm64)
                     val frameworkDir = xcframeworkDir.listFiles { it -> it.isDirectory }?.firstOrNull { slice ->
                         slice.resolve("OneSignalFramework.framework/Headers").exists()
                     } ?: throw GradleException("OneSignalFramework.framework/Headers not found in ${xcframeworkDir.absolutePath}")
