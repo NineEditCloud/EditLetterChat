@@ -30,13 +30,14 @@ class CreateGroupChat/*创建群聊界面*/:Screen{
             TopAppBar(rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowLeft),{
                 navigator.pop()/*关闭当前界面*/
             }, "创建群聊", )
+
         }
     }
 }
 class Add_FriendAndGroupChat/*添加好友和群聊界面(添加联系)*/:Screen{
     @Composable
     override fun Content(){
-        val backgroundColor=if(!isSystemInDarkTheme())Color(0xFFEEF2FD) else Color(0xFF1C1E1F)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
+        val backgroundColor=if(!isSystemInDarkTheme() ) Color(0xFFEEF2FD) else Color(0xFF1C1E1F)/*浅深主题背景色，背景色可这样判断写，文字用MaterialTheme.colorScheme.onSurface不易出错*/
 
         val navigator=LocalNavigator.currentOrThrow/*Voyager-Navigation 绑定当前界面的导航控制器*/
 
@@ -44,6 +45,7 @@ class Add_FriendAndGroupChat/*添加好友和群聊界面(添加联系)*/:Screen
             TopAppBar(rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowLeft), {
                 navigator.pop()/*关闭当前界面*/
             }, "添加联系", )
+
         }
     }
 }

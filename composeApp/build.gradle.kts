@@ -251,6 +251,10 @@ kotlin{
         /*pod()方法会自动尝试生成Kotlin绑定(让Kotlin代码能调用共享模块依赖)，
         但 微信SDK、支付宝SDK 的CocoaPod没正确的moduleMap或头文件 导致cinterop失败，
         改为手动cinterop配置(见上方forEach中的cinterops块)*/
+
+        pod("OneSignalXCFramework"){/*OneSignal实时接收推送唤醒已冻结进程-IOS版(支持国内外苹果APNs推送)*/
+            version="5.0.0"
+        }
     }
 
 //    ohosArm64{/*HarmonyOSNext(纯血鸿蒙星河版-移动端系统 并非安卓改造的HarmonyOS)，Kotlin/Native可将Kotlin共享代码跨鸿蒙编译*/
@@ -407,6 +411,8 @@ kotlin{
             implementation("com.tencent.mm.opensdk:wechat-sdk-android:6.8.34")/*安卓调起微信支付-SDK，6.8.34仍兼容 安卓4.1，2.0+兼容IOS12.0+*/
             implementation("com.alipay.sdk:alipaysdk-android:+@aar")          /*安卓调起支付宝支付-SDK +@aar代表下载最新aar软件包版，15.8.2@aar仍兼容 安卓5.0/IOS12.0*/
             /*客户端无银联云闪付SDK等，绑卡支付功能是放在服务端执行*/
+
+            implementation("com.onesignal:OneSignal:5.1.0")/*OneSignal实时接收推送唤醒已冻结进程-安卓版(支持国内安卓各厂商推送、国外谷歌FCM推送)*/
         }
         iosMain.dependencies/*IOS端依赖*/{
 //            implementation("org.jetbrains.compose.window:window:${libs.versions.compose.get()}")/*Compose1.6.x及以下-IOS端依赖，1.7.x+版org.jetbrains.compose.ui库已自动包含 手补以防万一切换到旧版*/

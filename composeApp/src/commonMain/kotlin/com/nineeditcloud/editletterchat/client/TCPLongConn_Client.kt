@@ -9,7 +9,6 @@ import com.nineeditcloud.editletterchat.common_tools.toHashMap
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
-import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.*
 import kotlinx.coroutines.CancellationException
 
