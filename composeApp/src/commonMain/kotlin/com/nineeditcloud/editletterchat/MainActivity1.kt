@@ -624,8 +624,8 @@ class MainActivity1:Screen{
 
 //                    val scope=rememberCoroutineScope()/*数据变化自动重组发射新值的 协程作用域*/
                     val lifecycleOwner=LocalLifecycleOwner.current/*lifecycle协程，绑定 Activity(活动) 或 Fragment(界面片段) 生命周期*/
-                    /*用LaunchedEffect实时监听accountData变化，加载数据*/
-                    LaunchedEffect(accountData){
+
+                    LaunchedEffect(accountData){/*用LaunchedEffect实时监听accountData变化时执行*/
                         if(accountData!=null){/*若当前账号数据不为空*/
                             lifecycleOwner.lifecycleScope.launch(Dispatchers.IO/*数据库、通信必须在输入输出流线程执行 否则切换导航界面时会崩溃*/){
                                 val currentAccount_FriendDBTableDao=getDatabase("${accountData!!.id}friend")/*获取 当前账号(不为空则调用)好友本地数据 数据库实例*/.friendDao()/*获取数据库中的 好友表Dao*/

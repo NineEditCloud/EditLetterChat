@@ -224,6 +224,29 @@ kotlin{
                     /*-I 指定头文件搜索路径，-F 指定framework搜索路径(指向xcframework目录)*/
                     compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
                 }
+
+                val oneSignal by creating{
+                    defFile(project.file("src/nativeInterop/cinterop/OneSignal.def"))
+                    packageName("com.onesignal")
+
+                    /*OneSignal CocoaPod安装后的路径*/
+                    val podsDir=project.rootDir.resolve("iosApp/Pods/OneSignal")
+                    val xcframeworkDir=podsDir.resolve("OneSignal.xcframework")
+                    val frameworkDir=if(xcframeworkDir.exists() ){
+                        val slices=xcframeworkDir.listFiles{ f-> f.isDirectory }?:emptyArray()
+                        slices.firstNotNullOfOrNull{ slice->
+                            val fw=slice.resolve("OneSignal.framework")
+                            if(fw.exists() && fw.isDirectory) fw else null
+                        }?:throw GradleException("OneSignal.framework not found")
+                    }else{
+                        logger.warn("⚠️ OneSignal.xcframework not found. Please run 'pod install' in iosApp directory.")
+                        podsDir
+                    }
+                    val headersDir=frameworkDir.resolve("Headers")
+                    compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
+                    linkerOpts("-F${xcframeworkDir.absolutePath}", "-framework", "OneSignal")
+                }
+
             }
         }
 
@@ -252,7 +275,7 @@ kotlin{
         但 微信SDK、支付宝SDK 的CocoaPod没正确的moduleMap或头文件 导致cinterop失败，
         改为手动cinterop配置(见上方forEach中的cinterops块)*/
 
-        pod("OneSignalXCFramework"){/*OneSignal实时接收推送唤醒已冻结进程-IOS版(支持国内外苹果APNs推送)*/
+        pod("OneSignal"){/*OneSignal实时接收推送唤醒已冻结进程-IOS版(支持国内外苹果APNs推送)*/
             version="5.0.0"
         }
     }

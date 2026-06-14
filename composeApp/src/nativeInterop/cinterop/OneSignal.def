@@ -1,0 +1,4 @@
+language = Objective-C
+headers = OneSignal.h
+headerFilter = **/*.h
+package = com.onesignal
