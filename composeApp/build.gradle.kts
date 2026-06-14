@@ -224,9 +224,9 @@ kotlin{
                     compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
                 }
 
-                val oneSignal by creating{/*OneSignal接收推送唤醒进程SDK与Kotlin绑定失败，可能IOS端只能用Swift调用*/
+//                val oneSignal by creating{/*OneSignal接收推送唤醒进程SDK与Kotlin绑定失败，可能IOS端只能用Swift调用*/
 //                    defFile(project.file("src/nativeInterop/cinterop/OneSignal.def") )/*导入cinterop OneSignal接收推送唤醒进程SDK依赖配置*/
-                    packageName("com.onesignal")
+//                    packageName("com.onesignal")
 //
 //                    val podsDir=project.rootDir.resolve("iosApp/Pods/OneSignal")
 //                    // 找 OneSignalFramework.xcframework(主framework)
@@ -246,7 +246,7 @@ kotlin{
 //
 //                    compilerOpts("-I${headersDir.absolutePath}", "-F${xcframeworkDir.absolutePath}")
 //                    /*linkerOpts 不支持在 cinterop 中设置，移到 binaries 配置中*/
-                }
+//                }
 
             }
         }
